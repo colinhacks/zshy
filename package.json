@@ -1,0 +1,42 @@
+{
+  "name": "zshy",
+  "version": "0.1.0",
+  "module": "./dist/index.js",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.2",
+    "@biomejs/biome": "^2.0.5",
+    "@types/node": "latest",
+    "tsx": "^4.20.3",
+    "typescript": ">5.5.0"
+  },
+  "peerDependencies": {
+    "typescript": ">5.5.0"
+  },
+  "dependencies": {
+    "globby": "^14.1.0",
+    "table": "^6.9.0"
+  },
+  "scripts": {
+    "build": "tsx index.ts"
+  },
+  "zshy": {
+    "exports": {
+      ".": "./index.ts"
+    },
+    "outDir": "dist"
+  },
+  "main": "./dist/index.cjs",
+  "types": "./dist/index.d.cts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.cts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ]
+}
