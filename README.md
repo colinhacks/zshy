@@ -359,10 +359,16 @@ By having `"types"` point to the `.d.cts` declarations, this error will never ha
 
 Many environments don't support `package.json#exports` yet (React Native, older bundlers, legacy TypeScript projects). For maximum compatibility:
 
-1. Put your source files in your package root (not in a `src` directory)
-2. Set `outDir: "."` in your `tsconfig.json`
 
-This setup lets imports like `"your-library/utils"` auto-resolve to `"your-library/utils/index.js"` in environments that predate modern module resolution. Zod uses this approach for broader compatibility.
+1. Remove `"type": "module"` from your `package.json` (if present)
+2. Put your source files in your package root (not in a `src` directory)
+3. Set `outDir: "."` in your `tsconfig.json`
+
+With this setup, your build outputs (`index.js`, etc) will be written to disk right next to their corresponding source files. This lets you simulate subpath imports; imports like `"your-library/utils"` will generally resolve to `"your-library/utils/index.js"` in environments that predate modern module resolution. Zod uses this approach for broader compatibility with the following environments:
+
+1. **Node.js v12.7 or older**
+2. **TypeScript projects using legacy configs** - e.g. `"module": "commonjs"`
+3. **React Native** - The Metro bundler does not support `"exports"` by default 
 
 <br/>
 
