@@ -32,11 +32,11 @@
 
 `zshy` is a simple-but-powerful build tool for compiling TypeScript libraries. It was originally created as internal build tool for [Zod](https://github.com/colinhacks/zod) but is now available as a general-purpose tool.
 
-**Supports ESM/CJS** — Builds ESM and CJS code from a single TypeScript source file.
+- **Supports ESM/CJS** — Builds ESM and CJS code from a single TypeScript source file.
 
-**Bundler-free** — No Rust, no bundlers, no extra configs, just good old-fashioned `tsc`.
+- **Bundler-free** — No Rust, no bundlers, no extra configs, just good old-fashioned `tsc`.
 
-**Declarative config** — No build scripts, just a simple `"zshy"` field in your `package.json`.
+- **Declarative config** — No build scripts, just a simple `"zshy"` field in your `package.json`.
   ```jsonc
   // package.json
   {
@@ -51,11 +51,11 @@
     }
   }
   ```  
-**Auto-generated `package.json#exports`** — Generates the appropriate `exports` map and writes it directly into your `package.json`.
+- **Auto-generated `package.json#exports`** — Generates the appropriate `exports` map and writes it directly into your `package.json`.
 
-**Supports `.tsx`** — JSX syntax will be transformed according to your `tsconfig.json` settings.
+- **Supports `.tsx`** — JSX syntax will be transformed according to your `tsconfig.json` settings.
 
-**Blazing fast** — Just kidding, it's slow. Typechecking with `tsc` is a lot slower than using a bundler that strips types. Buuut—
+- **Blazing fast** — Just kidding, it's slow. Typechecking with `tsc` is a lot slower than using a bundler that strips types. Buuut—
   1. you *should* be type checking your code during builds
   2. TypeScript is [about to get 10x faster](https://devblogs.microsoft.com/typescript/typescript-native-port/) and 
   3. you just spent the last hour staring at a Cursor spinner anyway.
@@ -68,7 +68,7 @@
 npm install --save-dev zshy
 ```
 
-2️⃣ Add the `"zshy"` field to your `package.json` and a `"build"` script.
+2️⃣ Add the `"zshy"` field to your `package.json`
 
 ```jsonc
 {
@@ -94,19 +94,52 @@ npm install --save-dev zshy
   }
 }
 ```
+3️⃣ Run a build
 
+```bash
+$npx zshy
 
-3️⃣ Add `"build"` script to your `package.json`:
-
-```diff
-// package.json
-{
-  // ...
-  "scripts": {
-+   "build": "zshy"
-  }
-}
+💎 Starting zshy build...
+⚙️ Detected project root: /path/to/my-pkg
+📦 Reading package.json from ./package.json
+📁 Reading tsconfig from ./tsconfig.json
+➡️ Determining entrypoints...
+   ╔══════════════════╤═════════════════════════╗
+   ║ Subpath          │ Entrypoint              ║
+   ╟──────────────────┼─────────────────────────╢
+   ║ "zshy"           │ ./src/index.ts              ║
+   ╟──────────────────┼─────────────────────────╢
+   ║ "zshy/utils"     │ ./src/utils.ts              ║
+   ╟──────────────────┼─────────────────────────╢
+   ║ "zshy/plugins/*" │ ./src/plugins/* (2 matches) ║
+   ╚══════════════════╧═════════════════════════╝
+📂 Transpiling from ./src (rootDir) to ./dist (outDir)
+🟨 Package is ES module (package.json#type is "module")
+🧱 Building CJS... (rewriting .ts -> .cjs/.d.cts)
+🧱 Building ESM...
+📦 Updating package.json exports...
+   {
+     ".": {
+       "types": "./dist/index.d.cts",
+       "import": "./dist/index.js",
+       "require": "./dist/index.cjs"
+     }
+   }
+🎉 Build complete!
 ```
+
+> If you like, create a `package.json` `build` script:
+> ```diff
+>  // package.json
+>  {
+>    // ...
+>    "scripts": {
+>  +   "build": "zshy"
+>    }
+>  }
+>  ```
+
+
 
 4️⃣ Run the `build` command:
 
