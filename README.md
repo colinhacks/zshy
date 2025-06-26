@@ -98,7 +98,7 @@ npm install --save-dev zshy
 ### 3️⃣ Run a build
 
 ```bash
-$npx zshy
+$ npx zshy
 
 💎 Starting zshy build...
 ⚙️ Detected project root: /path/to/my-pkg
@@ -131,14 +131,13 @@ $npx zshy
 
 > If you like, create a `package.json` `build` script:
 > ```diff
->  // package.json
->  {
->    // ...
->    "scripts": {
->  +   "build": "zshy"
->    }
->  }
->  ```
+> {
+>   // ...
+>   "scripts": {
+> +   "build": "zshy"
+>   }
+> }
+> ```
 
 
 
