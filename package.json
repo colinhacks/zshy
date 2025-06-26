@@ -1,9 +1,37 @@
 {
   "name": "zshy",
-  "version": "0.0.1",
+  "version": "0.0.2",
+  "description": "Gold-standard build tool for TypeScript libraries",
+  "keywords": [
+    "typescript",
+    "build-tool",
+    "compiler",
+    "dual-package",
+    "esm",
+    "cjs",
+    "library",
+    "tsc"
+  ],
+  "homepage": "https://github.com/colinhacks/zshy#readme",
+  "bugs": {
+    "url": "https://github.com/colinhacks/zshy/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/colinhacks/zshy.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Colin McDonnell",
+    "email": "colin@colinhacks.com",
+    "url": "https://colinhacks.com"
+  },
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/colinhacks"
+  },
   "module": "./out/index.js",
   "type": "module",
-  "private": true,
   "bin": {
     "zshy": "./out/index.js"
   },
@@ -25,7 +53,7 @@
     "table": "^6.9.0"
   },
   "scripts": {
-    "build": "tsx index.ts"
+    "build": "tsx src/index.ts"
   },
   "zshy": {
     "exports": {
