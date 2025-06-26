@@ -129,50 +129,24 @@ $ npx zshy
 🎉 Build complete!
 ```
 
-> If you like, create a `package.json` `build` script:
-> ```diff
-> {
->   // ...
->   "scripts": {
-> +   "build": "zshy"
->   }
-> }
-> ```
 
+Alernatively, create a `package.json` `build` script.
 
+```diff
+{
+  // ...
+  "scripts": {
++   "build": "zshy"
+  }
+}
+```
 
-4️⃣ Run the `build` command:
+The to run a build:
 
 ```bash
-$ npm run build # or npx zshy
-💎 Starting zshy build...
-⚙️ Detected project root: /path/to/my-pkg
-📦 Reading package.json from ./package.json
-📁 Reading tsconfig from ./tsconfig.json
-➡️ Determining entrypoints...
-   ╔══════════════════╤═════════════════════════╗
-   ║ Subpath          │ Entrypoint              ║
-   ╟──────────────────┼─────────────────────────╢
-   ║ "zshy"           │ ./src/index.ts              ║
-   ╟──────────────────┼─────────────────────────╢
-   ║ "zshy/utils"     │ ./src/utils.ts              ║
-   ╟──────────────────┼─────────────────────────╢
-   ║ "zshy/plugins/*" │ ./src/plugins/* (2 matches) ║
-   ╚══════════════════╧═════════════════════════╝
-📂 Transpiling from ./src (rootDir) to ./dist (outDir)
-🟨 Package is ES module (package.json#type is "module")
-🧱 Building CJS... (rewriting .ts -> .cjs/.d.cts)
-🧱 Building ESM...
-📦 Updating package.json exports...
-   {
-     ".": {
-       "types": "./dist/index.d.cts",
-       "import": "./dist/index.js",
-       "require": "./dist/index.cjs"
-     }
-   }
-🎉 Build complete!
+$ npm run build
 ```
+
 
 ## Build details (for nerds only)
 
