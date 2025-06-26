@@ -1,7 +1,7 @@
 <p align="center">
 
-  <h1 align="center">🐒<br/><code>zshy</code></h1>
-  <p align="center">TypeScript-first dual package builder. Zero config, maximum compatibility.
+  <h1 align="center">⚜️<br/><code>zshy</code></h1>
+  <p align="center">Gold-standard build tool for TypeScript libraries.
     <br/>
     by <a href="https://x.com/colinhacks">@colinhacks</a>
   </p>
