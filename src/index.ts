@@ -218,7 +218,7 @@ Examples:
 	const relOutDir = path.relative(pkgJsonDir, outDir);
 	const declarationDir = path.resolve(
 		pkgJsonDir,
-		_parsedConfig?.declarationDir || "./dist",
+		_parsedConfig?.declarationDir || relOutDir,
 	);
 	const relDeclarationDir = path.relative(pkgJsonDir, declarationDir);
 

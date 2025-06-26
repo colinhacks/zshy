@@ -38,21 +38,17 @@
     ]
   },
   "main": "./out/index.cjs",
-  "types": "./dist/index.d.cts",
-  "files": [
-    "out",
-    "types"
-  ],
+  "types": "./out/index.d.cts",
   "exports": {
     ".": {
       "@zod/source": "./src/index.ts",
-      "types": "./dist/index.d.cts",
+      "types": "./out/index.d.cts",
       "import": "./out/index.js",
       "require": "./out/index.cjs"
     },
     "./utils": {
       "@zod/source": "./src/utils.ts",
-      "types": "./dist/utils.d.cts",
+      "types": "./out/utils.d.cts",
       "import": "./out/utils.js",
       "require": "./out/utils.cjs"
     },
@@ -61,5 +57,8 @@
       "import": "./out/src/plugins/*",
       "require": "./out/src/plugins/*"
     }
-  }
+  },
+  "files": [
+    "out"
+  ]
 }

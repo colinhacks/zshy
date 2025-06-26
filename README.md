@@ -346,6 +346,8 @@ With this setup, your build outputs (`index.js`, etc) will be written to disk ri
 2. **TypeScript projects using legacy configs** - e.g. `"module": "commonjs"`
 3. **React Native** - The Metro bundler does not support `"exports"` by default 
 
+<br/> 
+
 ### Is it fast?
 
 Not really. Typechecking with `tsc` is a lot slower than using a bundler that strips types. That said: 
