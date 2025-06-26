@@ -355,10 +355,11 @@ By having `"types"` point to the `.d.cts` declarations, this error will never ha
 
 <br/>
 
-### What about legacy, non-Node.js environments?
+### Can it support legacy or non-Node.js environments?
 
-Many environments don't support `package.json#exports` yet (React Native, older bundlers, legacy TypeScript projects). For maximum compatibility:
+Yes! This is one of the key reasons `zshy` was originally developed for Zod. 
 
+Many environments don't support `package.json#exports` yet (React Native, older bundlers, Node.js v10 or earlier, and many TypeScript projects using legacy configs). This causes issues for packages that want to use subpath imports to structure their package. Fortunately `zshy` unlocks a workaround I call a *flat build*:
 
 1. Remove `"type": "module"` from your `package.json` (if present)
 2. Put your source files in your package root (not in a `src` directory)
@@ -369,39 +370,3 @@ With this setup, your build outputs (`index.js`, etc) will be written to disk ri
 1. **Node.js v12.7 or older**
 2. **TypeScript projects using legacy configs** - e.g. `"module": "commonjs"`
 3. **React Native** - The Metro bundler does not support `"exports"` by default 
-
-<br/>
-
-### How does `zshy` determine `rootDir`?
-
-Unless otherwise specified in your `tsconfig.json`, the `rootDir` is automatically determined from the common ancestor directory of all entry points. For example, if your entry points are `./src/index.ts`, `./src/utils.ts`, and `./src/plugins/auth.ts`, the computed `rootDir` would be `./src`.
-
-<br/>
-
-### What TypeScript compiler options does `zshy` override?
-
-`zshy` respects most of your `tsconfig.json` but applies strategic overrides for dual-format compilation:
-
-- **`module`**: Set to `"commonjs"` for CJS build, `"esnext"` for ESM build
-- **`moduleResolution`**: Set to `"node10"` for CJS, `"bundler"` for ESM  
-- **`moduleDetection`**: Set to `"auto"`
-- **`declaration`/`noEmit`/`emitDeclarationOnly`**: Overwritten to ensure proper output
-- **`verbatimModuleSyntax`**: Set to `false` to allow for multiple build formats
-
-<br/>
-
-### Is `zshy` fast?
-
-Just kidding, it's slow. But that's kind of a good thing: `tsc` type-checks your codebase (which is kinda important!) instead of merely stripping types like a bundler. Also a) TypeScript is [about to get 10x faster](https://devblogs.microsoft.com/typescript/typescript-native-port/) and b) you just spent the last hour staring at a Cursor spinner anyway.
-
-<br/>
-
-### What environments does `zshy` support?
-
-`zshy` is designed to work across many environments:
-
-1. **Modern Node.js** - Full support for `package.json#exports`
-2. **React Native** - Works with Metro bundler when using flat file structure
-3. **Legacy bundlers** - Supports older tools that predate exports maps
-4. **TypeScript projects** - Compatible with various `tsconfig.json` setups
-5. **Non-Node.js environments** - Works with alternative JavaScript runtimes
