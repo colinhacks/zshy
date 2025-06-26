@@ -62,13 +62,13 @@
 
 ## Usage
 
-1️⃣ Install `zshy` as a dev dependency:
+### 1️⃣ Install `zshy` as a dev dependency:
 
 ```bash
 npm install --save-dev zshy
 ```
 
-2️⃣ Add the `"zshy"` field to your `package.json`
+### 2️⃣ Add the `"zshy"` field to your `package.json`
 
 ```jsonc
 {
@@ -94,7 +94,8 @@ npm install --save-dev zshy
   }
 }
 ```
-3️⃣ Run a build
+
+### 3️⃣ Run a build
 
 ```bash
 $npx zshy
