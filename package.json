@@ -1,6 +1,6 @@
 {
   "name": "zshy",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "module": "./out/index.js",
   "type": "module",
   "private": true,

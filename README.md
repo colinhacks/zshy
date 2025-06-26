@@ -41,12 +41,12 @@
 - 👑 **Powered by `tsc`** — No bundling, no extra configs, just good old-fashioned `tsc`
 - 📝 **Declarative config** — No build scripts, just a simple `"zshy"` field in your `package.json`
 - 🤖 **Auto-generated `"exports"`** — Writes `"exports"` map directly into your `package.json`
+- 🟦 **Respects your `tsconfig.json`**
 - 📂 **Unopinionated about file structure** — Use any file structure you like
 - 🔗 **Unopinionated about import extensions** — Use any import syntax TypeScript supports: extensionless, `.js`, `.ts`
 - ⚛️ **Supports `.tsx`**
 - 📱 **Supports React Native** 
 - 🐌 **Blazing fast** — Just kidding, it's slow. But `tsc` is about to get 10x faster!
-
 
 <br/>
 <br/>
