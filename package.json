@@ -5,7 +5,7 @@
   "type": "module",
   "private": true,
   "bin": {
-    "zshy": "./dist/index..js"
+    "zshy": "./out/index.js"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.2",
@@ -20,6 +20,7 @@
     "typescript": ">5.5.0"
   },
   "dependencies": {
+    "arg": "^5.0.2",
     "globby": "^14.1.0",
     "table": "^6.9.0"
   },
@@ -28,8 +29,8 @@
   },
   "zshy": {
     "exports": {
-      ".": "./src/index.tsx",
-      "./utils": "./src/utils.tsx",
+      ".": "./src/index.ts",
+      "./utils": "./src/utils.ts",
       "./plugins/*": "./src/plugins/*"
     },
     "sourceDialects": [
@@ -37,21 +38,21 @@
     ]
   },
   "main": "./out/index.cjs",
-  "types": "./types/index.d.cts",
+  "types": "./dist/index.d.cts",
   "files": [
     "out",
     "types"
   ],
   "exports": {
     ".": {
-      "@zod/source": "./src/index.tsx",
-      "types": "./types/index.d.cts",
+      "@zod/source": "./src/index.ts",
+      "types": "./dist/index.d.cts",
       "import": "./out/index.js",
       "require": "./out/index.cjs"
     },
     "./utils": {
-      "@zod/source": "./src/utils.tsx",
-      "types": "./types/utils.d.cts",
+      "@zod/source": "./src/utils.ts",
+      "types": "./dist/utils.d.cts",
       "import": "./out/utils.js",
       "require": "./out/utils.cjs"
     },

@@ -9,7 +9,7 @@
     "allowJs": true,
     "outDir": "./out",
     "declaration": true,
-    "jsx":"react-jsx",
+    "jsx": "react-jsx",
 
     // Bundler mode
     
@@ -23,6 +23,7 @@
     "skipLibCheck": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true,
+    "esModuleInterop": true,
 
     // Some stricter flags (disabled by default)
     "noUnusedLocals": false,

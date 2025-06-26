@@ -37,11 +37,11 @@
 
 ### Features
 
-- **Dual-package builds** — Builds ESM and CJS outputs from a single TypeScript source file.
+- 🧱 **Dual-package builds** — Builds ESM and CJS outputs from a single TypeScript source file.
 
-- **Powered by `tsc`** — No bundling, no extra configs, just good old-fashioned `tsc`. It's the gold standard for transpiling TypeScript.
+- 👑 **Powered by `tsc`** — No bundling, no extra configs, just good old-fashioned `tsc`. It's the gold standard for transpiling TypeScript.
 
-- **Declarative config** — No build scripts, just a simple `"zshy"` field in your `package.json`.
+- 🏠 **Declarative config** — No build scripts, just a simple `"zshy"` field in your `package.json`.
   ```jsonc
   // package.json
   {
@@ -56,15 +56,15 @@
     }
   }
   ```  
-- **Auto-generated `"exports"`** — Generates the appropriate `"exports"` map and writes it directly into your `package.json`.
+- 🤖 **Auto-generated `"exports"`** — Generates the appropriate `"exports"` map and writes it directly into your `package.json`.
 
-- **Unopinionated about file structure** — You can use any file structure you like. `zshy` respects your `outDir` (and `rootDir` and `declarationDir`) and makes sure the `"exports"` map is always 100% correct.
+- 📂 **Unopinionated about file structure** — You can use any file structure you like. `zshy` respects your `outDir` (and `rootDir` and `declarationDir`) and makes sure the `"exports"` map is always 100% correct.
 
-- **Unopinionated about import extensions** — Use any import syntax TypeScript supports: extensionless, `.js`, `.ts`, whatever. `zshy` rewrites extensions during the build to ensure compatibility
+- 🔗 **Unopinionated about import extensions** — Use any import syntax TypeScript supports: extensionless, `.js`, `.ts`, whatever. `zshy` rewrites extensions during the build to ensure compatibility
 
-- **Supports `.tsx`** — JSX syntax will be transformed according to your `tsconfig.json` settings.
+- ⚛️ **Supports `.tsx`** — JSX syntax will be transformed according to your `tsconfig.json` settings.
 
-- **Blazing fast** — Just kidding, it's slow. Typechecking with `tsc` is a lot slower than using a bundler that strips types. That said:
+- 🐌 **Blazing fast** — Just kidding, it's slow. Typechecking with `tsc` is a lot slower than using a bundler that strips types. That said:
   1. you *should* be type checking your code during builds,
   2. TypeScript is [about to get 10x faster](https://devblogs.microsoft.com/typescript/typescript-native-port/), and 
   3. you just spent the last hour staring at a Cursor spinner anyway
