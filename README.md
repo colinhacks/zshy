@@ -33,7 +33,7 @@
 
 <h2 align="center">What is <code>zshy</code>?</h2>
 
-`zshy` is a simple-but-powerful build tool for transpiling TypeScript libraries. It was originally created as internal build tool for [Zod](https://github.com/colinhacks/zod) but is now available as a general-purpose tool for TypeScript libraries.
+`zshy` is a simple, zero-config build tool for transpiling TypeScript libraries. It was originally created as internal build tool for [Zod](https://github.com/colinhacks/zod) but is now available as a general-purpose tool for TypeScript libraries.
 
 ### Features
 
