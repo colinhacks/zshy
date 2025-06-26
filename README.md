@@ -1,4 +1,3 @@
-
 <p align="center">
 
   <h1 align="center">🐒<br/><code>zshy</code></h1>
@@ -27,14 +26,20 @@
 
 <br/>
 <br/>
+<br/>
 
-## What is `zshy`?
 
-`zshy` is a simple-but-powerful build tool for compiling TypeScript libraries. It was originally created as internal build tool for [Zod](https://github.com/colinhacks/zod) but is now available as a general-purpose tool.
+<!-- ## What is `zshy`? -->
+
+<h2 align="center">What is <code>zshy</code>?</h2>
+
+`zshy` is a simple-but-powerful build tool for transpiling TypeScript libraries. It was originally created as internal build tool for [Zod](https://github.com/colinhacks/zod) but is now available as a general-purpose tool for TypeScript libraries.
 
 ### Features
 
-- **Painless dual-module builds (ESM + CJS)** — Builds ESM and CJS outputs from a single TypeScript source file.
+- **Dual-package builds** — Builds ESM and CJS outputs from a single TypeScript source file.
+
+- **Powered by `tsc`** — No bundling, no extra configs, just good old-fashioned `tsc`. It's the gold standard for transpiling TypeScript.
 
 - **Declarative config** — No build scripts, just a simple `"zshy"` field in your `package.json`.
   ```jsonc
@@ -51,24 +56,25 @@
     }
   }
   ```  
-- **Auto-generated `package.json#exports`** — Generates the appropriate `exports` map and writes it directly into your `package.json`.
-
-- **Supports `.tsx`** — JSX syntax will be transformed according to your `tsconfig.json` settings.
+- **Auto-generated `"exports"`** — Generates the appropriate `"exports"` map and writes it directly into your `package.json`.
 
 - **Unopinionated about file structure** — You can use any file structure you like. `zshy` respects your `outDir` (and `rootDir` and `declarationDir`) and makes sure the `"exports"` map is always 100% correct.
 
 - **Unopinionated about import extensions** — Use any import syntax TypeScript supports: extensionless, `.js`, `.ts`, whatever. `zshy` rewrites extensions during the build to ensure compatibility
 
-- **Powered by `tsc`** — No bundling, no extra configs, just good old-fashioned `tsc`. It's all you need!
+- **Supports `.tsx`** — JSX syntax will be transformed according to your `tsconfig.json` settings.
 
-- **Blazing fast** — Just kidding, it's slow. Typechecking with `tsc` is a lot slower than using a bundler that strips types. Buuut—
-  1. you *should* be type checking your code during builds
-  2. TypeScript is [about to get 10x faster](https://devblogs.microsoft.com/typescript/typescript-native-port/) and 
-  3. you just spent the last hour staring at a Cursor spinner anyway.
+- **Blazing fast** — Just kidding, it's slow. Typechecking with `tsc` is a lot slower than using a bundler that strips types. That said:
+  1. you *should* be type checking your code during builds,
+  2. TypeScript is [about to get 10x faster](https://devblogs.microsoft.com/typescript/typescript-native-port/), and 
+  3. you just spent the last hour staring at a Cursor spinner anyway
 
-## Usage
 
-### 1️⃣ Install `zshy` as a dev dependency:
+<br/>
+<br/>
+<h2 align="center">Usage</h2>
+
+### 1. Install `zshy` as a dev dependency:
 
 ```bash
 npm install --save-dev zshy
@@ -76,7 +82,7 @@ yarn add --dev zshy
 pnpm add --save-dev zshy
 ```
 
-### 2️⃣ Add `"zshy"` field to your `package.json`
+### 2. Add `"zshy"` field to your `package.json`
 
 Specify your package entrypoint with the `"zshy"` key in `package.json`.
 
@@ -106,7 +112,7 @@ More complicated packages can specify subpaths or wildcard exports with `"zshy.e
 ```
 
 
-### 3️⃣ Run a build
+### 3. Run a build
 
 ```bash
 $ npx zshy
@@ -152,8 +158,7 @@ $ npx zshy
 🎉 Build complete!
 ```
 
-
-Alernatively, create a `package.json` `build` script.
+Alernatively, add a `"build"` script to your `package.json`:
 
 ```diff
 {
@@ -164,20 +169,20 @@ Alernatively, create a `package.json` `build` script.
 }
 ```
 
-The to run a build:
+Then, to run a build:
 
 ```bash
 $ npm run build
 ```
 
 
-## Build details (for nerds only)
+<br/>
+<br/>
+<h2 align="center">FAQ</h2>
 
-This section walks through the build process used by `zshy` step-by-step, explaining some of its design decisions along the way.
+### How does `zshy` resolve entrypoints?
 
-### Step 1: Resolve entry points
-
-First, `zshy` reads your `package.json#zshy` config to determine your source entrypoints. 
+It reads your `package.json#zshy` config:
 
 ```jsonc
 // package.json
@@ -194,48 +199,95 @@ First, `zshy` reads your `package.json#zshy` config to determine your source ent
 }
 ```
 
-> Wildcard globs like `"./plugins/*"` will shallowly match any `.ts` or `.tsx` files in the specified directory.
+**Note** — Since `zshy` computes an exact set of resolved entrypoints, your `"files"`, `"include"`, and `"exclude"` settings in `tsconfig.json` are ignored during the build.
 
-Later, `zshy` passes the full set of entrypoints into `tsc` as `"files"`.
+### Does `zshy` respect my `tsconfig.json` compiler options?
 
-ZMake
+Yes! With some strategic overrides:
 
-### Step 2: Determine `rootDir`
+- **`module`**: Overridden (`"commonjs"` for CJS build, `"esnext"` for ESM build)
+- **`moduleResolution`**: Overridden (`"node10"` for CJS, `"bundler"` for ESM)
+- **`declaration`/`noEmit`/`emitDeclarationOnly`**: Overridden to ensure proper output
+- **`verbatimModuleSyntax`**: Set to `false` to allow multiple build formats
 
-Unless otherwise specified in your `tsconfig.json`, the `rootDir` is automatically determined from the common ancestor directory of all entry points. In the example above, the `rootDir` is `./src`.
+All other options are respected, including:
 
+- `rootDir` (defaults to the common ancestor directory of all entrypoints)
+- `outDir` (defaults to `./dist`)
+- `declarationDir` (defaults to `./dist`)
+- `target` (defaults to `es2020`)
+- `jsx`
 
-### Step 3: Determine `outDir`/`declarationDir`
+### Do I need to use a specific file structure?
 
-`zshy` respects the `outDir`/`declarationDir` settings in your `tsconfig.json#compilerOptions`. Both default to `./dist`.
+No. You can organize your source however you like; `zshy` will transpile your entrypoints and all the files they import, respecting your `tsconfig.json` settings.
 
-### Step 4: Resolve `tsconfig.json` compiler options
+> **Comparison** — `tshy` requires you to put your source in a `./src` directory, and always builds to `./dist/esm` and `./dist/cjs`.
 
-`zshy` uses your existing `tsconfig.json` when building, with some strategic overrides:
+### What files does `zshy` create?
 
-- **`module`**: Set to `"commonjs"` for CJS build, `"esnext"` for ESM build
-- **`moduleResolution`**: Set to `"node10"` for CJS, `"bundler"` for ESM  
-- **`moduleDetection`**: Set to `"auto"` 
-- **`declaration`/`noEmit`/`emitDeclarationOnly`**: Overwritten to ensure proper output
-- **`verbatimModuleSyntax`**: Set to `false` to allow for multiple build formats
+It depends on your `package.json#type` field. If your package is ESM (that is, `"type": "module"` in `package.json`), the CJS build files will be generated as `.cjs`/`.d.cts`:
 
-### Step 5: Run builds, rewrite extensions 
+- `.js` + `.d.ts` (ESM)
+- `.cjs` + `.d.cts` (CJS)
 
-`zshy` runs two `tsc` builds, one for ESM and one for CJS. During the build, it relies on the [TypeScript Compiler API](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API) to rewrite extensions appropriately. 
+```bash
+$ tree out
 
-- If you have `"type": "module"` in `package.json` (recommended) then your package is *default-ESM*. In this case, `zshy` will produce
-  - `.js`/`.d.ts` in ESM format
-  - `.cjs`/`.d.cts` in CJS format
-- If you do not have `"type": "module"` (or it is set to `"commonjs"`), then your package is *default-CJS*. In this case, `zshy` will produce
-  - `.mjs`/`.d.mts` in ESM format
-  - `.js`/`.d.ts` in CJS format
+.
+├── package.json # if type == "module"
+├── src
+│   └── index.ts
+└── out
+    ├── index.js 
+    ├── index.d.ts
+    ├── index.cts
+    └── index.d.cts
+```
 
-> Remember: the `package.json#type` field determines whether Node.js considers `.js` (or `.d.ts`) file within your project to be ESM or CJS.
+Otherwise, the package is considered *default-CJS* and the ESM build files will be rewritten as `.mjs`/`.d.mts`.
 
+- `.mjs` + `.d.mts` (ESM)
+- `.js` + `.d.ts` (CJS)
 
-### Step 6: Generate exports
+```bash
+$ tree out
+.
+├── package.json # if type != "module"
+├── src
+│   └── index.ts
+└── out
+    ├── index.js
+    ├── index.d.ts
+    ├── index.mjs
+    └── index.d.mts
+```
 
-`zshy` automatically writes the `exports` map to your `package.json`. Given an initial `"zshy" config, if will add the following lines:
+> **Comparison** — `tshy` generates plain `.js`/`.d.ts` files into separate `dist/esm` and `dist/cjs` directories, each with a stub `package.json` to enable proper module resolution in Node.js. This is more convoluted than the flat file structure generated by `zshy`. It also causes issues with [Module Federation](https://github.com/colinhacks/zod/issues/4656). 
+
+### How does extension rewriting work?
+
+`zshy` uses the [TypeScript Compiler API](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API) to perform extension rewriting during the `tsc` build process. TypeScript provides dedicated hooks for performing such transforms (though they are criminally under-utilized, until now!):
+
+- **`ts.TransformerFactory`**: Provides AST transformations to rewrite import/export extensions before module conversion
+- **`ts.CompilerHost#writeFile`**: Handles output file extension changes (`.js` → `.cjs`/`.mjs`)
+
+> **Comparison** — `tshy` was designed to enable dual-package builds powered by the `tsc` compiler. To make this work, it relies on a specific file structure and the creation of temporary `package.json` files to accommodate the various idiosyncrasies of Node.js module resolution. TypeScript provides a robust API for AST transformations (`ts.TransformerFactory`) that `tshy` does not take advantage of.
+
+### Can I use extension-less imports?
+
+Yes! `zshy` supports whatever import style you prefer: 
+- `from "./utils"`: classic extensionless imports
+- `from "./utils.js"`: ESM-friendly extensioned imports
+- `from "./util.ts"`: recently supported natively via[`rewriteRelativeImportExtensions`](https://www.typescriptlang.org/tsconfig/#rewriteRelativeImportExtensions)
+
+Use whatever you like; `zshy` will rewrite extensionless and `.ts` imports/exports to have the appropriate file extension.
+
+> **Comparison** — `tshy` forces you to use `.js` imports throughout your codebase. While this is generally a good practice, it's not always feasible, and there are hundreds of thousands of existing TypeScript codebases reliant on extensionless imports.
+
+### How does it generate `package.json#exports`?
+
+Your exports map is automatically written into your `package.json` when you run `zshy`. The generated exports map looks like this:
 
 ```diff
 {
@@ -247,75 +299,68 @@ Unless otherwise specified in your `tsconfig.json`, the `rootDir` is automatical
     }
   },
 + "exports": { // auto-generated by zshy
-+   {
-+     ".": {
-+       "types": "./out/index.d.cts",
-+       "import": "./out/index.js",
-+       "require": "./out/index.cjs"
-+     },
-+     "./utils": {
-+       "types": "./out/utils.d.cts",
-+       "import": "./out/utils.js",
-+       "require": "./out/utils.cjs"
-+     },
-+     "./plugins/*": {
-+       "import": "./out/src/plugins/*",
-+       "require": "./out/src/plugins/*"
-+     }
++   ".": {
++     "types": "./out/index.d.cts",
++     "import": "./out/index.js",
++     "require": "./out/index.cjs"
++   },
++   "./utils": {
++     "types": "./out/utils.d.cts", 
++     "import": "./out/utils.js",
++     "require": "./out/utils.cjs"
++   },
++   "./plugins/*": {
++     "import": "./out/src/plugins/*",
++     "require": "./out/src/plugins/*"
 +   }
 + }
 }
 ```
 
-> **Why `.d.cts` for types?** The `"types"` field always points to the CJS declaration file. This avoids the ["Masquerading as ESM"](https://github.com/arethetypeswrong/arethetypeswrong.github.io/blob/main/docs/problems/FalseESM.md) error, which can make packages un-importable from CJS environments. Since ESM can `require()` CJS but CJS can't `import` ESM (without dynamic imports), converging on `.d.cts` ensures maximum compatibility.
+### Why `.d.cts` for `"types"`?
 
-## Comparison to `tshy`
+The `"types"` field always points to the CJS declaration file (`.d.cts`). This design choice:
 
-While heavily inspired by [`tshy`](https://github.com/isaacs/tshy), `zshy` differs in several major ways:
+- **Avoids duplicate `.d.ts` files**: Prevents [Excessively Deep](https://github.com/colinhacks/zod/issues/4422) TypeScript errors in packages using declaration merging (`declare module {}`)
+- **Solves "Masquerading as ESM"**: Avoids the [false ESM error](https://github.com/arethetypeswrong/arethetypeswrong.github.io/blob/main/docs/problems/FalseESM.md) that can make packages un-importable from CJS environments
 
-### Extension rewriting
+Since ESM can `require()` CJS but CJS can't `import` ESM (without dynamic imports), converging on `.d.cts` ensures maximum compatibility.
 
-Uses the excellent TypeScript Compiler API to rewrite imports/exports and tweak the extensions of the build outputs. The Compiler API provides official mechanisms for performing these kind of transforms (`ts.TransformerFactory` and `ts.CompilerHost#writeFile`) which are criminally underutilized by the ecosystem.
+> **Comparison** — `tshy` generates independent (but identical) `.d.ts` files in `dist/esm` and `dist/cjs`. This duplication introduces the possibility for thorny [Excessively Deep](https://github.com/colinhacks/zod/issues/4422) issues in packages that rely on declaration merging (`declare module {}`) for plugins (e.g. [Zod](https://github.com/colinhacks/zod), [day.js](https://day.js.org/), etc)
 
-> `tshy` was designed to enable dual-package builds powered by the `tsc` compiler. To make this work, it relies on a specific file structure and the creation of temporary `package.json` files to accommodate the various idiosyncrasies of Node.js module resolution. TypeScript provides a robust API for AST transformations (`ts.TransformerFactory`) that `tshy` does not take advantage of.
+### What about legacy, non-Node.js environments?
 
-### Unopinionated file structure
+Many environments don't support `package.json#exports` yet (React Native, older bundlers, legacy TypeScript projects). For maximum compatibility:
 
-Allows any set of input entrypoints. `zshy` transpiles your entrypoints and all the files they import. It respects `outDir`, `rootDir`, and `declarationDir` in your `tsconfig.json` if specified (and provides sensible defaults otherwise).
+1. Put your source files in your package root (not in a `src` directory)
+2. Set `outDir: "."` in your `tsconfig.json`
 
-> `tshy` requires you to put your source in a `./src` directory, and always builds to `./dist`
+This setup lets imports like `"your-library/utils"` auto-resolve to `"your-library/utils/index.js"` in environments that predate modern module resolution. Zod uses this approach for broader compatibility.
 
-### Clean, flat structure
+### How does `zshy` determine `rootDir`?
 
-No nested directories or duplicated files. `zshy` generates `.js`/`.cjs`/`.d.cts` files alongside each other, mirroring the original source file structure. 
+Unless otherwise specified in your `tsconfig.json`, the `rootDir` is automatically determined from the common ancestor directory of all entry points. For example, if your entry points are `./src/index.ts`, `./src/utils.ts`, and `./src/plugins/auth.ts`, the computed `rootDir` would be `./src`.
 
->`tshy` always generates plain `.js`/`.d.ts` files into separate `dist/esm` and `dist/cjs` directories. Each of these subdirectories contain a stub `package.json` with a `"type"` field to indicate the module format. This also causes issues with [Module Federation](https://github.com/colinhacks/zod/issues/4656) caused by stub `package.json` files.
+### What TypeScript compiler options does `zshy` override?
 
-### No duplicate `.d.ts` files
+`zshy` respects most of your `tsconfig.json` but applies strategic overrides for dual-format compilation:
 
-`zshy` produces a single canonical declaration file for each source files.
+- **`module`**: Set to `"commonjs"` for CJS build, `"esnext"` for ESM build
+- **`moduleResolution`**: Set to `"node10"` for CJS, `"bundler"` for ESM  
+- **`moduleDetection`**: Set to `"auto"`
+- **`declaration`/`noEmit`/`emitDeclarationOnly`**: Overwritten to ensure proper output
+- **`verbatimModuleSyntax`**: Set to `false` to allow for multiple build formats
 
-> `tshy` generates independent (but identical) `.d.ts` files in `dist/esm` and `dist/cjs`. This duplication introduces the possibility for thorny [Excessively Deep](https://github.com/colinhacks/zod/issues/4422) issues in packages that rely on declaration merging (`declare module {}`) for plugins (e.g. [Zod](https://github.com/colinhacks/zod), [day.js](https://day.js.org/), etc)
+### Is `zshy` fast?
 
-### Extensionless imports
+Just kidding, it's slow. But that's kind of a good thing: `tsc` type-checks your codebase (which is kinda important!) instead of merely stripping types like a bundler. Also a) TypeScript is [about to get 10x faster](https://devblogs.microsoft.com/typescript/typescript-native-port/) and b) you just spent the last hour staring at a Cursor spinner anyway.
 
-There are thousands of legacy codebases that rely on TypeScript's old extension-less imports. More recently, TypeScript added support for `.ts` extensions with [`rewriteRelativeImportExtensions`](https://www.typescriptlang.org/tsconfig/#rewriteRelativeImportExtensions). You can use whatever you like; `zshy` will rewrite the extensions during build.
+### What environments does `zshy` support?
 
-> `tshy` requires you to include file extensions on your imports. While this is generally a good practice, it's not always feasible. 
+`zshy` is designed to work across many environments:
 
-### 
- legacy, non-Node.js environments
-
-Many React Native codebases and older TypeScript projects rely on legacy module resolution systems that pre-date the existence of `package.json#exports` and ESM. 
-
-1. Metro bundlers for React Native
-2. Projects with `tsconfig.json#module` set to `"commonjs"`
-3. Non-Node.js environments with different module resolution systems
-
-With `zshy` it's possible to *simulate* subpath imports in these environments:
-
-1. Put your source files in your package root (not in a `src` directory) 
-2. Set `outDir` to `.`
-
-With this setup, imports like `"your-libary/utils"` will auto-resolve to `"your-libarary/utils/index.js"` in most environments. Zod uses this approach to achieve broader compatibilty. 
-
+1. **Modern Node.js** - Full support for `package.json#exports`
+2. **React Native** - Works with Metro bundler when using flat file structure
+3. **Legacy bundlers** - Supports older tools that predate exports maps
+4. **TypeScript projects** - Compatible with various `tsconfig.json` setups
+5. **Non-Node.js environments** - Works with alternative JavaScript runtimes
