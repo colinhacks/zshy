@@ -86,7 +86,7 @@ pnpm add --save-dev zshy
 
 <br/>
 
-### 2. Add `"zshy"` field to your `package.json`
+### 2. Add the `"zshy"` field to your `package.json`
 
 Specify your package entrypoint with the `"zshy"` key in `package.json`.
 
@@ -94,7 +94,7 @@ Specify your package entrypoint with the `"zshy"` key in `package.json`.
 {
   "name": "my-pkg",
   "version": "1.0.0",
-  "zshy": "./src/index.ts" // package root
+  "zshy": "./src/index.ts" // package entrypoint
 }
 ```
 
@@ -143,19 +143,16 @@ $ npx zshy
 📦 Updating package.json exports...
    {
      ".": {
-       "@zod/source": "./src/index.tsx",
        "types": "./out/index.d.cts",
        "import": "./out/index.js",
        "require": "./out/index.cjs"
      },
      "./utils": {
-       "@zod/source": "./src/utils.tsx",
        "types": "./out/utils.d.cts",
        "import": "./out/utils.js",
        "require": "./out/utils.cjs"
      },
      "./plugins/*": {
-       "@zod/source": "./src/plugins/*",
        "import": "./out/src/plugins/*",
        "require": "./out/src/plugins/*"
      }
@@ -223,7 +220,7 @@ All other options are respected, including:
 
 - `rootDir` (defaults to the common ancestor directory of all entrypoints)
 - `outDir` (defaults to `./dist`)
-- `declarationDir` (defaults to `./dist`)
+- `declarationDir` (defaults to `./dist` — you probably shouldn't set this explicitly)
 - `target` (defaults to `es2020`)
 - `jsx`
 
@@ -355,7 +352,7 @@ By having `"types"` point to the `.d.cts` declarations, this error will never ha
 
 <br/>
 
-### Can it support legacy or non-Node.js environments?
+### Can it support React Native legacy or non-Node.js environments?
 
 Yes! This is one of the key reasons `zshy` was originally developed for Zod. 
 

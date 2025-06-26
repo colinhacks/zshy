@@ -198,6 +198,9 @@ async function main(): Promise<void> {
 				`⚠️  The "files" key is missing in package.json. Setting to "${relOutDir}".`,
 			);
 			pkgJson.files = [relOutDir];
+			if (relOutDir !== relDeclarationDir) {
+				pkgJson.files.push(relDeclarationDir);
+			}
 		}
 	}
 
@@ -315,13 +318,20 @@ async function main(): Promise<void> {
 	console.log(
 		`📂 Transpiling ${relRootDir ? `./${relRootDir}` : "."} (rootDir) to ${relOutDir ? `./${relOutDir}` : "."} (outDir)`,
 	);
+	if (relDeclarationDir !== relOutDir) {
+		console.log(
+			`📂 Writing declaration files to ${
+				relDeclarationDir ? `./${relDeclarationDir}` : "."
+			} (declarationDir)`,
+		);
+	}
 
 	const isTypeModule = pkgJson.type === "module";
 	if (isTypeModule) {
 		console.log(`🟨 Package is an ES module (package.json#type is \"module\")`);
 	} else {
 		console.log(
-			`🐢 Package is a CJS module (${pkgJson.type === "commonjs" ? 'package.json#type is "commonjs"' : 'package.json#type not set to "module"'})`,
+			`🐢 Package is a CommonJS module (${pkgJson.type === "commonjs" ? 'package.json#type is "commonjs"' : 'package.json#type not set to "module"'})`,
 		);
 	}
 
@@ -419,6 +429,14 @@ async function main(): Promise<void> {
 					); // /path/to/dist/index.ts
 					const outPathNoExt = removeExtension(outPath); // /path/to/dist/index
 
+					// For declaration files, use declarationDir if it's different from outDir
+					const declarationPath = path.resolve(
+						pkgJsonDir,
+						declarationDir,
+						sourcePathRelativeToRootDir,
+					); // /path/to/types/index.ts
+					const declarationPathNoExt = removeExtension(declarationPath); // /path/to/types/index
+
 					const esmFile = isTypeModule
 						? `${outPathNoExt}.js`
 						: `${outPathNoExt}.mjs`; // ./v4/index.js or ./v4/index.mjs
@@ -426,15 +444,12 @@ async function main(): Promise<void> {
 						? `${outPathNoExt}.cjs`
 						: `${outPathNoExt}.js`;
 					const dtsFile = isTypeModule
-						? `${outPathNoExt}.d.cts`
-						: `${outPathNoExt}.d.ts`;
+						? `${declarationPathNoExt}.d.cts`
+						: `${declarationPathNoExt}.d.ts`;
 
-					const relEsmFile =
-						"./" + path.relative(pkgJsonDir, path.resolve(outDir, esmFile));
-					const relCjsFile =
-						"./" + path.relative(pkgJsonDir, path.resolve(outDir, cjsFile));
-					const relDtsFile =
-						"./" + path.relative(pkgJsonDir, path.resolve(outDir, dtsFile));
+					const relEsmFile = "./" + path.relative(pkgJsonDir, esmFile);
+					const relCjsFile = "./" + path.relative(pkgJsonDir, cjsFile);
+					const relDtsFile = "./" + path.relative(pkgJsonDir, dtsFile);
 
 					newExports[exportPath] = {
 						types: relDtsFile,

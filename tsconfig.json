@@ -8,7 +8,6 @@
     "moduleDetection": "auto",
     "allowJs": true,
     "outDir": "./out",
-    "declarationDir": "./types",
     "declaration": true,
     "jsx":"react-jsx",
 
