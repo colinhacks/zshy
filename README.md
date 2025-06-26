@@ -64,9 +64,11 @@
 - 🔗 **Unopinionated about import extensions** 
   — Use any import syntax TypeScript supports: extensionless, `.js`, `.ts`, whatever. `zshy` rewrites extensions during the build to ensure compatibility
 - ⚛️ **Supports `.tsx`** 
-  — JSX syntax will be transformed according to your `tsconfig.json` settings.
+  
+  JSX syntax will be transformed according to your `tsconfig.json` settings.
 - 🐌 **Blazing fast** 
-  — Just kidding, it's slow. Typechecking with `tsc` is a lot slower than using a bundler that strips types. That said:
+  
+  Just kidding, it's slow. Typechecking with `tsc` is a lot slower than using a bundler that strips types. That said:
     1. you *should* be type checking your code during builds,
     2. TypeScript is [about to get 10x faster](https://devblogs.microsoft.com/typescript/typescript-native-port/), and 
     3. you just spent the last hour staring at a Cursor spinner anyway
