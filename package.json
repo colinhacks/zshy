@@ -1,13 +1,18 @@
 {
   "name": "zshy",
   "version": "0.1.0",
-  "module": "./dist/index.js",
+  "module": "./out/index.js",
   "type": "module",
   "private": true,
+  "bin": {
+    "zshy": "./dist/index..js"
+  },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.2",
     "@biomejs/biome": "^2.0.5",
     "@types/node": "latest",
+    "@types/react": "^19.1.8",
+    "react": "^19.1.0",
     "tsx": "^4.20.3",
     "typescript": ">5.5.0"
   },
@@ -23,20 +28,36 @@
   },
   "zshy": {
     "exports": {
-      ".": "./index.ts"
+      ".": "./src/index.tsx",
+      "./utils": "./src/utils.tsx",
+      "./plugins/*": "./src/plugins/*"
     },
-    "outDir": "dist"
+    "sourceDialects": [
+      "@zod/source"
+    ]
   },
-  "main": "./dist/index.cjs",
-  "types": "./dist/index.d.cts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.cts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
-    }
-  },
+  "main": "./out/index.cjs",
+  "types": "./out/index.d.cts",
   "files": [
     "dist"
-  ]
+  ],
+  "exports": {
+    ".": {
+      "@zod/source": "./src/index.tsx",
+      "types": "./out/index.d.cts",
+      "import": "./out/index.js",
+      "require": "./out/index.cjs"
+    },
+    "./utils": {
+      "@zod/source": "./src/utils.tsx",
+      "types": "./out/utils.d.cts",
+      "import": "./out/utils.js",
+      "require": "./out/utils.cjs"
+    },
+    "./plugins/*": {
+      "@zod/source": "./src/plugins/*",
+      "import": "./out/src/plugins/*",
+      "require": "./out/src/plugins/*"
+    }
+  }
 }

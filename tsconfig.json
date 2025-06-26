@@ -3,19 +3,20 @@
     // Environment setup & latest features
     "lib": ["ESNext"],
     "target": "es2020",
-    "module": "node16",
-    "moduleDetection": "force",
-    "jsx": "react-jsx",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "moduleDetection": "auto",
     "allowJs": true,
+    "outDir": "./out",
+    "jsx":"react-jsx",
 
     // Bundler mode
-    "moduleResolution": "node16",
+    
     "allowImportingTsExtensions": true,
     "rewriteRelativeImportExtensions": true,
-    "verbatimModuleSyntax": true,
+    "verbatimModuleSyntax": false,
     "noEmit": true,
     
-
     // Best practices
     "strict": true,
     "skipLibCheck": true,

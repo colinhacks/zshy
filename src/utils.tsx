@@ -1,35 +1,40 @@
 import { globby } from "globby";
-import * as fs from "node:fs";
 import * as path from "node:path";
 import * as ts from "typescript";
 
-interface CompilerOptions {
+export interface ProjectOptions {
 	configPath: string;
 	compilerOptions: ts.CompilerOptions &
-		Required<Pick<ts.CompilerOptions, "module">>;
-	jsExtension?: string;
-	dtsExtension?: string;
+		Required<
+			Pick<ts.CompilerOptions, "module" | "moduleResolution" | "outDir">
+		>;
+	// jsExtension?: string;
+	// dtsExtension?: string;
+	mode: "cts" | "ts" | "mts";
 	// module: ts.ModuleKind;
 }
 
 // Get entry points using the same logic as esbuild.mts
 export async function getEntryPoints(patterns: string[]): Promise<string[]> {
-	return await globby(patterns, {
-		ignore: ["**/*.d.ts"],
-	});
+	const results: string[] = [];
+	for (const pattern of patterns) {
+		const _results = await globby(pattern, {
+			ignore: ["**/*.d.ts"],
+		});
+
+		if (!pattern.endsWith("/*") && _results.length === 0) {
+			console.error(`❌ File does not exist: ${pattern}`);
+			process.exit(1);
+		}
+
+		results.push(..._results);
+	}
+	return results;
 }
 
-export async function compileProject(
-	config: CompilerOptions,
-	entryPoints: string[],
-): Promise<void> {
-	const exts = [];
-	exts.push(config.jsExtension ?? ".js");
-	exts.push(config.dtsExtension ?? ".d.ts");
-	console.log(`🧱 Building${exts.length ? " " + exts.join("/") : ""}...`);
-
+export function readTsconfig(tsconfigPath: string) {
 	// Read and parse tsconfig.json
-	const configPath = path.resolve(config.configPath);
+	const configPath = path.resolve(tsconfigPath);
 	const configFile = ts.readConfigFile(configPath, ts.sys.readFile);
 
 	if (configFile.error) {
@@ -41,7 +46,7 @@ export async function compileProject(
 				getNewLine: () => ts.sys.newLine,
 			}),
 		);
-		return;
+		process.exit(1);
 	}
 
 	// Parse the config
@@ -62,34 +67,44 @@ export async function compileProject(
 				}),
 			);
 		}
-		return;
+		process.exit(1);
 	}
 
-	// clean up
-	delete parsedConfig.options.rootDir;
-	delete parsedConfig.options.outDir;
-	delete parsedConfig.options.declarationDir;
-	delete parsedConfig.options.customConditions;
+	if (!parsedConfig.options) {
+		throw new Error("❌ Error reading tsconfig.json#compilerOptions");
+	}
+	return parsedConfig.options!;
+}
 
-	// Override compiler options for this specific build
-	const compilerOptions: ts.CompilerOptions = {
-		...parsedConfig.options,
-		// module: config.module,
-		moduleResolution: ts.ModuleResolutionKind.NodeJs, // Override for CommonJS compatibility
-		declaration: true,
-		emitDeclarationOnly: false,
-		target: ts.ScriptTarget.ES2020, // Ensure compatible target for CommonJS
-		skipLibCheck: true, // Skip library checks to reduce errors
-		allowJs: false,
-		checkJs: false,
-		noEmitOnError: false, // Continue emitting even with errors
-		...(config.compilerOptions ?? {}),
-	};
+export async function compileProject(
+	config: ProjectOptions,
+	entryPoints: string[],
+): Promise<void> {
+	const exts = [];
+	// exts.push(config.jsExtension ?? ".js");
+	// exts.push(config.dtsExtension ?? ".d.ts");
+	// console.log(
+	// 	`🧱 Building${
+	// 		config.mode === "ts"
+	// 			? ".js/.d.ts"
+	// 			: config.mode === "mts"
+	// 				? ".mjs/.d.ts"
+	// 				: ".cjs/.d.ts"
+	// 	}...`,
+	// );
 
 	// Create compiler host
-	const host = ts.createCompilerHost(compilerOptions);
+	const host = ts.createCompilerHost(config.compilerOptions);
 	const originalWriteFile = host.writeFile;
 
+	const jsExt =
+		config.mode === "mts" ? ".mjs" : config.mode === "cts" ? ".cjs" : ".js";
+	const dtsExt =
+		config.mode === "mts"
+			? ".d.mts"
+			: config.mode === "cts"
+				? ".d.cts"
+				: ".d.ts";
 	host.writeFile = (
 		fileName,
 		data,
@@ -101,16 +116,16 @@ export async function compileProject(
 		let outputFileName = fileName;
 		const processedData = data;
 
-		if (config.jsExtension) {
-			if (fileName.endsWith(".js")) {
-				outputFileName = fileName.replace(/\.js$/, config.jsExtension);
-			}
+		// if (config.jsExtension) {
+		if (fileName.endsWith(".js")) {
+			outputFileName = fileName.replace(/\.js$/, jsExt);
 		}
-		if (config.dtsExtension) {
-			if (fileName.endsWith(".d.ts")) {
-				outputFileName = fileName.replace(/\.d\.ts$/, config.dtsExtension);
-			}
+		// }
+		// if (config.dtsExtension) {
+		if (fileName.endsWith(".d.ts")) {
+			outputFileName = fileName.replace(/\.d\.ts$/, dtsExt);
 		}
+		// }
 
 		// console.log(`   ${outputFileName}`);
 
@@ -128,11 +143,9 @@ export async function compileProject(
 	// Create the TypeScript program using entry points
 	const program = ts.createProgram({
 		rootNames: entryPoints,
-		options: compilerOptions,
+		options: config.compilerOptions,
 		host,
 	});
-
-	const jsExt = config.jsExtension;
 
 	// Create a transformer factory to rewrite extensions
 	const extensionRewriteTransformer: ts.TransformerFactory<
@@ -141,7 +154,6 @@ export async function compileProject(
 		return (sourceFile) => {
 			const visitor = (node: ts.Node): ts.Node => {
 				if (
-					jsExt &&
 					ts.isImportDeclaration(node) &&
 					node.moduleSpecifier &&
 					ts.isStringLiteral(node.moduleSpecifier)
@@ -159,11 +171,30 @@ export async function compileProject(
 							node.assertClause,
 						);
 					}
+
+					// if import is extensionless, add .js extension
+					if (originalText.startsWith("./") || originalText.startsWith("../")) {
+						console.dir("import", { depth: null });
+						console.dir(originalText, { depth: null });
+						const hasExtension = path.extname(originalText) !== "";
+
+						if (!hasExtension) {
+							const newText = originalText + jsExt;
+							console.dir(newText, { depth: null });
+
+							return ts.factory.updateImportDeclaration(
+								node,
+								node.modifiers,
+								node.importClause,
+								ts.factory.createStringLiteral(newText),
+								node.assertClause,
+							);
+						}
+					}
 				}
 
 				// Handle export declarations
 				if (
-					jsExt &&
 					ts.isExportDeclaration(node) &&
 					node.moduleSpecifier &&
 					ts.isStringLiteral(node.moduleSpecifier)
@@ -182,11 +213,28 @@ export async function compileProject(
 							node.assertClause,
 						);
 					}
+
+					// if export is extensionless, add .js extension
+					if (originalText.startsWith("./") || originalText.startsWith("../")) {
+						const hasExtension = path.extname(originalText) !== "";
+
+						if (!hasExtension) {
+							const newText = originalText + jsExt;
+
+							return ts.factory.updateExportDeclaration(
+								node,
+								node.modifiers,
+								node.isTypeOnly,
+								node.exportClause,
+								ts.factory.createStringLiteral(newText),
+								node.assertClause,
+							);
+						}
+					}
 				}
 
 				// Handle dynamic imports
 				if (
-					jsExt &&
 					ts.isCallExpression(node) &&
 					node.expression.kind === ts.SyntaxKind.ImportKeyword
 				) {
@@ -207,6 +255,27 @@ export async function compileProject(
 									...node.arguments.slice(1),
 								],
 							);
+						}
+
+						// if dynamic import is extensionless, add .js extension
+						if (
+							originalText.startsWith("./") ||
+							originalText.startsWith("../")
+						) {
+							const hasExtension = path.extname(originalText) !== "";
+
+							if (!hasExtension) {
+								const newText = originalText + jsExt;
+								return ts.factory.updateCallExpression(
+									node,
+									node.expression,
+									node.typeArguments,
+									[
+										ts.factory.createStringLiteral(newText),
+										...node.arguments.slice(1),
+									],
+								);
+							}
 						}
 					}
 				}
@@ -256,7 +325,7 @@ export async function compileProject(
 
 	// emit the files
 	const emitResult = program.emit(undefined, undefined, undefined, undefined, {
-		after: [
+		before: [
 			extensionRewriteTransformer as ts.TransformerFactory<ts.SourceFile>,
 		],
 		afterDeclarations: [extensionRewriteTransformer],

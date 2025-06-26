@@ -1,13 +1,39 @@
 import { globby } from "globby";
 import { table } from "table";
 import * as fs from "node:fs";
-import * as path from "node:path";
+import * as path from "node:path/posix";
 import * as ts from "typescript";
 
-import { getEntryPoints, compileProject } from "./utils.mts";
+import {
+	getEntryPoints,
+	compileProject,
+	readTsconfig,
+	type ProjectOptions,
+} from "./utils.js";
+
+export { ProjectOptions };
+export function arg(opts: ProjectOptions): void {}
+
+function isSourceFile(filePath: string): boolean {
+	return (
+		filePath.endsWith(".ts") ||
+		filePath.endsWith(".mts") ||
+		filePath.endsWith(".cts") ||
+		filePath.endsWith(".tsx")
+	);
+}
+
+function removeExtension(filePath: string): string {
+	return filePath.split(".").slice(0, -1).join(".") || filePath;
+}
 
 async function main(): Promise<void> {
 	console.log("💎 Starting zshy build...");
+
+	///////////////////////////////////
+	///    find and read pkg json   ///
+	///////////////////////////////////
+
 	// Find package.json by scanning up the file system
 	let packageJsonPath = "./package.json";
 	let currentDir = process.cwd();
@@ -41,19 +67,10 @@ async function main(): Promise<void> {
 			packageJsonPath,
 		)}`,
 	);
-	const tsconfigPath = path.join(pkgJsonDir, "tsconfig.json");
 
-	if (!fs.existsSync(tsconfigPath)) {
-		// Check if tsconfig.json exists
-		console.error(
-			`❌ tsconfig.json not found at ${path.resolve(tsconfigPath)}`,
-		);
-		process.exit(1);
-	}
-
-	console.log(
-		`📁 Reading tsconfig from ./${path.relative(pkgJsonDir, tsconfigPath)}`,
-	);
+	/////////////////////////////////
+	///    parse zshy config      ///
+	/////////////////////////////////
 
 	// const pkgJson = JSON.parse(fs.readFileSync("./package.json", "utf-8"));
 	const CONFIG_KEY = "zshy";
@@ -61,7 +78,7 @@ async function main(): Promise<void> {
 	let config!: {
 		exports: Record<string, string>;
 		sourceDialects?: string[];
-		outDir?: string; // optional, can be used to specify output directory
+		// outDir?: string; // optional, can be used to specify output directory
 		// other properties can be added as needed
 	};
 
@@ -99,8 +116,53 @@ async function main(): Promise<void> {
 		process.exit(1);
 	}
 
-	const outDir = path.resolve(pkgJsonDir, config?.outDir || "./dist");
+	///////////////////////////
+	///    read tsconfig    ///
+	///////////////////////////
+	const tsconfigPath = path.join(pkgJsonDir, "tsconfig.json");
+	const _parsedConfig = readTsconfig(tsconfigPath);
+	if (!fs.existsSync(tsconfigPath)) {
+		// Check if tsconfig.json exists
+		console.error(
+			`❌ tsconfig.json not found at ${path.resolve(tsconfigPath)}`,
+		);
+		process.exit(1);
+	}
+	console.log(
+		`📁 Reading tsconfig from ./${path.relative(pkgJsonDir, tsconfigPath)}`,
+	);
+
+	if (_parsedConfig.rootDir) {
+		console.error(
+			`❌ rootDir is determined from your set of entrypoints; you can remove it from your tsconfig.json.`,
+		);
+		process.exit(1);
+	}
+
+	if (_parsedConfig.declarationDir) {
+		console.error(
+			`❌ declarationDir is not supported in zshy; you should remove it from your tsconfig.json.`,
+		);
+		process.exit(1);
+	}
+
+	// set/override compiler options
+	delete _parsedConfig.customConditions; //  can't be set for CommonJS builds
+
+	const outDir = path.resolve(pkgJsonDir, _parsedConfig?.outDir || "./dist");
 	const relOutDir = path.relative(pkgJsonDir, outDir);
+
+	const tsconfigJson: ts.CompilerOptions = {
+		..._parsedConfig,
+		outDir,
+		target: _parsedConfig.target ?? ts.ScriptTarget.ES2020, // ensure compatible target for CommonJS
+		skipLibCheck: true, // skip library checks to reduce errors
+		declaration: true,
+		noEmit: false,
+		emitDeclarationOnly: false,
+		rewriteRelativeImportExtensions: true,
+		verbatimModuleSyntax: false,
+	};
 
 	if (relOutDir === "") {
 		if (!pkgJson.files) {
@@ -115,6 +177,15 @@ async function main(): Promise<void> {
 				"**/*.d.mts",
 				"**/*.d.cts",
 			];
+		} else {
+			console.warn(
+				`⚠️  You're building your code to the project root. This means your compiled files will be generated alongside your source files.\n   ➜ Ensure that your "files" in package.json excludes TypeScript source files, or your users may experience .d.ts resolution issues in some environments.
+				
+				\`\`\`
+				"files": ["**/*.js", "**/*.mjs", "**/*.cjs", "**/*.d.ts", "**/*.d.mts", "**/*.d.cts"],
+				\`\`\`
+				`,
+			);
 		}
 	} else {
 		if (!pkgJson.files) {
@@ -125,11 +196,14 @@ async function main(): Promise<void> {
 		}
 	}
 
+	/////////////////////////////////
+	///   extract entry points    ///
+	/////////////////////////////////
+
 	// Extract entry points from zshy exports config
 	console.log("➡️  Determining entrypoints...");
 	const entryPatterns: string[] = [];
-	// console.dir(config.exports, { depth: null });
-	// console.log("   {");
+
 	const rows: string[][] = [["Subpath", "Entrypoint"]];
 	for (const [exportPath, sourcePath] of Object.entries(config.exports)) {
 		if (exportPath.includes("package.json")) continue;
@@ -146,39 +220,47 @@ async function main(): Promise<void> {
 		}
 		if (typeof sourcePath === "string") {
 			if (sourcePath.includes("*")) {
-				if (!sourcePath.endsWith("/*"))
-					throw new Error(
-						`Wildcard paths should not contain file extensions: ${sourcePath}`,
+				if (!sourcePath.endsWith("/*")) {
+					console.error(
+						`❌ Wildcard paths should not contain file extensions: ${sourcePath}`,
 					);
-				const pattern = sourcePath.slice(0, -2) + "/*.ts";
+					process.exit(1);
+				}
+				const pattern = sourcePath.slice(0, -2) + "/*.{ts,tsx,mts,cts}";
 				const wildcardFiles = await globby([pattern], {
 					ignore: ["**/*.d.ts"],
 					cwd: pkgJsonDir,
 					deep: 1,
 				});
 				entryPatterns.push(...wildcardFiles);
-				// console.log(
-				// 	`     ${cleanExportPath} ➜ ${pattern} (${
-				// 		wildcardFiles.length
-				// 	} matches)`,
-				// );
+
 				rows.push([
 					`"${cleanExportPath}"`,
-					`${pattern} ${wildcardFiles.length} matches`,
+					`${sourcePath} (${wildcardFiles.length} matches)`,
 				]);
-			} else if (sourcePath.endsWith(".ts")) {
+			} else if (isSourceFile(sourcePath)) {
 				entryPatterns.push(sourcePath);
-				// console.log(`     ${cleanExportPath} ➜ ${sourcePath}`);
+
 				rows.push([`"${cleanExportPath}"`, sourcePath]);
 			}
 		}
 	}
-	// console.log("   }");
-	// console.table(rows);
+
 	console.log("   " + table(rows).split("\n").join("\n   ").trim());
+
+	///////////////////////////////
+	///   compute entry points  ///
+	///////////////////////////////
 
 	// compute entry points
 	const entryPoints = await getEntryPoints(entryPatterns);
+	// disallow .mts and .cts files
+	if (entryPoints.some((ep) => ep.endsWith(".mts") || ep.endsWith(".cts"))) {
+		console.error(
+			"❌ Source files with .mts or .cts extensions are not supported. Please use regular .ts files.",
+		);
+		process.exit(1);
+	}
 	if (entryPoints.length === 0) {
 		console.error(
 			"❌ No entry points found matching the specified patterns in package.json#zshy exports",
@@ -186,87 +268,102 @@ async function main(): Promise<void> {
 		process.exit(1);
 	}
 
+	///////////////////////////////
+	///   compute root dir      ///
+	///////////////////////////////
+
 	// Compute common ancestor directory for all entry points
-	const rootDir =
-		entryPoints.length > 0
-			? entryPoints.reduce(
-					(common, entryPoint) => {
-						const entryDir = path.dirname(path.resolve(entryPoint));
-						const commonDir = path.resolve(common);
+	let rootDir: string;
+	if (tsconfigJson.rootDir) {
+		rootDir = path.resolve(tsconfigPath, tsconfigJson.rootDir);
+	} else {
+		// compute rootDir from entrypoints
+		rootDir =
+			entryPoints.length > 0
+				? entryPoints.reduce(
+						(common, entryPoint) => {
+							const entryDir = path.dirname(path.resolve(entryPoint));
+							const commonDir = path.resolve(common);
 
-						// Find the longest common path
-						const entryParts = entryDir.split(path.sep);
-						const commonParts = commonDir.split(path.sep);
+							// Find the longest common path
+							const entryParts = entryDir.split(path.sep);
+							const commonParts = commonDir.split(path.sep);
 
-						let i = 0;
-						while (
-							i < entryParts.length &&
-							i < commonParts.length &&
-							entryParts[i] === commonParts[i]
-						) {
-							i++;
-						}
+							let i = 0;
+							while (
+								i < entryParts.length &&
+								i < commonParts.length &&
+								entryParts[i] === commonParts[i]
+							) {
+								i++;
+							}
 
-						return commonParts.slice(0, i).join(path.sep) || path.sep;
-					},
-					path.dirname(path.resolve(entryPoints[0]!)),
-				)
-			: process.cwd();
+							return commonParts.slice(0, i).join(path.sep) || path.sep;
+						},
+						path.dirname(path.resolve(entryPoints[0]!)),
+					)
+				: process.cwd();
+	}
 
 	// console.dir(_commonAncestor, { depth: null });
 	const relRootDir = path.relative(pkgJsonDir, rootDir);
-	console.log(`📂 Computed rootDir: ${relRootDir ? `./${relRootDir}` : "."}`);
+	console.log(
+		`📂 Transpiling ${relRootDir ? `./${relRootDir}` : "."} (rootDir) to ${relOutDir ? `./${relOutDir}` : "."} (outDir)`,
+	);
 
-	const isESM = pkgJson.type === "module";
+	const isTypeModule = pkgJson.type === "module";
+	if (isTypeModule) {
+		console.log(`🟨 Package is an ES module (package.json#type is \"module\")`);
+	} else {
+		console.log(
+			`🐢 Package is a CJS module (${pkgJson.type === "commonjs" ? 'package.json#type is "commonjs"' : 'package.json#type not set to "module"'})`,
+		);
+	}
+
+	///////////////////////////////
+	///       compile tsc        ///
+	///////////////////////////////
+
 	try {
-		const cjsConfig = {
-			jsExtension: ".cjs",
-			dtsExtension: ".d.cts",
-		};
-		const esmConfig = {
-			jsExtension: ".mjs",
-			dtsExtension: ".d.mts",
-		};
-		const defaultConfig = {
-			// jsExtension: ".js",
-			// dtsExtension: ".d.ts",
-		};
 		// CJS
+		console.log(
+			`🧱 Building CJS...${isTypeModule ? ` (rewriting .ts -> .cjs/.d.cts)` : ``}`,
+		);
 		await compileProject(
 			{
 				configPath: tsconfigPath,
-				...(isESM ? cjsConfig : defaultConfig),
+				mode: isTypeModule ? "cts" : "ts",
 				compilerOptions: {
+					...tsconfigJson,
 					module: ts.ModuleKind.CommonJS,
 					moduleResolution: ts.ModuleResolutionKind.Node10,
 					outDir,
-					verbatimModuleSyntax: false,
-					declaration: true,
-					noEmit: false,
-					emitDeclarationOnly: false,
-					rewriteRelativeImportExtensions: true,
 				},
 			},
 			entryPoints,
 		);
 
 		// ESM
+		console.log(
+			`🧱 Building ESM...${isTypeModule ? `` : ` (rewriting .ts -> .mjs/.d.mts)`}`,
+		);
 		await compileProject(
 			{
 				configPath: tsconfigPath,
-				...(isESM ? defaultConfig : esmConfig),
+				mode: isTypeModule ? "ts" : "mts",
 				compilerOptions: {
+					...tsconfigJson,
 					module: ts.ModuleKind.ESNext,
 					moduleResolution: ts.ModuleResolutionKind.Bundler,
 					outDir,
-					declaration: true,
-					noEmit: false,
-					emitDeclarationOnly: false,
-					rewriteRelativeImportExtensions: true,
 				},
 			},
 			entryPoints,
 		);
+
+		///////////////////////////////
+		///   generate exports      ///
+		///////////////////////////////
 
 		// generate package.json exports
 		console.log("📦 Updating package.json exports...");
@@ -293,7 +390,6 @@ async function main(): Promise<void> {
 						) +
 						"/*";
 					newExports[exportPath] = {
-						"@zod/source": sourcePath,
 						import: relSourcePath,
 						require: relSourcePath,
 					};
@@ -303,7 +399,7 @@ async function main(): Promise<void> {
 							...newExports[exportPath],
 						};
 					}
-				} else if (sourcePath.endsWith(".ts")) {
+				} else if (isSourceFile(sourcePath)) {
 					// Handle regular TypeScript entry points
 					// const basePath = sourcePath.slice(0, -3); // ./v4/index.ts
 					const absSourcePath = path.resolve(pkgJsonDir, sourcePath); // /path/to/v4/index.ts
@@ -316,11 +412,15 @@ async function main(): Promise<void> {
 						outDir,
 						sourcePathRelativeToRootDir,
 					); // /path/to/dist/index.ts
-					const outPathNoExt = outPath.slice(0, -3); // /path/to/dist/index
+					const outPathNoExt = removeExtension(outPath); // /path/to/dist/index
 
-					const esmFile = isESM ? `${outPathNoExt}.js` : `${outPathNoExt}.mjs`; // ./v4/index.js or ./v4/index.mjs
-					const cjsFile = isESM ? `${outPathNoExt}.cjs` : `${outPathNoExt}.js`;
-					const dtsFile = isESM
+					const esmFile = isTypeModule
+						? `${outPathNoExt}.js`
+						: `${outPathNoExt}.mjs`; // ./v4/index.js or ./v4/index.mjs
+					const cjsFile = isTypeModule
+						? `${outPathNoExt}.cjs`
+						: `${outPathNoExt}.js`;
+					const dtsFile = isTypeModule
 						? `${outPathNoExt}.d.cts`
 						: `${outPathNoExt}.d.ts`;
 
@@ -360,14 +460,18 @@ async function main(): Promise<void> {
 			}
 		}
 
+		///////////////////////////////
+		///     write pkg json      ///
+		///////////////////////////////
+
 		// Update package.json with new exports
 		pkgJson.exports = newExports;
 		fs.writeFileSync(packageJsonPath, JSON.stringify(pkgJson, null, 2) + "\n");
 
 		// console.log("✅ Updating package.json#exports");
-		// console.log(
-		// 	"   " + JSON.stringify(newExports, null, 2).split("\n").join("\n   "),
-		// );
+		console.log(
+			"   " + JSON.stringify(newExports, null, 2).split("\n").join("\n   "),
+		);
 
 		// // run `@arethetypeswrong/cli --pack .` to check types
 		// console.log("🔍 Checking types with @arethetypeswrong/cli...");
