@@ -1,7 +1,7 @@
 
 <p align="center">
 
-  <h1 align="center"><code>🐒<br/>zshy</code></h1>
+  <h1 align="center">🐒<br/><code>zshy</code></h1>
   <p align="center">TypeScript-first dual package builder. Zero config, maximum compatibility.
     <br/>
     by <a href="https://x.com/colinhacks">@colinhacks</a>
@@ -37,7 +37,7 @@
 **Bundler-free** — No Rust, no bundlers, no extra configs, just good old-fashioned `tsc`.
 
 **Declarative config** — No build scripts, just a simple `"zshy"` field in your `package.json`.
-  ```json
+  ```jsonc
   // package.json
   {
     "name": "my-pkg",
@@ -70,7 +70,7 @@ npm install --save-dev zshy
 
 2️⃣ Add the `"zshy"` field to your `package.json` and a `"build"` script.
 
-```json
+```jsonc
 {
   "name": "my-pkg",
   "version": "1.0.0",
@@ -150,7 +150,7 @@ This section walks through the build process used by `zshy` step-by-step, explai
 First, `zshy` reads your `package.json#zshy` config to determine your source entrypoints. 
 
 
-```json
+```jsonc
 // package.json
 {
   "name": "my-pkg",
@@ -212,7 +212,7 @@ Extension rewriting is achieved with a simple AST transform applied during compi
 
 `zshy` automatically writes the `exports` map to your `package.json`:
 
-```json
+```jsonc
 {
   "exports": {
     ".": {
