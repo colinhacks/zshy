@@ -8,10 +8,7 @@ export interface ProjectOptions {
 		Required<
 			Pick<ts.CompilerOptions, "module" | "moduleResolution" | "outDir">
 		>;
-	// jsExtension?: string;
-	// dtsExtension?: string;
 	mode: "cts" | "ts" | "mts";
-	// module: ts.ModuleKind;
 }
 
 // Get entry points using the same logic as esbuild.mts

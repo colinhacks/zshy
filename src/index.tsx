@@ -132,25 +132,30 @@ async function main(): Promise<void> {
 		`📁 Reading tsconfig from ./${path.relative(pkgJsonDir, tsconfigPath)}`,
 	);
 
-	if (_parsedConfig.rootDir) {
-		console.error(
-			`❌ rootDir is determined from your set of entrypoints; you can remove it from your tsconfig.json.`,
-		);
-		process.exit(1);
-	}
+	// if (_parsedConfig.rootDir) {
+	// 	console.error(
+	// 		`❌ rootDir is determined from your set of entrypoints; you can remove it from your tsconfig.json.`,
+	// 	);
+	// 	process.exit(1);
+	// }
 
-	if (_parsedConfig.declarationDir) {
-		console.error(
-			`❌ declarationDir is not supported in zshy; you should remove it from your tsconfig.json.`,
-		);
-		process.exit(1);
-	}
+	// if (_parsedConfig.declarationDir) {
+	// 	console.error(
+	// 		`❌ declarationDir is not supported in zshy; you should remove it from your tsconfig.json.`,
+	// 	);
+	// 	process.exit(1);
+	// }
 
 	// set/override compiler options
 	delete _parsedConfig.customConditions; //  can't be set for CommonJS builds
 
 	const outDir = path.resolve(pkgJsonDir, _parsedConfig?.outDir || "./dist");
 	const relOutDir = path.relative(pkgJsonDir, outDir);
+	const declarationDir = path.resolve(
+		pkgJsonDir,
+		_parsedConfig?.declarationDir || "./dist",
+	);
+	const relDeclarationDir = path.relative(pkgJsonDir, declarationDir);
 
 	const tsconfigJson: ts.CompilerOptions = {
 		..._parsedConfig,
