@@ -1,6 +1,6 @@
 {
   "name": "zshy",
-  "version": "0.0.2",
+  "version": "0.0.5",
   "description": "Gold-standard build tool for TypeScript libraries",
   "keywords": [
     "typescript",
@@ -63,7 +63,8 @@
     },
     "sourceDialects": [
       "@zod/source"
-    ]
+    ],
+    "tsconfig": "./tsconfig.build.json"
   },
   "main": "./out/index.cjs",
   "types": "./out/index.d.cts",

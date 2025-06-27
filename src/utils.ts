@@ -32,13 +32,15 @@ export async function getEntryPoints(patterns: string[]): Promise<string[]> {
 export function readTsconfig(tsconfigPath: string) {
 	// Read and parse tsconfig.json
 	const configPath = path.resolve(tsconfigPath);
+	const configDir = path.dirname(configPath);
+
 	const configFile = ts.readConfigFile(configPath, ts.sys.readFile);
 
 	if (configFile.error) {
 		console.error(
 			"Error reading tsconfig.json:",
 			ts.formatDiagnostic(configFile.error, {
-				getCurrentDirectory: () => ts.sys.getCurrentDirectory(),
+				getCurrentDirectory: () => configDir,
 				getCanonicalFileName: (fileName) => fileName,
 				getNewLine: () => ts.sys.newLine,
 			}),
@@ -46,19 +48,23 @@ export function readTsconfig(tsconfigPath: string) {
 		process.exit(1);
 	}
 
-	// Parse the config
+	// Parse the config with explicit base path
 	const parsedConfig = ts.parseJsonConfigFileContent(
 		configFile.config,
-		ts.sys,
-		path.dirname(configPath),
+		{
+			...ts.sys,
+			// Override getCurrentDirectory to use the tsconfig directory
+			getCurrentDirectory: () => configDir,
+		},
+		configDir,
 	);
 
 	if (parsedConfig.errors.length > 0) {
-		console.error("Error parsing tsconfig.json:");
+		console.error("❌ Error parsing tsconfig.json:");
 		for (const error of parsedConfig.errors) {
 			console.error(
 				ts.formatDiagnostic(error, {
-					getCurrentDirectory: () => ts.sys.getCurrentDirectory(),
+					getCurrentDirectory: () => configDir,
 					getCanonicalFileName: (fileName) => fileName,
 					getNewLine: () => ts.sys.newLine,
 				}),
@@ -77,19 +83,6 @@ export async function compileProject(
 	config: ProjectOptions,
 	entryPoints: string[],
 ): Promise<void> {
-	const exts = [];
-	// exts.push(config.jsExtension ?? ".js");
-	// exts.push(config.dtsExtension ?? ".d.ts");
-	// console.log(
-	// 	`🧱 Building${
-	// 		config.mode === "ts"
-	// 			? ".js/.d.ts"
-	// 			: config.mode === "mts"
-	// 				? ".mjs/.d.ts"
-	// 				: ".cjs/.d.ts"
-	// 	}...`,
-	// );
-
 	// Create compiler host
 	const host = ts.createCompilerHost(config.compilerOptions);
 	const originalWriteFile = host.writeFile;
@@ -295,28 +288,34 @@ export async function compileProject(
 			(d) => d.category === ts.DiagnosticCategory.Warning,
 		).length;
 
-		console.log(`⚠️ Found ${errorCount} errors and ${warningCount} warnings`);
+		if (errorCount > 0 || warningCount > 0) {
+			console.log(
+				`⚠️  Found ${errorCount} error(s) and ${warningCount} warning(s)`,
+			);
+			console.log();
+		}
 
-		// Only show first 5 errors to avoid overwhelming output
-		const firstErrors = diagnostics
-			.filter((d) => d.category === ts.DiagnosticCategory.Error)
-			.slice(0, 5);
+		// Format diagnostics with color and context like tsc, keeping original order
+		const formatHost: ts.FormatDiagnosticsHost = {
+			getCurrentDirectory: () => process.cwd(),
+			getCanonicalFileName: (fileName) => fileName,
+			getNewLine: () => ts.sys.newLine,
+		};
 
-		if (firstErrors.length > 0) {
-			console.log("First few compilation errors:");
-			for (const diagnostic of firstErrors) {
-				console.error(
-					ts.formatDiagnostic(diagnostic, {
-						getCurrentDirectory: () => ts.sys.getCurrentDirectory(),
-						getCanonicalFileName: (fileName) => fileName,
-						getNewLine: () => ts.sys.newLine,
-					}),
-				);
-			}
+		// Keep errors and warnings intermixed in their original order
+		const relevantDiagnostics = diagnostics.filter(
+			(d) =>
+				d.category === ts.DiagnosticCategory.Error ||
+				d.category === ts.DiagnosticCategory.Warning,
+		);
 
-			if (errorCount > 5) {
-				console.log(`... and ${errorCount - 5} more errors`);
-			}
+		if (relevantDiagnostics.length > 0) {
+			console.log(
+				ts.formatDiagnosticsWithColorAndContext(
+					relevantDiagnostics,
+					formatHost,
+				),
+			);
 		}
 	}
 
@@ -337,14 +336,37 @@ export async function compileProject(
 
 	// Report any emit diagnostics
 	if (emitResult.diagnostics.length > 0) {
-		console.error("❌ Errors detected during emit:");
-		for (const diagnostic of emitResult.diagnostics) {
-			console.error(
-				ts.formatDiagnostic(diagnostic, {
-					getCurrentDirectory: () => ts.sys.getCurrentDirectory(),
-					getCanonicalFileName: (fileName) => fileName,
-					getNewLine: () => ts.sys.newLine,
-				}),
+		const emitErrors = emitResult.diagnostics.filter(
+			(d) => d.category === ts.DiagnosticCategory.Error,
+		);
+		const emitWarnings = emitResult.diagnostics.filter(
+			(d) => d.category === ts.DiagnosticCategory.Warning,
+		);
+
+		console.error(
+			`❌ Found ${emitErrors.length} error(s) and ${emitWarnings.length} warning(s) during emit:`,
+		);
+		console.log();
+
+		const formatHost: ts.FormatDiagnosticsHost = {
+			getCurrentDirectory: () => process.cwd(),
+			getCanonicalFileName: (fileName) => fileName,
+			getNewLine: () => ts.sys.newLine,
+		};
+
+		// Keep errors and warnings intermixed in their original order
+		const relevantEmitDiagnostics = emitResult.diagnostics.filter(
+			(d) =>
+				d.category === ts.DiagnosticCategory.Error ||
+				d.category === ts.DiagnosticCategory.Warning,
+		);
+
+		if (relevantEmitDiagnostics.length > 0) {
+			console.log(
+				ts.formatDiagnosticsWithColorAndContext(
+					relevantEmitDiagnostics,
+					formatHost,
+				),
 			);
 		}
 	}

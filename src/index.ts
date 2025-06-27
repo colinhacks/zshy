@@ -32,11 +32,9 @@ async function main(): Promise<void> {
 	let args;
 	try {
 		args = parseArgs({
-			"--project": String,
 			"--help": Boolean,
 
 			// Aliases
-			"-p": "--project",
 			"-h": "--help",
 		});
 	} catch (error) {
@@ -53,21 +51,12 @@ async function main(): Promise<void> {
 Usage: zshy [options]
 
 Options:
-  -p, --project <path>    Path to tsconfig.json file
   -h, --help             Show this help message
 
 Examples:
-  zshy                           # Use ./tsconfig.json
-  zshy -p ./tsconfig.build.json  # Use specific tsconfig file
-  zshy --project ./tsconfig.prod.json
+  zshy                   # Use ./tsconfig.json or package.json#zshy.tsconfig
 		`);
 		process.exit(0);
-	}
-
-	const projectPath = args["--project"];
-
-	if (projectPath) {
-		console.log(`⚙️  Using custom project path: ${projectPath}`);
 	}
 
 	///////////////////////////////////
@@ -118,6 +107,7 @@ Examples:
 	let config!: {
 		exports: Record<string, string>;
 		sourceDialects?: string[];
+		tsconfig?: string; // optional path to tsconfig.json file
 		// outDir?: string; // optional, can be used to specify output directory
 		// other properties can be added as needed
 	};
@@ -162,14 +152,14 @@ Examples:
 
 	// Determine tsconfig.json path
 	let tsconfigPath: string;
-	if (projectPath) {
-		// Resolve the provided project path against current working directory
-		const resolvedProjectPath = path.resolve(process.cwd(), projectPath);
+	if (config.tsconfig) {
+		// Resolve the provided tsconfig path against package.json directory
+		const resolvedProjectPath = path.resolve(pkgJsonDir, config.tsconfig);
 
 		if (fs.existsSync(resolvedProjectPath)) {
 			if (fs.statSync(resolvedProjectPath).isDirectory()) {
 				console.error(
-					`❌ Project path must be a tsconfig.json file, not a directory: ${resolvedProjectPath}`,
+					`❌ zshy.tsconfig must point to a tsconfig.json file, not a directory: ${resolvedProjectPath}`,
 				);
 				process.exit(1);
 			} else {
@@ -177,7 +167,7 @@ Examples:
 				tsconfigPath = resolvedProjectPath;
 			}
 		} else {
-			console.error(`❌ Project file not found: ${resolvedProjectPath}`);
+			console.error(`❌ Tsconfig file not found: ${resolvedProjectPath}`);
 			process.exit(1);
 		}
 	} else {
@@ -249,12 +239,11 @@ Examples:
 			];
 		} else {
 			console.warn(
-				`⚠️  You're building your code to the project root. This means your compiled files will be generated alongside your source files.\n   ➜ Ensure that your "files" in package.json excludes TypeScript source files, or your users may experience .d.ts resolution issues in some environments.
-				
-				\`\`\`
-				"files": ["**/*.js", "**/*.mjs", "**/*.cjs", "**/*.d.ts", "**/*.d.mts", "**/*.d.cts"],
-				\`\`\`
-				`,
+				`⚠️  You're building your code to the project root. This means your compiled files will be generated alongside your source files.
+   ➜ Ensure that your "files" in package.json excludes TypeScript source files, or your users may experience .d.ts resolution issues in some environments:
+
+   "files": ["**/*.js", "**/*.mjs", "**/*.cjs", "**/*.d.ts", "**/*.d.mts", "**/*.d.cts"],
+`,
 			);
 		}
 	} else {
