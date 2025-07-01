@@ -54,7 +54,8 @@
   },
   "scripts": {
     "build": "tsx src/index.ts",
-    "test": "vitest run"
+    "test": "vitest run",
+    "clean": "git clean -qxdf . -e node_modules"
   },
   "zshy": {
     "exports": {
