@@ -31,9 +31,10 @@
     "type": "github",
     "url": "https://github.com/sponsors/colinhacks"
   },
-  "module": "./output/js/src/index.js",
+  "module": "./out/index.js",
   "bin": {
-    "zshy": "./out/index.js"
+    "zshy": "./out/index.cjs",
+    "zshy-cli": "./out/index.cjs"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.2",
@@ -72,26 +73,26 @@
     ],
     "tsconfig": "./tsconfig.build.json"
   },
-  "main": "./output/js/src/index.cjs",
-  "types": "./output/types/src/index.d.cts",
+  "main": "./out/index.cjs",
+  "types": "./out/index.d.cts",
   "exports": {
     ".": {
       "@zod/source": "./src/index.ts",
-      "types": "./output/types/src/index.d.cts",
-      "import": "./output/js/src/index.js",
-      "require": "./output/js/src/index.cjs"
+      "types": "./out/index.d.cts",
+      "import": "./out/index.js",
+      "require": "./out/index.cjs"
     },
     "./utils": {
       "@zod/source": "./src/utils.ts",
-      "types": "./output/types/src/utils.d.cts",
-      "import": "./output/js/src/utils.js",
-      "require": "./output/js/src/utils.cjs"
+      "types": "./out/utils.d.cts",
+      "import": "./out/utils.js",
+      "require": "./out/utils.cjs"
     },
     "./plugins/*": {
       "@zod/source": "./src/plugins/*",
-      "types": "./output/types/src/plugins/*",
-      "import": "./output/js/src/plugins/*",
-      "require": "./output/js/src/plugins/*"
+      "types": "./out/plugins/*",
+      "import": "./out/plugins/*",
+      "require": "./out/plugins/*"
     }
   },
   "files": [
