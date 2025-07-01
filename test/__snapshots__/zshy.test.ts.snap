@@ -556,10 +556,7 @@ exports[`zshy with different tsconfig configurations > should work with modern.t
 exports[`zshy with different tsconfig configurations > should work with root-output.test.tsconfig.json 1`] = `
 {
   "exitCode": 0,
-  "stderr": "️  You're building your code to the project root. This means your compiled files will be generated alongside your source files.
-    Ensure that your "files" in package.json excludes TypeScript source files, or your users may experience .d.ts resolution issues in some environments:
-
-   "files": ["**/*.js", "**/*.mjs", "**/*.cjs", "**/*.d.ts", "**/*.d.mts", "**/*.d.cts"],",
+  "stderr": "",
   "stdout": "→  Starting build...
 →  Verbose mode enabled
 →  Detected package manager: pnpm exec
@@ -580,6 +577,9 @@ exports[`zshy with different tsconfig configurations > should work with root-out
 →  Reading tsconfig from ./root-output.test.tsconfig.json
 →  Skipping cleanup of outDir as it contains source files
 →  Skipping cleanup of declarationDir as it contains source files
+→  You're building your code to the project root. This means your compiled files will be generated alongside your source files.
+   Ensure that your "files" in package.json excludes TypeScript source files, or your users may experience .d.ts resolution issues in some environments:
+     "files": ["**/*.js", "**/*.mjs", "**/*.cjs", "**/*.d.ts", "**/*.d.mts", "**/*.d.cts"]
 →  Determining entrypoints...
    ╔═══════════════════════════════╤═════════════════════════════╗
    ║ Subpath                       │ Entrypoint                  ║
@@ -661,12 +661,7 @@ exports[`zshy with different tsconfig configurations > should work with root-out
 →  [dryrun] Updating package.json#/bin...
 →  Generated "bin": "./index.cjs"
 →  [dryrun] Skipping package.json modification
-→  Build complete!
-
-️  You're building your code to the project root. This means your compiled files will be generated alongside your source files.
-    Ensure that your "files" in package.json excludes TypeScript source files, or your users may experience .d.ts resolution issues in some environments:
-
-   "files": ["**/*.js", "**/*.mjs", "**/*.cjs", "**/*.d.ts", "**/*.d.mts", "**/*.d.cts"],",
+→  Build complete!",
 }
 `;
 
