@@ -146,7 +146,7 @@ function normalizeOutput(output: string): string {
       // Normalize file paths to be relative and use forward slashes
       .replace(/\/Users\/[^/]+\/[^/\s]+\/projects\/zshy/g, "<root>")
       // Normalize any absolute paths
-      // .replace(/\/[^\s]+\/zshy/g, "<root>")
+      .replace(/\/[^\s]+\/zshy/g, "<root>")
       // Normalize timestamps and timing info
       .replace(/\d+ms/g, "<time>")
       // Normalize any specific file counts that might vary
