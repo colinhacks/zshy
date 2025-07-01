@@ -34,6 +34,8 @@
 
 `zshy` is a simple, zero-config build tool for transpiling TypeScript libraries. It was originally created as internal build tool for [Zod](https://github.com/colinhacks/zod) but is now available as a general-purpose tool for TypeScript libraries.
 
+<br/>
+
 ### Features
 
 - 🧱 **Dual-module builds** — Builds ESM and CJS outputs from a single TypeScript source file
@@ -48,20 +50,44 @@
 - 📱 **Supports React Native** — Supports a [flat build mode](#can-it-support-react-native-legacy-or-non-nodejs-environments) designed for bundlers that don't support `package.json#/exports`
 - 🐌 **Blazing fast** — Just kidding, it's slow. But [it's worth it](#is-it-fast).
 
+<br/>
+
+### How does it work?
+
 It achieves all of these goals with no bundler. It uses the TypeScript Compiler API to _rewrite file extensions_ during the build step. Specifically:
 
-- 1. Each `.ts` file is transpiled to `.js` (ESM) and `.cjs` (CommonJS)
-- 2. Declarations files are also generated: `.d.ts` (ESM) and `.d.cts`
-- 2. All `import` statements are rewritten to the appropriate extension:
-  - `from "./util"` becomes `from "./util.js"` (ESM) / `from "./util.cjs"` (CJS)
-  - `from "./util.ts"` becomes `from "./util.js"` (ESM) / `from "./util.cjs"` (CJS)
-  - `from "./util.js"` becomes `from "./util.js"` (ESM) / `from "./util.cjs"` (CJS)
-- 3. All `export ... from` statements are similarly rewritten
-- 4. All dynamic `import()` calls are similarly rewritten
+**Each `.ts` file is transpiled to `.js` (ESM) and `.cjs` (CommonJS). Declarations files are also generated: `.d.ts` (ESM) and `.d.cts`.**
+
+```bash
+$ tree .
+├── package.json # if type == "module"
+├── src
+│   └── index.ts
+└── dist # generated
+  ├── index.js
+  ├── index.cjs
+  ├── index.d.ts
+  └── index.d.cts
+```
+
+**All `import` statements are rewritten to the appropriate extension:**
+
+| Original path      | Result (ESM)       | Result (CJS)        |
+| ------------------ | ------------------ | ------------------- |
+| `from "./util"`    | `from "./util.js"` | `from "./util.cjs"` |
+| `from "./util.ts"` | `from "./util.js"` | `from "./util.cjs"` |
+| `from "./util.js"` | `from "./util.js"` | `from "./util.cjs"` |
 
 Unfortunately vanilla `tsc` does not support extension rewriting and the TypeScript team has stated that this [is not on the roadmap](https://github.com/microsoft/TypeScript/issues/16577#issuecomment-754941937). As such, the vast majority of build tools in use today rely on bundlers to perform these transforms.
 
-But `zshy` takes a different approach. It uses the [TypeScript Compiler API](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API) to implement a very simple code transform (implemented via the official `ts.TransformerFactory` API) that achieves all the same things, no bundler required. It's the gold standard for transpiling TypeScript libraries: dual-module builds powered by `tsc` with full type-checking and a fresh DX.
+But `zshy` takes a different approach. It implements this simple set of transforms using the official [TypeScript Compiler API](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API) (specifically the `ts.TransformerFactory` API, which lets you define AST-level code transforms).
+
+The result is a tool that's the "holy grail" of TypeScript library build tools:
+
+- performs dual-module (ESM + CJS) builds with no bundler
+- leverages `tsc`'s best-in-class transpilation engine
+- type checks your code
+- doesn't require another config file (just `package.json` and `tsconfig.json`)
 
 <br/>
 <br/>
