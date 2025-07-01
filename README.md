@@ -1,7 +1,7 @@
 <p align="center">
 
   <h1 align="center">⚜️<br/><code>zshy</code></h1>
-  <p align="center">Gold-standard build tool for TypeScript libraries.
+  <p align="center">The ultimate build tool for TypeScript libraries. Powered by <code>tsc</code>.
     <br/>
     by <a href="https://x.com/colinhacks">@colinhacks</a>
   </p>
@@ -39,14 +39,15 @@
 
 - 🧱 **Dual-module builds** — Builds ESM and CJS outputs from a single TypeScript source file
 - 👑 **Powered by `tsc`** — No bundling, no extra configs, just good old-fashioned `tsc`
-- 📝 **Declarative config** — No build scripts, just a simple `"zshy"` field in your `package.json`
+- 🟦 **No config file** — Reads only from your `package.json` and `tsconfig.json` (configurable)
+- 📝 **Declarative entrypoint map** — Specify your TypeScript entrypoints in `package.json#zshy` 
 - 🤖 **Auto-generated `"exports"`** — Writes `"exports"` map directly into your `package.json`
-- 🟦 **Respects your `tsconfig.json`**
-- 📂 **Unopinionated about file structure** — Use any file structure you like
-- 🔗 **Unopinionated about import extensions** — Use any import syntax TypeScript supports: extensionless, `.js`, `.ts`
-- ⚛️ **Supports `.tsx`**
-- 📱 **Supports React Native** 
-- 🐌 **Blazing fast** — Just kidding, it's slow. But `tsc` is about to get 10x faster!
+- 🐚 **CLI-friendly** — First-class `"bin"` support
+- 📂 **Supports any file structure** — Use any file structure you like
+- 🔗 **Supports extensionless imports** — Use any import syntax TypeScript supports: extensionless, `.js`, `.ts`
+- ⚛️ **Supports `.tsx`** — Rewrites to `.js/.cjs/.mjs` per 
+- 📱 **Supports React Native** — Supports a [flat build mode](#can-it-support-react-native-legacy-or-non-nodejs-environments) designed for bundlers that don't support `package.json#exports`
+- 🐌 **Blazing fast** — Just kidding, it's slow. But [it's worth it](#is-it-fast)
 
 <br/>
 <br/>
@@ -155,6 +156,11 @@ Then, to run a build:
 $ npm run build
 ```
 
+<br/> 
+
+
+### 
+
 
 <br/>
 <br/>
@@ -214,19 +220,19 @@ No. You can organize your source however you like; `zshy` will transpile your en
 
 ### What files does `zshy` create?
 
-It depends on your `package.json#type` field. If your package is ESM (that is, `"type": "module"` in `package.json`), the CJS build files will be generated as `.cjs`/`.d.cts`:
+It depends on your `package.json#type` field. If your package is ESM (that is, `"type": "module"` in `package.json`):
 
 - `.js` + `.d.ts` (ESM)
 - `.cjs` + `.d.cts` (CJS)
 
 ```bash
-$ tree out
+$ tree dist
 
 .
 ├── package.json # if type == "module"
 ├── src
 │   └── index.ts
-└── out
+└── dist
     ├── index.js 
     ├── index.d.ts
     ├── index.cts
@@ -239,12 +245,12 @@ Otherwise, the package is considered *default-CJS* and the ESM build files will 
 - `.js` + `.d.ts` (CJS)
 
 ```bash
-$ tree out
+$ tree dist
 .
 ├── package.json # if type != "module"
 ├── src
 │   └── index.ts
-└── out
+└── dist
     ├── index.js
     ├── index.d.ts
     ├── index.mjs
@@ -257,12 +263,21 @@ $ tree out
 
 ### How does extension rewriting work?
 
-`zshy` uses the [TypeScript Compiler API](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API) to perform extension rewriting during the `tsc` build process. TypeScript provides dedicated hooks for performing such transforms (though they are criminally under-utilized, until now!):
+`zshy` uses the [TypeScript Compiler API](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API) to rewrite file extensions during the `tsc` build process. This makes it possible to generate CJS and ESM build outputs side-by-side. 
+
+Depending on the build format being targeted, `zshy` will:
+
+- Rewrite `.ts` imports/exports to `.js`/`.cjs`/`.mjs`
+- Rewrite extensionless imports/exports to `.js`/`.cjs`/`.mjs`
+- Rewrite `.js` imports/exports to `.cjs`/`.mjs`
+- Rename build output files to `.cjs`/`.mjs`/`.d.cts`/`.d.mts`
+
+TypeScript provides dedicated hooks for performing such transforms (though they are criminally under-utilized). 
 
 - **`ts.TransformerFactory`**: Provides AST transformations to rewrite import/export extensions before module conversion
 - **`ts.CompilerHost#writeFile`**: Handles output file extension changes (`.js` → `.cjs`/`.mjs`)
 
-> **Comparison** — `tshy` was designed to enable dual-package builds powered by the `tsc` compiler. To make this work, it relies on a specific file structure and the creation of temporary `package.json` files to accommodate the various idiosyncrasies of Node.js module resolution. TypeScript provides a robust API for AST transformations (`ts.TransformerFactory`) that `tshy` does not take advantage of.
+> **Comparison** — `tshy` was designed to enable dual-package builds powered by the `tsc` compiler. To make this work, it relies on a specific file structure and the creation of temporary `package.json` files to accommodate the various idiosyncrasies of Node.js module resolution. It also requires the use of separate `dist/esm` and `dist/cjs` build subdirectories. 
 
 <br/>
 
@@ -273,7 +288,7 @@ Yes! `zshy` supports whatever import style you prefer:
 - `from "./utils.js"`: ESM-friendly extensioned imports
 - `from "./util.ts"`: recently supported natively via[`rewriteRelativeImportExtensions`](https://www.typescriptlang.org/tsconfig/#rewriteRelativeImportExtensions)
 
-Use whatever you like; `zshy` will rewrite extensionless and `.ts` imports/exports to have the appropriate file extension.
+Use whatever you like; `zshy` will rewrite all imports/exports properly during the build process.
 
 > **Comparison** — `tshy` forces you to use `.js` imports throughout your codebase. While this is generally a good practice, it's not always feasible, and there are hundreds of thousands of existing TypeScript codebases reliant on extensionless imports.
 
@@ -332,25 +347,37 @@ By having `"types"` point to the `.d.cts` declarations, this error will never ha
 
 ### Can it support React Native legacy or non-Node.js environments?
 
-Yes! This is one of the key reasons `zshy` was originally developed for Zod. 
+Yes! This is one of the key reasons `zshy` was originally developed. Many environments don't support `package.json#exports` yet:
 
-Many environments don't support `package.json#exports` yet (React Native, older bundlers, Node.js v10 or earlier, and many TypeScript projects using legacy configs). This causes issues for packages that want to use subpath imports to structure their package. Fortunately `zshy` unlocks a workaround I call a *flat build*:
+- Node.js v12.7 or earlier
+- React Native - The Metro bundler does not support `"exports"` by default 
+- TypeScript projects with legacy configs — e.. `"module": "commonjs"`
+
+This causes issues for packages that want to use subpath imports to structure their package. Fortunately `zshy` unlocks a workaround I call a *flat build*:
 
 1. Remove `"type": "module"` from your `package.json` (if present)
 2. Put your source files in your package root (not in a `src` directory)
 3. Set `outDir: "."` in your `tsconfig.json`
+4. Configure `"exclude"` in `package.json` to exclude all source files:
+  - ```jsonc
+    {
+      // ...
+      "exclude": [
+        "**/*.ts",
+        "**/*.tsx",
+        "**/*.cts",
+        "**/*.mts",
+        "node_modules"
+      ]
+    }
+    ```
 
-With this setup, your build outputs (`index.js`, etc) will be written to disk right next to their corresponding source files. This lets you simulate subpath imports; imports like `"your-library/utils"` will generally resolve to `"your-library/utils/index.js"` in environments that predate modern module resolution. Zod uses this approach for broader compatibility with the following environments:
-
-1. **Node.js v12.7 or older**
-2. **TypeScript projects using legacy configs** - e.g. `"module": "commonjs"`
-3. **React Native** - The Metro bundler does not support `"exports"` by default 
+With this setup, your build outputs (`index.js`, etc) will be written to disk alongside to their corresponding source files. Older environments will resolve imports like `"your-library/utils"` to `"your-library/utils/index.js"`, effectively simulating subpath imports in environments that don't support them.
 
 <br/> 
 
 ### Is it fast?
 
-Not really. Typechecking with `tsc` is a lot slower than using a bundler that strips types. That said: 
-1) you *should* be type checking your code during builds, 
-2) TypeScript is [about to get 10x faster](https://devblogs.microsoft.com/typescript/typescript-native-port/), and 
-3) you just spent the last hour staring at a Cursor spinner anyway 😇
+Not really. It uses `tsc` to typecheck your codebase, which is a lot slower than using a bundler that strips types. That said: 
+1) you *should* be type checking your code during builds;
+2) TypeScript is [about to get 10x faster](https://devblogs.microsoft.com/typescript/typescript-native-port/)

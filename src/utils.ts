@@ -9,6 +9,7 @@ export interface ProjectOptions {
 			Pick<ts.CompilerOptions, "module" | "moduleResolution" | "outDir">
 		>;
 	mode: "cts" | "ts" | "mts";
+	verbose?: boolean;
 }
 
 // Get entry points using the same logic as esbuild.mts
@@ -117,7 +118,9 @@ export async function compileProject(
 		}
 		// }
 
-		// console.log(`   ${outputFileName}`);
+		if (config.verbose) {
+			console.log(`   Writing: ${outputFileName}`);
+		}
 
 		if (originalWriteFile) {
 			originalWriteFile(
@@ -129,6 +132,14 @@ export async function compileProject(
 			);
 		}
 	};
+
+	if (config.verbose) {
+		console.log(`   Entry points: ${entryPoints.join(", ")}`);
+		console.log(`   Module: ${ts.ModuleKind[config.compilerOptions.module]}`);
+		console.log(
+			`   Target: ${ts.ScriptTarget[config.compilerOptions.target || ts.ScriptTarget.ES5]}`,
+		);
+	}
 
 	// Create the TypeScript program using entry points
 	const program = ts.createProgram({
@@ -234,8 +245,6 @@ export async function compileProject(
 
 						if (originalText.endsWith(".js")) {
 							const newText = originalText.slice(0, -3) + jsExt;
-							// console.log(`Rewriting dynamic import from ${originalText} to
-							// ${newText}`);
 							return ts.factory.updateCallExpression(
 								node,
 								node.expression,

@@ -1,6 +1,7 @@
 {
   "name": "zshy",
   "version": "0.0.5",
+  "type": "module",
   "description": "Gold-standard build tool for TypeScript libraries",
   "keywords": [
     "typescript",
@@ -30,8 +31,7 @@
     "type": "github",
     "url": "https://github.com/sponsors/colinhacks"
   },
-  "module": "./out/index.js",
-  "type": "module",
+  "module": "./output/js/src/index.js",
   "bin": {
     "zshy": "./out/index.js"
   },
@@ -42,7 +42,7 @@
     "@types/react": "^19.1.8",
     "react": "^19.1.0",
     "tsx": "^4.20.3",
-    "typescript": ">5.5.0"
+    "typescript": "^5.8.3"
   },
   "peerDependencies": {
     "typescript": ">5.5.0"
@@ -53,7 +53,8 @@
     "table": "^6.9.0"
   },
   "scripts": {
-    "build": "tsx src/index.ts"
+    "build": "tsx src/index.ts",
+    "test": "vitest run"
   },
   "zshy": {
     "exports": {
@@ -61,30 +62,35 @@
       "./utils": "./src/utils.ts",
       "./plugins/*": "./src/plugins/*"
     },
+    "bin": {
+      "zshy": "./src/index.ts",
+      "zshy-cli": "./src/index.ts"
+    },
     "sourceDialects": [
       "@zod/source"
     ],
     "tsconfig": "./tsconfig.build.json"
   },
-  "main": "./out/index.cjs",
-  "types": "./out/index.d.cts",
+  "main": "./output/js/src/index.cjs",
+  "types": "./output/types/src/index.d.cts",
   "exports": {
     ".": {
       "@zod/source": "./src/index.ts",
-      "types": "./out/index.d.cts",
-      "import": "./out/index.js",
-      "require": "./out/index.cjs"
+      "types": "./output/types/src/index.d.cts",
+      "import": "./output/js/src/index.js",
+      "require": "./output/js/src/index.cjs"
     },
     "./utils": {
       "@zod/source": "./src/utils.ts",
-      "types": "./out/utils.d.cts",
-      "import": "./out/utils.js",
-      "require": "./out/utils.cjs"
+      "types": "./output/types/src/utils.d.cts",
+      "import": "./output/js/src/utils.js",
+      "require": "./output/js/src/utils.cjs"
     },
     "./plugins/*": {
       "@zod/source": "./src/plugins/*",
-      "import": "./out/src/plugins/*",
-      "require": "./out/src/plugins/*"
+      "types": "./output/types/src/plugins/*",
+      "import": "./output/js/src/plugins/*",
+      "require": "./output/js/src/plugins/*"
     }
   },
   "files": [

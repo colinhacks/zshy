@@ -1,0 +1,18 @@
+{
+  "description": "Test: Separate declaration directory configuration. Tests zshy's support for declarationDir different from outDir. outDir: build, declarationDir: types, should generate proper exports map",
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "./build",
+    "rootDir": "./src",
+    "declaration": true,
+    "declarationDir": "./types"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "build", "types"]
+}

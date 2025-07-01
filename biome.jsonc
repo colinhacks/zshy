@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.0.5/schema.json",
 
   "formatter": {
     "enabled": true,
@@ -60,24 +60,25 @@
     }
   },
   "files": {
-    "ignore": [
-      "*.js",
-      "*.mjs",
-      "*.cjs",
-      "*.d.ts",
-      "*.d.cts",
-      "*.d.mts",
-      "lib",
-      "coverage",
-      "dist",
-      ".tshy",
-      ".tshy-build",
-      "experiments",
-      "node_modules",
-      ".next",
-      "packages/bench",
-      "packages/treeshake",
-      ".source"
+    "ignoreUnknown": true,
+    "includes": [
+      "!*.js",
+      "!*.mjs",
+      "!*.cjs",
+      "!*.d.ts",
+      "!*.d.cts",
+      "!*.d.mts",
+      "!lib",
+      "!coverage",
+      "!dist",
+      "!.tshy",
+      "!.tshy-build",
+      "!experiments",
+      "!node_modules",
+      "!.next",
+      "!packages/bench",
+      "!packages/treeshake",
+      "!.source"
     ]
   }
 }
