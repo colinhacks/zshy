@@ -5,6 +5,10 @@ import * as ts from "typescript";
 export function formatForLog(data: unknown) {
   return JSON.stringify(data, null, 2).split("\n").join("\n   ");
 }
+
+export function emojiLog(_emoji: string, content: string, level: "log" | "warn" | "error" = "log") {
+  console[level]("→  " + content);
+}
 export interface ProjectOptions {
   configPath: string;
   compilerOptions: ts.CompilerOptions & Required<Pick<ts.CompilerOptions, "module" | "moduleResolution" | "outDir">>;
@@ -23,7 +27,7 @@ export async function getEntryPoints(patterns: string[]): Promise<string[]> {
     });
 
     if (!pattern.endsWith("/*") && _results.length === 0) {
-      console.error(`❌ File does not exist: ${pattern}`);
+      emojiLog("❌", `File does not exist: ${pattern}`, "error");
       process.exit(1);
     }
 
@@ -63,7 +67,7 @@ export function readTsconfig(tsconfigPath: string) {
   );
 
   if (parsedConfig.errors.length > 0) {
-    console.error("❌ Error parsing tsconfig.json:");
+    emojiLog("❌", "Error parsing tsconfig.json:", "error");
     for (const error of parsedConfig.errors) {
       console.error(
         ts.formatDiagnostic(error, {
@@ -77,14 +81,14 @@ export function readTsconfig(tsconfigPath: string) {
   }
 
   if (!parsedConfig.options) {
-    throw new Error("❌ Error reading tsconfig.json#/compilerOptions");
+    emojiLog("❌", "Error reading tsconfig.json#/compilerOptions", "error");
+    process.exit(1);
   }
   return parsedConfig.options!;
 }
 
 export async function compileProject(config: ProjectOptions, entryPoints: string[]): Promise<string[]> {
   // Deduplicate entry points before compilation
-  const uniqueEntryPoints = [...new Set(entryPoints)];
 
   // Track files that would be written
   const writtenFiles: string[] = [];
@@ -116,22 +120,9 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
     }
   };
 
-  if (config.verbose) {
-    console.log(`🗣️  Resolved entrypoints: ${formatForLog(uniqueEntryPoints)}`);
-    console.log(
-      `🗣️  Resolved compilerOptions: ${formatForLog({
-        ...config.compilerOptions,
-        // resolve enum values to strings for better logging
-        module: ts.ModuleKind[config.compilerOptions.module!],
-        moduleResolution: ts.ModuleResolutionKind[config.compilerOptions.moduleResolution!],
-        target: ts.ScriptTarget[config.compilerOptions.target!],
-      })}`
-    );
-  }
-
   // Create the TypeScript program using unique entry points
   const program = ts.createProgram({
-    rootNames: uniqueEntryPoints,
+    rootNames: entryPoints,
     options: config.compilerOptions,
     host,
   });
@@ -256,7 +247,7 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
     const warningCount = diagnostics.filter((d) => d.category === ts.DiagnosticCategory.Warning).length;
 
     if (errorCount > 0 || warningCount > 0) {
-      console.log(`⚠️  Found ${errorCount} error(s) and ${warningCount} warning(s)`);
+      emojiLog("⚠️", `Found ${errorCount} error(s) and ${warningCount} warning(s)`, "warn");
       console.log();
     }
 
@@ -284,7 +275,7 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
   });
 
   if (emitResult.emitSkipped) {
-    console.error("❌ Emit was skipped due to errors");
+    emojiLog("❌", "Emit was skipped due to errors", "error");
   } else {
     // console.log(`✅ Emitted ${config.jsExtension} and ${config.dtsExtension}
     // files`);
@@ -295,7 +286,7 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
     const emitErrors = emitResult.diagnostics.filter((d) => d.category === ts.DiagnosticCategory.Error);
     const emitWarnings = emitResult.diagnostics.filter((d) => d.category === ts.DiagnosticCategory.Warning);
 
-    console.error(`❌ Found ${emitErrors.length} error(s) and ${emitWarnings.length} warning(s) during emit:`);
+    emojiLog("❌", `Found ${emitErrors.length} error(s) and ${emitWarnings.length} warning(s) during emit:`, "error");
     console.log();
 
     const formatHost: ts.FormatDiagnosticsHost = {

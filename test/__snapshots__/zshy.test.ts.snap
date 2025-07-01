@@ -4,12 +4,13 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
 {
   "exitCode": 0,
   "stderr": "",
-  "stdout": "Starting zshy build...
-️  Verbose mode enabled
- Dry run mode enabled - no files will be written
-️  Detected project root: <root>/test
- Reading package.json from ./package.json
- Parsed zshy config: {
+  "stdout": "→  Starting build...
+→  Verbose mode enabled
+→  Detected package manager: pnpm exec
+→  Dry run mode enabled - no files will be written
+→  Detected project root: <root>/test
+→  Reading package.json from ./package.json
+→  Parsed zshy config: {
      "exports": {
        ".": "./src/index.ts",
        "./utils": "./src/utils.ts",
@@ -20,10 +21,10 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
        "@zod/source"
      ]
    }
- Reading tsconfig from ./basic.test.tsconfig.json
-️  Cleaning up outDir...
-️  Skipping cleanup of declarationDir as it contains source files
-️  Determining entrypoints...
+→  Reading tsconfig from ./basic.test.tsconfig.json
+→  Cleaning up outDir...
+→  Skipping cleanup of declarationDir as it contains source files
+→  Determining entrypoints...
    ╔═══════════════════════════════╤═════════════════════════════╗
    ║ Subpath                       │ Entrypoint                  ║
    ╟───────────────────────────────┼─────────────────────────────╢
@@ -32,24 +33,23 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
    ║ "zshy-test-fixture/plugins/*" │ ./src/plugins/* (2 matches) ║
    ║ bin:zshy-test-fixture         │ ./src/index.ts              ║
    ╚═══════════════════════════════╧═════════════════════════════╝
- Resolved build paths:
+→  Resolved build paths:
    ╔══════════╤═══════════════╗
    ║ Location │ Resolved path ║
    ╟──────────┼───────────────╢
    ║ rootDir  │ ./src         ║
    ║ outDir   │ ./dist        ║
    ╚══════════╧═══════════════╝
- Package is an ES module (package.json#/type is "module")
- Building CJS... (rewriting .ts -> .cjs/.d.cts)
-️  Resolved entrypoints: [
+→  Package is an ES module (package.json#/type is "module")
+→  Resolved entrypoints: [
      "./src/index.ts",
      "./src/utils.ts",
      "./src/plugins/a.ts",
      "./src/plugins/b.ts"
    ]
-️  Resolved compilerOptions: {
+→  Resolved compilerOptions: {
      "target": "ES2020",
-     "module": "CommonJS",
+     "module": "ESNext",
      "moduleResolution": "Node10",
      "strict": true,
      "esModuleInterop": true,
@@ -63,51 +63,27 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
      "rewriteRelativeImportExtensions": true,
      "verbatimModuleSyntax": false
    }
- Building ESM...
-️  Resolved entrypoints: [
-     "./src/index.ts",
-     "./src/utils.ts",
-     "./src/plugins/a.ts",
-     "./src/plugins/b.ts"
-   ]
-️  Resolved compilerOptions: {
-     "target": "ES2020",
-     "module": "ESNext",
-     "moduleResolution": "Bundler",
-     "strict": true,
-     "esModuleInterop": true,
-     "skipLibCheck": true,
-     "forceConsistentCasingInFileNames": true,
-     "outDir": "<root>/test/dist",
-     "rootDir": "<root>/test/src",
-     "declaration": true,
-     "noEmit": false,
-     "emitDeclarationOnly": false,
-     "rewriteRelativeImportExtensions": true,
-     "verbatimModuleSyntax": false
-   }
- [dryrun] Writing files... (16 total):
-   ./dist/index.cjs
-   ./dist/index.d.cts
-   ./dist/index.d.ts
-   ./dist/index.js
-   ./dist/plugins/a.cjs
-   ./dist/plugins/a.d.cts
-   ./dist/plugins/a.d.ts
-   ./dist/plugins/a.js
-   ./dist/plugins/b.cjs
-   ./dist/plugins/b.d.cts
-   ./dist/plugins/b.d.ts
-   ./dist/plugins/b.js
-   ./dist/utils.cjs
-   ./dist/utils.d.cts
-   ./dist/utils.d.ts
-   ./dist/utils.js
- Updating package.json#/exports...
- Updating package.json#/bin...
-️ Updated package.json#/bin: "./dist/index.cjs"
- Skipping package.json modification (dry-run)
-️  Updated package.json#/exports: {
+→  Building CJS... (rewriting .ts -> .cjs/.d.cts)
+→  Building ESM...
+→  [dryrun] Writing files (16 total)...
+     ./dist/index.cjs
+     ./dist/index.d.cts
+     ./dist/index.d.ts
+     ./dist/index.js
+     ./dist/plugins/a.cjs
+     ./dist/plugins/a.d.cts
+     ./dist/plugins/a.d.ts
+     ./dist/plugins/a.js
+     ./dist/plugins/b.cjs
+     ./dist/plugins/b.d.cts
+     ./dist/plugins/b.d.ts
+     ./dist/plugins/b.js
+     ./dist/utils.cjs
+     ./dist/utils.d.cts
+     ./dist/utils.d.ts
+     ./dist/utils.js
+→  [dryrun] Updating package.json#/exports...
+→  Generated "exports": {
      ".": {
        "@zod/source": "./src/index.ts",
        "types": "./dist/index.d.cts",
@@ -127,7 +103,10 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
        "require": "./dist/plugins/*"
      }
    }
- Build complete!",
+→  [dryrun] Updating package.json#/bin...
+→  Generated "bin": "./dist/index.cjs"
+→  [dryrun] Skipping package.json modification
+→  Build complete!",
 }
 `;
 
@@ -135,12 +114,13 @@ exports[`zshy with different tsconfig configurations > should work with bin.test
 {
   "exitCode": 0,
   "stderr": "",
-  "stdout": "Starting zshy build...
-️  Verbose mode enabled
- Dry run mode enabled - no files will be written
-️  Detected project root: <root>/test
- Reading package.json from ./package.json
- Parsed zshy config: {
+  "stdout": "→  Starting build...
+→  Verbose mode enabled
+→  Detected package manager: pnpm exec
+→  Dry run mode enabled - no files will be written
+→  Detected project root: <root>/test
+→  Reading package.json from ./package.json
+→  Parsed zshy config: {
      "exports": {
        ".": "./src/index.ts",
        "./utils": "./src/utils.ts",
@@ -151,10 +131,10 @@ exports[`zshy with different tsconfig configurations > should work with bin.test
        "@zod/source"
      ]
    }
- Reading tsconfig from ./bin.test.tsconfig.json
-️  Cleaning up outDir...
-️  Skipping cleanup of declarationDir as it contains source files
-️  Determining entrypoints...
+→  Reading tsconfig from ./bin.test.tsconfig.json
+→  Cleaning up outDir...
+→  Skipping cleanup of declarationDir as it contains source files
+→  Determining entrypoints...
    ╔═══════════════════════════════╤═════════════════════════════╗
    ║ Subpath                       │ Entrypoint                  ║
    ╟───────────────────────────────┼─────────────────────────────╢
@@ -163,24 +143,23 @@ exports[`zshy with different tsconfig configurations > should work with bin.test
    ║ "zshy-test-fixture/plugins/*" │ ./src/plugins/* (2 matches) ║
    ║ bin:zshy-test-fixture         │ ./src/index.ts              ║
    ╚═══════════════════════════════╧═════════════════════════════╝
- Resolved build paths:
+→  Resolved build paths:
    ╔══════════╤═══════════════╗
    ║ Location │ Resolved path ║
    ╟──────────┼───────────────╢
    ║ rootDir  │ ./src         ║
    ║ outDir   │ ./dist        ║
    ╚══════════╧═══════════════╝
- Package is an ES module (package.json#/type is "module")
- Building CJS... (rewriting .ts -> .cjs/.d.cts)
-️  Resolved entrypoints: [
+→  Package is an ES module (package.json#/type is "module")
+→  Resolved entrypoints: [
      "./src/index.ts",
      "./src/utils.ts",
      "./src/plugins/a.ts",
      "./src/plugins/b.ts"
    ]
-️  Resolved compilerOptions: {
+→  Resolved compilerOptions: {
      "target": "ES2020",
-     "module": "CommonJS",
+     "module": "ESNext",
      "moduleResolution": "Node10",
      "strict": true,
      "esModuleInterop": true,
@@ -194,51 +173,27 @@ exports[`zshy with different tsconfig configurations > should work with bin.test
      "rewriteRelativeImportExtensions": true,
      "verbatimModuleSyntax": false
    }
- Building ESM...
-️  Resolved entrypoints: [
-     "./src/index.ts",
-     "./src/utils.ts",
-     "./src/plugins/a.ts",
-     "./src/plugins/b.ts"
-   ]
-️  Resolved compilerOptions: {
-     "target": "ES2020",
-     "module": "ESNext",
-     "moduleResolution": "Bundler",
-     "strict": true,
-     "esModuleInterop": true,
-     "skipLibCheck": true,
-     "forceConsistentCasingInFileNames": true,
-     "outDir": "<root>/test/dist",
-     "rootDir": "<root>/test/src",
-     "declaration": true,
-     "noEmit": false,
-     "emitDeclarationOnly": false,
-     "rewriteRelativeImportExtensions": true,
-     "verbatimModuleSyntax": false
-   }
- [dryrun] Writing files... (16 total):
-   ./dist/index.cjs
-   ./dist/index.d.cts
-   ./dist/index.d.ts
-   ./dist/index.js
-   ./dist/plugins/a.cjs
-   ./dist/plugins/a.d.cts
-   ./dist/plugins/a.d.ts
-   ./dist/plugins/a.js
-   ./dist/plugins/b.cjs
-   ./dist/plugins/b.d.cts
-   ./dist/plugins/b.d.ts
-   ./dist/plugins/b.js
-   ./dist/utils.cjs
-   ./dist/utils.d.cts
-   ./dist/utils.d.ts
-   ./dist/utils.js
- Updating package.json#/exports...
- Updating package.json#/bin...
-️ Updated package.json#/bin: "./dist/index.cjs"
- Skipping package.json modification (dry-run)
-️  Updated package.json#/exports: {
+→  Building CJS... (rewriting .ts -> .cjs/.d.cts)
+→  Building ESM...
+→  [dryrun] Writing files (16 total)...
+     ./dist/index.cjs
+     ./dist/index.d.cts
+     ./dist/index.d.ts
+     ./dist/index.js
+     ./dist/plugins/a.cjs
+     ./dist/plugins/a.d.cts
+     ./dist/plugins/a.d.ts
+     ./dist/plugins/a.js
+     ./dist/plugins/b.cjs
+     ./dist/plugins/b.d.cts
+     ./dist/plugins/b.d.ts
+     ./dist/plugins/b.js
+     ./dist/utils.cjs
+     ./dist/utils.d.cts
+     ./dist/utils.d.ts
+     ./dist/utils.js
+→  [dryrun] Updating package.json#/exports...
+→  Generated "exports": {
      ".": {
        "@zod/source": "./src/index.ts",
        "types": "./dist/index.d.cts",
@@ -258,7 +213,10 @@ exports[`zshy with different tsconfig configurations > should work with bin.test
        "require": "./dist/plugins/*"
      }
    }
- Build complete!",
+→  [dryrun] Updating package.json#/bin...
+→  Generated "bin": "./dist/index.cjs"
+→  [dryrun] Skipping package.json modification
+→  Build complete!",
 }
 `;
 
@@ -266,12 +224,13 @@ exports[`zshy with different tsconfig configurations > should work with bin-stri
 {
   "exitCode": 0,
   "stderr": "",
-  "stdout": "Starting zshy build...
-️  Verbose mode enabled
- Dry run mode enabled - no files will be written
-️  Detected project root: <root>/test
- Reading package.json from ./package.json
- Parsed zshy config: {
+  "stdout": "→  Starting build...
+→  Verbose mode enabled
+→  Detected package manager: pnpm exec
+→  Dry run mode enabled - no files will be written
+→  Detected project root: <root>/test
+→  Reading package.json from ./package.json
+→  Parsed zshy config: {
      "exports": {
        ".": "./src/index.ts",
        "./utils": "./src/utils.ts",
@@ -282,10 +241,10 @@ exports[`zshy with different tsconfig configurations > should work with bin-stri
        "@zod/source"
      ]
    }
- Reading tsconfig from ./bin-string.test.tsconfig.json
-️  Cleaning up outDir...
-️  Skipping cleanup of declarationDir as it contains source files
-️  Determining entrypoints...
+→  Reading tsconfig from ./bin-string.test.tsconfig.json
+→  Cleaning up outDir...
+→  Skipping cleanup of declarationDir as it contains source files
+→  Determining entrypoints...
    ╔═══════════════════════════════╤═════════════════════════════╗
    ║ Subpath                       │ Entrypoint                  ║
    ╟───────────────────────────────┼─────────────────────────────╢
@@ -294,44 +253,21 @@ exports[`zshy with different tsconfig configurations > should work with bin-stri
    ║ "zshy-test-fixture/plugins/*" │ ./src/plugins/* (2 matches) ║
    ║ bin:zshy-test-fixture         │ ./src/index.ts              ║
    ╚═══════════════════════════════╧═════════════════════════════╝
- Resolved build paths:
+→  Resolved build paths:
    ╔══════════╤═══════════════╗
    ║ Location │ Resolved path ║
    ╟──────────┼───────────────╢
    ║ rootDir  │ ./src         ║
    ║ outDir   │ ./dist        ║
    ╚══════════╧═══════════════╝
- Package is an ES module (package.json#/type is "module")
- Building CJS... (rewriting .ts -> .cjs/.d.cts)
-️  Resolved entrypoints: [
+→  Package is an ES module (package.json#/type is "module")
+→  Resolved entrypoints: [
      "./src/index.ts",
      "./src/utils.ts",
      "./src/plugins/a.ts",
      "./src/plugins/b.ts"
    ]
-️  Resolved compilerOptions: {
-     "target": "ES2020",
-     "module": "CommonJS",
-     "moduleResolution": "Node10",
-     "strict": true,
-     "esModuleInterop": true,
-     "skipLibCheck": true,
-     "forceConsistentCasingInFileNames": true,
-     "outDir": "<root>/test/dist",
-     "declaration": true,
-     "noEmit": false,
-     "emitDeclarationOnly": false,
-     "rewriteRelativeImportExtensions": true,
-     "verbatimModuleSyntax": false
-   }
- Building ESM...
-️  Resolved entrypoints: [
-     "./src/index.ts",
-     "./src/utils.ts",
-     "./src/plugins/a.ts",
-     "./src/plugins/b.ts"
-   ]
-️  Resolved compilerOptions: {
+→  Resolved compilerOptions: {
      "target": "ES2020",
      "module": "ESNext",
      "moduleResolution": "Bundler",
@@ -346,28 +282,27 @@ exports[`zshy with different tsconfig configurations > should work with bin-stri
      "rewriteRelativeImportExtensions": true,
      "verbatimModuleSyntax": false
    }
- [dryrun] Writing files... (16 total):
-   ./dist/index.cjs
-   ./dist/index.d.cts
-   ./dist/index.d.ts
-   ./dist/index.js
-   ./dist/plugins/a.cjs
-   ./dist/plugins/a.d.cts
-   ./dist/plugins/a.d.ts
-   ./dist/plugins/a.js
-   ./dist/plugins/b.cjs
-   ./dist/plugins/b.d.cts
-   ./dist/plugins/b.d.ts
-   ./dist/plugins/b.js
-   ./dist/utils.cjs
-   ./dist/utils.d.cts
-   ./dist/utils.d.ts
-   ./dist/utils.js
- Updating package.json#/exports...
- Updating package.json#/bin...
-️ Updated package.json#/bin: "./dist/index.cjs"
- Skipping package.json modification (dry-run)
-️  Updated package.json#/exports: {
+→  Building CJS... (rewriting .ts -> .cjs/.d.cts)
+→  Building ESM...
+→  [dryrun] Writing files (16 total)...
+     ./dist/index.cjs
+     ./dist/index.d.cts
+     ./dist/index.d.ts
+     ./dist/index.js
+     ./dist/plugins/a.cjs
+     ./dist/plugins/a.d.cts
+     ./dist/plugins/a.d.ts
+     ./dist/plugins/a.js
+     ./dist/plugins/b.cjs
+     ./dist/plugins/b.d.cts
+     ./dist/plugins/b.d.ts
+     ./dist/plugins/b.js
+     ./dist/utils.cjs
+     ./dist/utils.d.cts
+     ./dist/utils.d.ts
+     ./dist/utils.js
+→  [dryrun] Updating package.json#/exports...
+→  Generated "exports": {
      ".": {
        "@zod/source": "./src/index.ts",
        "types": "./dist/index.d.cts",
@@ -387,7 +322,10 @@ exports[`zshy with different tsconfig configurations > should work with bin-stri
        "require": "./dist/plugins/*"
      }
    }
- Build complete!",
+→  [dryrun] Updating package.json#/bin...
+→  Generated "bin": "./dist/index.cjs"
+→  [dryrun] Skipping package.json modification
+→  Build complete!",
 }
 `;
 
@@ -395,12 +333,13 @@ exports[`zshy with different tsconfig configurations > should work with legacy.t
 {
   "exitCode": 0,
   "stderr": "",
-  "stdout": "Starting zshy build...
-️  Verbose mode enabled
- Dry run mode enabled - no files will be written
-️  Detected project root: <root>/test
- Reading package.json from ./package.json
- Parsed zshy config: {
+  "stdout": "→  Starting build...
+→  Verbose mode enabled
+→  Detected package manager: pnpm exec
+→  Dry run mode enabled - no files will be written
+→  Detected project root: <root>/test
+→  Reading package.json from ./package.json
+→  Parsed zshy config: {
      "exports": {
        ".": "./src/index.ts",
        "./utils": "./src/utils.ts",
@@ -411,10 +350,10 @@ exports[`zshy with different tsconfig configurations > should work with legacy.t
        "@zod/source"
      ]
    }
- Reading tsconfig from ./legacy.test.tsconfig.json
-️  Cleaning up outDir...
-️  Skipping cleanup of declarationDir as it contains source files
-️  Determining entrypoints...
+→  Reading tsconfig from ./legacy.test.tsconfig.json
+→  Cleaning up outDir...
+→  Skipping cleanup of declarationDir as it contains source files
+→  Determining entrypoints...
    ╔═══════════════════════════════╤═════════════════════════════╗
    ║ Subpath                       │ Entrypoint                  ║
    ╟───────────────────────────────┼─────────────────────────────╢
@@ -423,22 +362,21 @@ exports[`zshy with different tsconfig configurations > should work with legacy.t
    ║ "zshy-test-fixture/plugins/*" │ ./src/plugins/* (2 matches) ║
    ║ bin:zshy-test-fixture         │ ./src/index.ts              ║
    ╚═══════════════════════════════╧═════════════════════════════╝
- Resolved build paths:
+→  Resolved build paths:
    ╔══════════╤═══════════════╗
    ║ Location │ Resolved path ║
    ╟──────────┼───────────────╢
    ║ rootDir  │ ./src         ║
    ║ outDir   │ ./lib         ║
    ╚══════════╧═══════════════╝
- Package is an ES module (package.json#/type is "module")
- Building CJS... (rewriting .ts -> .cjs/.d.cts)
-️  Resolved entrypoints: [
+→  Package is an ES module (package.json#/type is "module")
+→  Resolved entrypoints: [
      "./src/index.ts",
      "./src/utils.ts",
      "./src/plugins/a.ts",
      "./src/plugins/b.ts"
    ]
-️  Resolved compilerOptions: {
+→  Resolved compilerOptions: {
      "target": "ES2018",
      "module": "CommonJS",
      "moduleResolution": "Node10",
@@ -453,50 +391,27 @@ exports[`zshy with different tsconfig configurations > should work with legacy.t
      "rewriteRelativeImportExtensions": true,
      "verbatimModuleSyntax": false
    }
- Building ESM...
-️  Resolved entrypoints: [
-     "./src/index.ts",
-     "./src/utils.ts",
-     "./src/plugins/a.ts",
-     "./src/plugins/b.ts"
-   ]
-️  Resolved compilerOptions: {
-     "target": "ES2018",
-     "module": "ESNext",
-     "moduleResolution": "Bundler",
-     "strict": false,
-     "esModuleInterop": true,
-     "skipLibCheck": true,
-     "forceConsistentCasingInFileNames": true,
-     "outDir": "<root>/test/lib",
-     "declaration": true,
-     "noEmit": false,
-     "emitDeclarationOnly": false,
-     "rewriteRelativeImportExtensions": true,
-     "verbatimModuleSyntax": false
-   }
- [dryrun] Writing files... (16 total):
-   ./lib/index.cjs
-   ./lib/index.d.cts
-   ./lib/index.d.ts
-   ./lib/index.js
-   ./lib/plugins/a.cjs
-   ./lib/plugins/a.d.cts
-   ./lib/plugins/a.d.ts
-   ./lib/plugins/a.js
-   ./lib/plugins/b.cjs
-   ./lib/plugins/b.d.cts
-   ./lib/plugins/b.d.ts
-   ./lib/plugins/b.js
-   ./lib/utils.cjs
-   ./lib/utils.d.cts
-   ./lib/utils.d.ts
-   ./lib/utils.js
- Updating package.json#/exports...
- Updating package.json#/bin...
-️ Updated package.json#/bin: "./lib/index.cjs"
- Skipping package.json modification (dry-run)
-️  Updated package.json#/exports: {
+→  Building CJS... (rewriting .ts -> .cjs/.d.cts)
+→  Building ESM...
+→  [dryrun] Writing files (16 total)...
+     ./lib/index.cjs
+     ./lib/index.d.cts
+     ./lib/index.d.ts
+     ./lib/index.js
+     ./lib/plugins/a.cjs
+     ./lib/plugins/a.d.cts
+     ./lib/plugins/a.d.ts
+     ./lib/plugins/a.js
+     ./lib/plugins/b.cjs
+     ./lib/plugins/b.d.cts
+     ./lib/plugins/b.d.ts
+     ./lib/plugins/b.js
+     ./lib/utils.cjs
+     ./lib/utils.d.cts
+     ./lib/utils.d.ts
+     ./lib/utils.js
+→  [dryrun] Updating package.json#/exports...
+→  Generated "exports": {
      ".": {
        "@zod/source": "./src/index.ts",
        "types": "./lib/index.d.cts",
@@ -516,7 +431,10 @@ exports[`zshy with different tsconfig configurations > should work with legacy.t
        "require": "./lib/plugins/*"
      }
    }
- Build complete!",
+→  [dryrun] Updating package.json#/bin...
+→  Generated "bin": "./lib/index.cjs"
+→  [dryrun] Skipping package.json modification
+→  Build complete!",
 }
 `;
 
@@ -524,12 +442,13 @@ exports[`zshy with different tsconfig configurations > should work with modern.t
 {
   "exitCode": 0,
   "stderr": "",
-  "stdout": "Starting zshy build...
-️  Verbose mode enabled
- Dry run mode enabled - no files will be written
-️  Detected project root: <root>/test
- Reading package.json from ./package.json
- Parsed zshy config: {
+  "stdout": "→  Starting build...
+→  Verbose mode enabled
+→  Detected package manager: pnpm exec
+→  Dry run mode enabled - no files will be written
+→  Detected project root: <root>/test
+→  Reading package.json from ./package.json
+→  Parsed zshy config: {
      "exports": {
        ".": "./src/index.ts",
        "./utils": "./src/utils.ts",
@@ -540,10 +459,10 @@ exports[`zshy with different tsconfig configurations > should work with modern.t
        "@zod/source"
      ]
    }
- Reading tsconfig from ./modern.test.tsconfig.json
-️  Cleaning up outDir...
-️  Cleaning up declarationDir...
-️  Determining entrypoints...
+→  Reading tsconfig from ./modern.test.tsconfig.json
+→  Cleaning up outDir...
+→  Cleaning up declarationDir...
+→  Determining entrypoints...
    ╔═══════════════════════════════╤═════════════════════════════╗
    ║ Subpath                       │ Entrypoint                  ║
    ╟───────────────────────────────┼─────────────────────────────╢
@@ -552,7 +471,7 @@ exports[`zshy with different tsconfig configurations > should work with modern.t
    ║ "zshy-test-fixture/plugins/*" │ ./src/plugins/* (2 matches) ║
    ║ bin:zshy-test-fixture         │ ./src/index.ts              ║
    ╚═══════════════════════════════╧═════════════════════════════╝
- Resolved build paths:
+→  Resolved build paths:
    ╔════════════════╤════════════════╗
    ║ Location       │ Resolved path  ║
    ╟────────────────┼────────────────╢
@@ -560,42 +479,14 @@ exports[`zshy with different tsconfig configurations > should work with modern.t
    ║ outDir         │ ./output/js    ║
    ║ declarationDir │ ./output/types ║
    ╚════════════════╧════════════════╝
- Package is an ES module (package.json#/type is "module")
- Building CJS... (rewriting .ts -> .cjs/.d.cts)
-️  Resolved entrypoints: [
+→  Package is an ES module (package.json#/type is "module")
+→  Resolved entrypoints: [
      "./src/index.ts",
      "./src/utils.ts",
      "./src/plugins/a.ts",
      "./src/plugins/b.ts"
    ]
-️  Resolved compilerOptions: {
-     "target": "ES2022",
-     "module": "CommonJS",
-     "moduleResolution": "Node10",
-     "strict": true,
-     "esModuleInterop": true,
-     "allowSyntheticDefaultImports": true,
-     "skipLibCheck": true,
-     "forceConsistentCasingInFileNames": true,
-     "outDir": "<root>/test/output/js",
-     "rootDir": "<root>/test",
-     "declaration": true,
-     "declarationDir": "<root>/test/output/types",
-     "emitDecoratorMetadata": true,
-     "experimentalDecorators": true,
-     "noEmit": false,
-     "emitDeclarationOnly": false,
-     "rewriteRelativeImportExtensions": true,
-     "verbatimModuleSyntax": false
-   }
- Building ESM...
-️  Resolved entrypoints: [
-     "./src/index.ts",
-     "./src/utils.ts",
-     "./src/plugins/a.ts",
-     "./src/plugins/b.ts"
-   ]
-️  Resolved compilerOptions: {
+→  Resolved compilerOptions: {
      "target": "ES2022",
      "module": "ESNext",
      "moduleResolution": "Bundler",
@@ -615,28 +506,27 @@ exports[`zshy with different tsconfig configurations > should work with modern.t
      "rewriteRelativeImportExtensions": true,
      "verbatimModuleSyntax": false
    }
- [dryrun] Writing files... (16 total):
-   ./output/js/src/index.cjs
-   ./output/js/src/index.js
-   ./output/js/src/plugins/a.cjs
-   ./output/js/src/plugins/a.js
-   ./output/js/src/plugins/b.cjs
-   ./output/js/src/plugins/b.js
-   ./output/js/src/utils.cjs
-   ./output/js/src/utils.js
-   ./output/types/src/index.d.cts
-   ./output/types/src/index.d.ts
-   ./output/types/src/plugins/a.d.cts
-   ./output/types/src/plugins/a.d.ts
-   ./output/types/src/plugins/b.d.cts
-   ./output/types/src/plugins/b.d.ts
-   ./output/types/src/utils.d.cts
-   ./output/types/src/utils.d.ts
- Updating package.json#/exports...
- Updating package.json#/bin...
-️ Updated package.json#/bin: "./output/js/src/index.cjs"
- Skipping package.json modification (dry-run)
-️  Updated package.json#/exports: {
+→  Building CJS... (rewriting .ts -> .cjs/.d.cts)
+→  Building ESM...
+→  [dryrun] Writing files (16 total)...
+     ./output/js/src/index.cjs
+     ./output/js/src/index.js
+     ./output/js/src/plugins/a.cjs
+     ./output/js/src/plugins/a.js
+     ./output/js/src/plugins/b.cjs
+     ./output/js/src/plugins/b.js
+     ./output/js/src/utils.cjs
+     ./output/js/src/utils.js
+     ./output/types/src/index.d.cts
+     ./output/types/src/index.d.ts
+     ./output/types/src/plugins/a.d.cts
+     ./output/types/src/plugins/a.d.ts
+     ./output/types/src/plugins/b.d.cts
+     ./output/types/src/plugins/b.d.ts
+     ./output/types/src/utils.d.cts
+     ./output/types/src/utils.d.ts
+→  [dryrun] Updating package.json#/exports...
+→  Generated "exports": {
      ".": {
        "@zod/source": "./src/index.ts",
        "types": "./output/types/src/index.d.cts",
@@ -656,7 +546,10 @@ exports[`zshy with different tsconfig configurations > should work with modern.t
        "require": "./output/js/src/plugins/*"
      }
    }
- Build complete!",
+→  [dryrun] Updating package.json#/bin...
+→  Generated "bin": "./output/js/src/index.cjs"
+→  [dryrun] Skipping package.json modification
+→  Build complete!",
 }
 `;
 
@@ -667,12 +560,13 @@ exports[`zshy with different tsconfig configurations > should work with root-out
     Ensure that your "files" in package.json excludes TypeScript source files, or your users may experience .d.ts resolution issues in some environments:
 
    "files": ["**/*.js", "**/*.mjs", "**/*.cjs", "**/*.d.ts", "**/*.d.mts", "**/*.d.cts"],",
-  "stdout": "Starting zshy build...
-️  Verbose mode enabled
- Dry run mode enabled - no files will be written
-️  Detected project root: <root>/test
- Reading package.json from ./package.json
- Parsed zshy config: {
+  "stdout": "→  Starting build...
+→  Verbose mode enabled
+→  Detected package manager: pnpm exec
+→  Dry run mode enabled - no files will be written
+→  Detected project root: <root>/test
+→  Reading package.json from ./package.json
+→  Parsed zshy config: {
      "exports": {
        ".": "./src/index.ts",
        "./utils": "./src/utils.ts",
@@ -683,10 +577,10 @@ exports[`zshy with different tsconfig configurations > should work with root-out
        "@zod/source"
      ]
    }
- Reading tsconfig from ./root-output.test.tsconfig.json
-️  Skipping cleanup of outDir as it contains source files
-️  Skipping cleanup of declarationDir as it contains source files
-️  Determining entrypoints...
+→  Reading tsconfig from ./root-output.test.tsconfig.json
+→  Skipping cleanup of outDir as it contains source files
+→  Skipping cleanup of declarationDir as it contains source files
+→  Determining entrypoints...
    ╔═══════════════════════════════╤═════════════════════════════╗
    ║ Subpath                       │ Entrypoint                  ║
    ╟───────────────────────────────┼─────────────────────────────╢
@@ -695,44 +589,21 @@ exports[`zshy with different tsconfig configurations > should work with root-out
    ║ "zshy-test-fixture/plugins/*" │ ./src/plugins/* (2 matches) ║
    ║ bin:zshy-test-fixture         │ ./src/index.ts              ║
    ╚═══════════════════════════════╧═════════════════════════════╝
- Resolved build paths:
+→  Resolved build paths:
    ╔══════════╤═══════════════╗
    ║ Location │ Resolved path ║
    ╟──────────┼───────────────╢
    ║ rootDir  │ ./src         ║
    ║ outDir   │ .             ║
    ╚══════════╧═══════════════╝
- Package is an ES module (package.json#/type is "module")
- Building CJS... (rewriting .ts -> .cjs/.d.cts)
-️  Resolved entrypoints: [
+→  Package is an ES module (package.json#/type is "module")
+→  Resolved entrypoints: [
      "./src/index.ts",
      "./src/utils.ts",
      "./src/plugins/a.ts",
      "./src/plugins/b.ts"
    ]
-️  Resolved compilerOptions: {
-     "target": "ES2020",
-     "module": "CommonJS",
-     "moduleResolution": "Node10",
-     "strict": true,
-     "esModuleInterop": true,
-     "skipLibCheck": true,
-     "forceConsistentCasingInFileNames": true,
-     "outDir": "<root>/test",
-     "declaration": true,
-     "noEmit": false,
-     "emitDeclarationOnly": false,
-     "rewriteRelativeImportExtensions": true,
-     "verbatimModuleSyntax": false
-   }
- Building ESM...
-️  Resolved entrypoints: [
-     "./src/index.ts",
-     "./src/utils.ts",
-     "./src/plugins/a.ts",
-     "./src/plugins/b.ts"
-   ]
-️  Resolved compilerOptions: {
+→  Resolved compilerOptions: {
      "target": "ES2020",
      "module": "ESNext",
      "moduleResolution": "Bundler",
@@ -747,28 +618,27 @@ exports[`zshy with different tsconfig configurations > should work with root-out
      "rewriteRelativeImportExtensions": true,
      "verbatimModuleSyntax": false
    }
- [dryrun] Writing files... (16 total):
-   ./index.cjs
-   ./index.d.cts
-   ./index.d.ts
-   ./index.js
-   ./plugins/a.cjs
-   ./plugins/a.d.cts
-   ./plugins/a.d.ts
-   ./plugins/a.js
-   ./plugins/b.cjs
-   ./plugins/b.d.cts
-   ./plugins/b.d.ts
-   ./plugins/b.js
-   ./utils.cjs
-   ./utils.d.cts
-   ./utils.d.ts
-   ./utils.js
- Updating package.json#/exports...
- Updating package.json#/bin...
-️ Updated package.json#/bin: "./index.cjs"
- Skipping package.json modification (dry-run)
-️  Updated package.json#/exports: {
+→  Building CJS... (rewriting .ts -> .cjs/.d.cts)
+→  Building ESM...
+→  [dryrun] Writing files (16 total)...
+     ./index.cjs
+     ./index.d.cts
+     ./index.d.ts
+     ./index.js
+     ./plugins/a.cjs
+     ./plugins/a.d.cts
+     ./plugins/a.d.ts
+     ./plugins/a.js
+     ./plugins/b.cjs
+     ./plugins/b.d.cts
+     ./plugins/b.d.ts
+     ./plugins/b.js
+     ./utils.cjs
+     ./utils.d.cts
+     ./utils.d.ts
+     ./utils.js
+→  [dryrun] Updating package.json#/exports...
+→  Generated "exports": {
      ".": {
        "@zod/source": "./src/index.ts",
        "types": "./index.d.cts",
@@ -788,7 +658,10 @@ exports[`zshy with different tsconfig configurations > should work with root-out
        "require": "./plugins/*"
      }
    }
- Build complete!
+→  [dryrun] Updating package.json#/bin...
+→  Generated "bin": "./index.cjs"
+→  [dryrun] Skipping package.json modification
+→  Build complete!
 
 ️  You're building your code to the project root. This means your compiled files will be generated alongside your source files.
     Ensure that your "files" in package.json excludes TypeScript source files, or your users may experience .d.ts resolution issues in some environments:
@@ -801,12 +674,13 @@ exports[`zshy with different tsconfig configurations > should work with separate
 {
   "exitCode": 0,
   "stderr": "",
-  "stdout": "Starting zshy build...
-️  Verbose mode enabled
- Dry run mode enabled - no files will be written
-️  Detected project root: <root>/test
- Reading package.json from ./package.json
- Parsed zshy config: {
+  "stdout": "→  Starting build...
+→  Verbose mode enabled
+→  Detected package manager: pnpm exec
+→  Dry run mode enabled - no files will be written
+→  Detected project root: <root>/test
+→  Reading package.json from ./package.json
+→  Parsed zshy config: {
      "exports": {
        ".": "./src/index.ts",
        "./utils": "./src/utils.ts",
@@ -817,10 +691,10 @@ exports[`zshy with different tsconfig configurations > should work with separate
        "@zod/source"
      ]
    }
- Reading tsconfig from ./separate-declarations.test.tsconfig.json
-️  Cleaning up outDir...
-️  Cleaning up declarationDir...
-️  Determining entrypoints...
+→  Reading tsconfig from ./separate-declarations.test.tsconfig.json
+→  Cleaning up outDir...
+→  Cleaning up declarationDir...
+→  Determining entrypoints...
    ╔═══════════════════════════════╤═════════════════════════════╗
    ║ Subpath                       │ Entrypoint                  ║
    ╟───────────────────────────────┼─────────────────────────────╢
@@ -829,7 +703,7 @@ exports[`zshy with different tsconfig configurations > should work with separate
    ║ "zshy-test-fixture/plugins/*" │ ./src/plugins/* (2 matches) ║
    ║ bin:zshy-test-fixture         │ ./src/index.ts              ║
    ╚═══════════════════════════════╧═════════════════════════════╝
- Resolved build paths:
+→  Resolved build paths:
    ╔════════════════╤═══════════════╗
    ║ Location       │ Resolved path ║
    ╟────────────────┼───────────────╢
@@ -837,17 +711,16 @@ exports[`zshy with different tsconfig configurations > should work with separate
    ║ outDir         │ ./build       ║
    ║ declarationDir │ ./types       ║
    ╚════════════════╧═══════════════╝
- Package is an ES module (package.json#/type is "module")
- Building CJS... (rewriting .ts -> .cjs/.d.cts)
-️  Resolved entrypoints: [
+→  Package is an ES module (package.json#/type is "module")
+→  Resolved entrypoints: [
      "./src/index.ts",
      "./src/utils.ts",
      "./src/plugins/a.ts",
      "./src/plugins/b.ts"
    ]
-️  Resolved compilerOptions: {
+→  Resolved compilerOptions: {
      "target": "ES2020",
-     "module": "CommonJS",
+     "module": "ESNext",
      "moduleResolution": "Node10",
      "strict": true,
      "esModuleInterop": true,
@@ -862,52 +735,27 @@ exports[`zshy with different tsconfig configurations > should work with separate
      "rewriteRelativeImportExtensions": true,
      "verbatimModuleSyntax": false
    }
- Building ESM...
-️  Resolved entrypoints: [
-     "./src/index.ts",
-     "./src/utils.ts",
-     "./src/plugins/a.ts",
-     "./src/plugins/b.ts"
-   ]
-️  Resolved compilerOptions: {
-     "target": "ES2020",
-     "module": "ESNext",
-     "moduleResolution": "Bundler",
-     "strict": true,
-     "esModuleInterop": true,
-     "skipLibCheck": true,
-     "forceConsistentCasingInFileNames": true,
-     "outDir": "<root>/test/build",
-     "rootDir": "<root>/test/src",
-     "declaration": true,
-     "declarationDir": "<root>/test/types",
-     "noEmit": false,
-     "emitDeclarationOnly": false,
-     "rewriteRelativeImportExtensions": true,
-     "verbatimModuleSyntax": false
-   }
- [dryrun] Writing files... (16 total):
-   ./build/index.cjs
-   ./build/index.js
-   ./build/plugins/a.cjs
-   ./build/plugins/a.js
-   ./build/plugins/b.cjs
-   ./build/plugins/b.js
-   ./build/utils.cjs
-   ./build/utils.js
-   ./types/index.d.cts
-   ./types/index.d.ts
-   ./types/plugins/a.d.cts
-   ./types/plugins/a.d.ts
-   ./types/plugins/b.d.cts
-   ./types/plugins/b.d.ts
-   ./types/utils.d.cts
-   ./types/utils.d.ts
- Updating package.json#/exports...
- Updating package.json#/bin...
-️ Updated package.json#/bin: "./build/index.cjs"
- Skipping package.json modification (dry-run)
-️  Updated package.json#/exports: {
+→  Building CJS... (rewriting .ts -> .cjs/.d.cts)
+→  Building ESM...
+→  [dryrun] Writing files (16 total)...
+     ./build/index.cjs
+     ./build/index.js
+     ./build/plugins/a.cjs
+     ./build/plugins/a.js
+     ./build/plugins/b.cjs
+     ./build/plugins/b.js
+     ./build/utils.cjs
+     ./build/utils.js
+     ./types/index.d.cts
+     ./types/index.d.ts
+     ./types/plugins/a.d.cts
+     ./types/plugins/a.d.ts
+     ./types/plugins/b.d.cts
+     ./types/plugins/b.d.ts
+     ./types/utils.d.cts
+     ./types/utils.d.ts
+→  [dryrun] Updating package.json#/exports...
+→  Generated "exports": {
      ".": {
        "@zod/source": "./src/index.ts",
        "types": "./types/index.d.cts",
@@ -927,6 +775,9 @@ exports[`zshy with different tsconfig configurations > should work with separate
        "require": "./build/plugins/*"
      }
    }
- Build complete!",
+→  [dryrun] Updating package.json#/bin...
+→  Generated "bin": "./build/index.cjs"
+→  [dryrun] Skipping package.json modification
+→  Build complete!",
 }
 `;

@@ -6,7 +6,7 @@ import { globby } from "globby";
 import { table } from "table";
 import * as ts from "typescript";
 
-import { compileProject, formatForLog, getEntryPoints, readTsconfig } from "./utils";
+import { compileProject, emojiLog, formatForLog, getEntryPoints, readTsconfig } from "./utils";
 
 function isSourceFile(filePath: string): boolean {
   return (
@@ -31,6 +31,7 @@ async function main(): Promise<void> {
       "--verbose": Boolean,
       "--project": String,
       "--dry-run": Boolean,
+      // "--attw": Boolean,
 
       // Aliases
       "-h": "--help",
@@ -38,7 +39,7 @@ async function main(): Promise<void> {
     });
   } catch (error) {
     if (error instanceof Error) {
-      console.error(`❌ ${error.message}`);
+      emojiLog("❌", error.message, "error");
     }
     console.error(`Use --help for usage information`);
     process.exit(1);
@@ -64,17 +65,30 @@ Examples:
     process.exit(0);
   }
 
-  console.log("💎 Starting zshy build...");
+  const userAgent = process.env.npm_config_user_agent;
+  let pmExec: string;
+
+  if (userAgent?.startsWith("pnpm")) {
+    pmExec = "pnpm exec";
+  } else if (userAgent?.startsWith("yarn")) {
+    pmExec = "yarn exec";
+  } else {
+    pmExec = "npx";
+  }
+
+  emojiLog("💎", "Starting build... 🐒");
 
   const isVerbose = args["--verbose"];
   const isDryRun = args["--dry-run"];
+  const isAttw = false; // args["--attw"];
 
   if (isVerbose) {
-    console.log("🗣️  Verbose mode enabled");
+    emojiLog("ℹ️", "Verbose mode enabled");
+    emojiLog("📦", `Detected package manager: ${pmExec}`);
   }
 
   if (isDryRun) {
-    console.log("🔍 Dry run mode enabled - no files will be written");
+    emojiLog("🔍", "Dry run mode enabled - no files will be written");
   }
 
   ///////////////////////////////////
@@ -95,7 +109,7 @@ Examples:
   }
 
   if (!fs.existsSync(packageJsonPath)) {
-    console.error("❌ package.json not found in current directory or any parent directories");
+    emojiLog("❌", "package.json not found in current directory or any parent directories", "error");
     process.exit(1);
   }
 
@@ -105,8 +119,8 @@ Examples:
   const pkgJsonDir = path.dirname(packageJsonPath);
 
   // print project root
-  console.log(`⚙️  Detected project root: ${pkgJsonDir}`);
-  console.log(`📦 Reading package.json from ./${path.relative(pkgJsonDir, packageJsonPath)}`);
+  emojiLog("⚙️", `Detected project root: ${pkgJsonDir}`);
+  emojiLog("📦", `Reading package.json from ./${path.relative(pkgJsonDir, packageJsonPath)}`);
 
   /////////////////////////////////
   ///    parse zshy config      ///
@@ -125,7 +139,7 @@ Examples:
   };
 
   if (!pkgJson[CONFIG_KEY]) {
-    console.error(`❌ No "${CONFIG_KEY}" key found in package.json`);
+    emojiLog("❌", `No "${CONFIG_KEY}" key found in package.json`, "error");
     process.exit(1);
   }
 
@@ -139,10 +153,10 @@ Examples:
     if (typeof config.exports === "string") {
       config.exports = { ".": config.exports };
     } else if (typeof config.exports === "undefined") {
-      console.error(`❌ Missing "exports" key in package.json#/${CONFIG_KEY}`);
+      emojiLog("❌", `Missing "exports" key in package.json#/${CONFIG_KEY}`, "error");
       process.exit(1);
     } else if (typeof config.exports !== "object") {
-      console.error(`❌ Invalid "exports" key in package.json#/${CONFIG_KEY}`);
+      emojiLog("❌", `Invalid "exports" key in package.json#/${CONFIG_KEY}`, "error");
       process.exit(1);
     }
 
@@ -153,7 +167,7 @@ Examples:
       } else if (typeof config.bin === "object" && config.bin !== null) {
         // Object format is valid
       } else {
-        console.error(`❌ Invalid "bin" key in package.json#/${CONFIG_KEY}, expected string or object`);
+        emojiLog("❌", `Invalid "bin" key in package.json#/${CONFIG_KEY}, expected string or object`, "error");
         process.exit(1);
       }
     }
@@ -161,15 +175,15 @@ Examples:
     // 	exports: { ".": pkgJson[CONFIG_KEY].exports },
     // };
   } else if (typeof pkgJson[CONFIG_KEY] === "undefined") {
-    console.error(`❌ Missing "${CONFIG_KEY}" key in package.json`);
+    emojiLog("❌", `Missing "${CONFIG_KEY}" key in package.json`, "error");
     process.exit(1);
   } else {
-    console.error(`❌ Invalid "${CONFIG_KEY}" key in package.json, expected string or object`);
+    emojiLog("❌", `Invalid "${CONFIG_KEY}" key in package.json, expected string or object`, "error");
     process.exit(1);
   }
 
   if (isVerbose) {
-    console.log("🔧 Parsed zshy config:", formatForLog(config));
+    emojiLog("🔧", `Parsed zshy config: ${formatForLog(config)}`);
   }
 
   ///////////////////////////
@@ -184,14 +198,18 @@ Examples:
 
     if (fs.existsSync(resolvedProjectPath)) {
       if (fs.statSync(resolvedProjectPath).isDirectory()) {
-        console.error(`❌ --project must point to a tsconfig.json file, not a directory: ${resolvedProjectPath}`);
+        emojiLog(
+          "❌",
+          `--project must point to a tsconfig.json file, not a directory: ${resolvedProjectPath}`,
+          "error"
+        );
         process.exit(1);
       } else {
         // Use the file directly
         tsconfigPath = resolvedProjectPath;
       }
     } else {
-      console.error(`❌ tsconfig.json file not found: ${resolvedProjectPath}`);
+      emojiLog("❌", `tsconfig.json file not found: ${resolvedProjectPath}`, "error");
       process.exit(1);
     }
   } else if (config.tsconfig) {
@@ -200,14 +218,18 @@ Examples:
 
     if (fs.existsSync(resolvedProjectPath)) {
       if (fs.statSync(resolvedProjectPath).isDirectory()) {
-        console.error(`❌ zshy.tsconfig must point to a tsconfig.json file, not a directory: ${resolvedProjectPath}`);
+        emojiLog(
+          "❌",
+          `zshy.tsconfig must point to a tsconfig.json file, not a directory: ${resolvedProjectPath}`,
+          "error"
+        );
         process.exit(1);
       } else {
         // Use the file directly
         tsconfigPath = resolvedProjectPath;
       }
     } else {
-      console.error(`❌ Tsconfig file not found: ${resolvedProjectPath}`);
+      emojiLog("❌", `Tsconfig file not found: ${resolvedProjectPath}`, "error");
       process.exit(1);
     }
   } else {
@@ -218,10 +240,10 @@ Examples:
   const _parsedConfig = readTsconfig(tsconfigPath);
   if (!fs.existsSync(tsconfigPath)) {
     // Check if tsconfig.json exists
-    console.error(`❌ tsconfig.json not found at ${path.resolve(tsconfigPath)}`);
+    emojiLog("❌", `tsconfig.json not found at ${path.resolve(tsconfigPath)}`, "error");
     process.exit(1);
   }
-  console.log(`📁 Reading tsconfig from ./${path.relative(pkgJsonDir, tsconfigPath)}`);
+  emojiLog("📁", `Reading tsconfig from ./${path.relative(pkgJsonDir, tsconfigPath)}`);
 
   // if (_parsedConfig.rootDir) {
   // 	console.error(
@@ -247,29 +269,29 @@ Examples:
 
   // clean up outDir and declarationDir
   if (relOutDir !== "") {
-    console.log(`🗑️  Cleaning up outDir...`);
+    emojiLog("🗑️", `Cleaning up outDir...`);
     fs.rmSync(outDir, { recursive: true, force: true });
 
     // // print success mesage in verbose mode
     if (isVerbose) {
       if (fs.existsSync(outDir)) {
-        console.error(`❌ Failed to clean up outDir: ${relOutDir}. Directory still exists.`);
+        emojiLog("❌", `Failed to clean up outDir: ${relOutDir}. Directory still exists.`, "error");
       }
     }
   } else {
-    console.log(`🗑️  Skipping cleanup of outDir as it contains source files`);
+    emojiLog("🗑️", `Skipping cleanup of outDir as it contains source files`);
   }
   if (relDeclarationDir !== relOutDir && relDeclarationDir !== "") {
-    console.log(`🗑️  Cleaning up declarationDir...`);
+    emojiLog("🗑️", `Cleaning up declarationDir...`);
     fs.rmSync(declarationDir, { recursive: true, force: true });
     // // print success mesage in verbose mode
     if (isVerbose) {
       if (fs.existsSync(declarationDir)) {
-        console.error(`❌ Failed to clean up declarationDir: ${relDeclarationDir}. Directory still exists.`);
+        emojiLog("❌", `Failed to clean up declarationDir: ${relDeclarationDir}. Directory still exists.`, "error");
       }
     }
   } else {
-    if (isVerbose) console.log(`🗑️  Skipping cleanup of declarationDir as it contains source files`);
+    if (isVerbose) emojiLog("🗑️", `Skipping cleanup of declarationDir as it contains source files`);
   }
 
   const tsconfigJson: ts.CompilerOptions = {
@@ -286,13 +308,14 @@ Examples:
 
   if (relOutDir === "") {
     if (!pkgJson.files) {
-      console.log(
-        '⚠️  You\'re building your code to the project root. This means your compiled files will be generated alongside your source files.\n   ➜ Setting "files" in package.json to exclude TypeScript source from the published package.'
+      emojiLog(
+        "⚠️",
+        'You\'re building your code to the project root. This means your compiled files will be generated alongside your source files.\n   ➜ Setting "files" in package.json to exclude TypeScript source from the published package.'
       );
       pkgJson.files = ["**/*.js", "**/*.mjs", "**/*.cjs", "**/*.d.ts", "**/*.d.mts", "**/*.d.cts"];
     } else {
       console.warn(
-        `⚠️  You're building your code to the project root. This means your compiled files will be generated alongside your source files.
+        `⚠️  You\'re building your code to the project root. This means your compiled files will be generated alongside your source files.
    ➜ Ensure that your "files" in package.json excludes TypeScript source files, or your users may experience .d.ts resolution issues in some environments:
 
    "files": ["**/*.js", "**/*.mjs", "**/*.cjs", "**/*.d.ts", "**/*.d.mts", "**/*.d.cts"],
@@ -301,7 +324,7 @@ Examples:
     }
   } else {
     if (!pkgJson.files) {
-      console.log(`⚠️  The "files" key is missing in package.json. Setting to "${relOutDir}".`);
+      emojiLog("⚠️", `The "files" key is missing in package.json. Setting to "${relOutDir}".`);
       pkgJson.files = [relOutDir];
       if (relOutDir !== relDeclarationDir) {
         pkgJson.files.push(relDeclarationDir);
@@ -314,7 +337,7 @@ Examples:
   /////////////////////////////////
 
   // Extract entry points from zshy exports config
-  console.log("➡️  Determining entrypoints...");
+  emojiLog("➡️", "Determining entrypoints...");
   const entryPatterns: string[] = [];
 
   const rows: string[][] = [["Subpath", "Entrypoint"]];
@@ -326,13 +349,13 @@ Examples:
     } else if (exportPath.startsWith("./")) {
       cleanExportPath = pkgJson.name + "/" + exportPath.slice(2);
     } else {
-      console.error(`⚠️  Invalid subpath export "${exportPath}" — should start with "./"`);
+      emojiLog("⚠️", `Invalid subpath export "${exportPath}" — should start with "./"`, "warn");
       process.exit(1);
     }
     if (typeof sourcePath === "string") {
       if (sourcePath.includes("*")) {
         if (!sourcePath.endsWith("/*")) {
-          console.error(`❌ Wildcard paths should not contain file extensions: ${sourcePath}`);
+          emojiLog("❌", `Wildcard paths should not contain file extensions: ${sourcePath}`, "error");
           process.exit(1);
         }
         const pattern = sourcePath.slice(0, -2) + "/*.{ts,tsx,mts,cts}";
@@ -396,11 +419,15 @@ Examples:
   const entryPoints = await getEntryPoints(entryPatterns);
   // disallow .mts and .cts files
   if (entryPoints.some((ep) => ep.endsWith(".mts") || ep.endsWith(".cts"))) {
-    console.error("❌ Source files with .mts or .cts extensions are not supported. Please use regular .ts files.");
+    emojiLog(
+      "❌",
+      "Source files with .mts or .cts extensions are not supported. Please use regular .ts files.",
+      "error"
+    );
     process.exit(1);
   }
   if (entryPoints.length === 0) {
-    console.error("❌ No entry points found matching the specified patterns in package.json#/zshy exports");
+    emojiLog("❌", "No entry points found matching the specified patterns in package.json#/zshy exports", "error");
     process.exit(1);
   }
 
@@ -440,7 +467,7 @@ Examples:
   const relRootDir = path.relative(pkgJsonDir, rootDir);
 
   // Display resolved paths table
-  console.log("🔧 Resolved build paths:");
+  emojiLog("🔧", "Resolved build paths:");
   const pathRows: string[][] = [["Location", "Resolved path"]];
 
   // pathRows.push([
@@ -474,10 +501,11 @@ Examples:
 
   const isTypeModule = pkgJson.type === "module";
   if (isTypeModule) {
-    console.log(`🟨 Package is an ES module (package.json#/type is \"module\")`);
+    emojiLog("🟨", `Package is an ES module (package.json#/type is "module")`);
   } else {
-    console.log(
-      `🐢 Package is a CommonJS module (${pkgJson.type === "commonjs" ? 'package.json#/type is "commonjs"' : 'package.json#/type not set to "module"'})`
+    emojiLog(
+      "🐢",
+      `Package is a CommonJS module (${pkgJson.type === "commonjs" ? 'package.json#/type is "commonjs"' : 'package.json#/type not set to "module"'})`
     );
   }
 
@@ -485,12 +513,26 @@ Examples:
   ///       compile tsc        ///
   ///////////////////////////////
 
+  const uniqueEntryPoints = [...new Set(entryPoints)];
   try {
+    if (isVerbose) {
+      emojiLog("→", `Resolved entrypoints: ${formatForLog(uniqueEntryPoints)}`);
+      emojiLog(
+        "→",
+        `Resolved compilerOptions: ${formatForLog({
+          ...tsconfigJson,
+          module: ts.ModuleKind[tsconfigJson.module!],
+          moduleResolution: ts.ModuleResolutionKind[tsconfigJson.moduleResolution!],
+          target: ts.ScriptTarget[tsconfigJson.target!],
+        })}`
+      );
+    }
+
     // Track all written files
     const allWrittenFiles: string[] = [];
 
     // CJS
-    console.log(`🧱 Building CJS...${isTypeModule ? ` (rewriting .ts -> .cjs/.d.cts)` : ``}`);
+    emojiLog("🧱", `Building CJS...${isTypeModule ? ` (rewriting .ts -> .cjs/.d.cts)` : ``}`);
     const cjsFiles = await compileProject(
       {
         configPath: tsconfigPath,
@@ -505,12 +547,12 @@ Examples:
           outDir,
         },
       },
-      entryPoints
+      uniqueEntryPoints
     );
     allWrittenFiles.push(...cjsFiles);
 
     // ESM
-    console.log(`🧱 Building ESM...${isTypeModule ? `` : ` (rewriting .ts -> .mjs/.d.mts)`}`);
+    emojiLog("🧱", `Building ESM...${isTypeModule ? `` : ` (rewriting .ts -> .mjs/.d.mts)`}`);
     const esmFiles = await compileProject(
       {
         configPath: tsconfigPath,
@@ -525,7 +567,7 @@ Examples:
           outDir,
         },
       },
-      entryPoints
+      uniqueEntryPoints
     );
     allWrittenFiles.push(...esmFiles);
 
@@ -535,7 +577,7 @@ Examples:
 
     // Display files that were written or would be written (only in verbose mode)
     if (isVerbose && allWrittenFiles.length > 0) {
-      console.log(`📜 ${isDryRun ? "[dryrun] " : ""}Writing files... (${allWrittenFiles.length} total):`);
+      emojiLog("📜", `${isDryRun ? "[dryrun] " : ""}Writing files (${allWrittenFiles.length} total)...`);
 
       // Sort files by relative path for consistent display
       const sortedFiles = [...allWrittenFiles]
@@ -544,7 +586,7 @@ Examples:
         .map((relPath) => (relPath.startsWith(".") ? relPath : `./${relPath}`));
 
       sortedFiles.forEach((file) => {
-        console.log(`   ${file}`);
+        console.log(`     ${file}`);
       });
     }
 
@@ -553,7 +595,7 @@ Examples:
     ///////////////////////////////
 
     // generate package.json exports
-    console.log("📦 Updating package.json#/exports...");
+    emojiLog("📦", `${isDryRun ? "[dryrun] " : ""}Updating package.json#/exports...`);
 
     // Generate exports based on zshy config
     const newExports: Record<string, any> = {};
@@ -574,13 +616,7 @@ Examples:
       if (typeof sourcePath === "string") {
         if (sourcePath.endsWith("/*")) {
           // Handle wildcard exports
-          // const relSourcePath =
-          // 	"./" +
-          // 	path.relative(
-          // 		pkgJsonDir,
-          // 		path.resolve(outDir, sourcePath.slice(0, -2)),
-          // 	) +
-          // 	"/*";
+
           newExports[exportPath] = {
             types: relDtsPath,
             import: relJsPath,
@@ -593,9 +629,8 @@ Examples:
             };
           }
         } else if (isSourceFile(sourcePath)) {
-          const esmPath = removeExtension(relJsPath) + (isTypeModule ? `.js` : `.mjs`); // ./v4/index.js or ./v4/index.mjs
+          const esmPath = removeExtension(relJsPath) + (isTypeModule ? `.js` : `.mjs`);
           const cjsPath = removeExtension(relJsPath) + (isTypeModule ? `.cjs` : `.js`);
-
           const dtsPath = removeExtension(relDtsPath) + (isTypeModule ? `.d.cts` : `.d.ts`); // ./
 
           newExports[exportPath] = {
@@ -616,10 +651,14 @@ Examples:
             };
           }
         } else {
-          console.error(`❌ Invalid entrypoint: ${sourcePath}`);
+          emojiLog("❌", `Invalid entrypoint: ${sourcePath}`, "error");
           process.exit();
         }
       }
+    }
+
+    if (isVerbose) {
+      emojiLog("🔧", `Generated "exports": ${formatForLog(newExports)}`);
     }
 
     ///////////////////////////////
@@ -628,7 +667,7 @@ Examples:
 
     // Generate bin field based on zshy bin config
     if (config.bin) {
-      console.log("📦 Updating package.json#/bin...");
+      emojiLog("📦", `${isDryRun ? "[dryrun] " : ""}Updating package.json#/bin...`);
       const newBin: Record<string, string> = {};
 
       // Convert config.bin to object format for processing
@@ -650,18 +689,14 @@ Examples:
       // If original config.bin was a string, output as string
       if (typeof config.bin === "string") {
         pkgJson.bin = Object.values(newBin)[0];
-
-        if (isVerbose) {
-          console.log(`🗣️ Updated package.json#/bin: "${Object.values(newBin)[0]}"`);
-        }
       } else {
         // Output as object
         pkgJson.bin = newBin;
-
-        if (isVerbose) {
-          console.log("🗣️  Updated package.json#/bin: " + formatForLog(newBin));
-        }
       }
+    }
+
+    if (isVerbose) {
+      emojiLog("🔧", `Generated "bin": ${formatForLog(pkgJson.bin)}`);
     }
 
     ///////////////////////////////
@@ -672,33 +707,64 @@ Examples:
     pkgJson.exports = newExports;
 
     if (isDryRun) {
-      console.log("🔍 Skipping package.json modification (dry-run)");
+      emojiLog("📦", "[dryrun] Skipping package.json modification");
     } else {
       fs.writeFileSync(packageJsonPath, JSON.stringify(pkgJson, null, 2) + "\n");
     }
 
-    // console.log("✅ Updating package.json#/exports");
-    if (isVerbose) {
-      console.log(`🗣️  Updated package.json#/exports: ${formatForLog(newExports)}`);
+    if (isAttw) {
+      // run `@arethetypeswrong/cli --pack .` to check types
+
+      emojiLog("🔍", "Checking types with @arethetypeswrong/cli...");
+      const { execFile } = await import("node:child_process");
+      const { promisify } = await import("node:util");
+
+      const execFileAsync = promisify(execFile);
+      const [cmd, ...args] = `${pmExec} @arethetypeswrong/cli --pack ${pkgJsonDir}`.split(" ");
+      console.dir([cmd, ...args], { depth: null });
+
+      let stdout = "";
+      let stderr = "";
+      let exitCode = 0;
+
+      try {
+        const result = await execFileAsync(cmd!, args, {
+          cwd: pkgJsonDir,
+          encoding: "utf-8",
+        });
+        stdout = result.stdout;
+        stderr = result.stderr;
+      } catch (error: any) {
+        stdout = error.stdout || "";
+        stderr = error.stderr || "";
+        exitCode = error.code || 1;
+      }
+
+      const output = stdout || stderr;
+      if (output) {
+        const indentedOutput = output
+          .split("\n")
+          .map((line: string) => `   ${line}`)
+          .join("\n");
+
+        if (exitCode === 0) {
+          console.log(indentedOutput);
+        } else {
+          console.error(indentedOutput);
+          emojiLog("⚠️", "ATTW found issues, but the build was not affected.", "warn");
+        }
+      }
     }
 
-    // // run `@arethetypeswrong/cli --pack .` to check types
-    // console.log("🔍 Checking types with @arethetypeswrong/cli...");
-    // const { execSync } = await import("node:child_process");
-    // execSync(`npx @arethetypeswrong/cli --pack ${pkgJsonDir}`, {
-    // 	stdio: "inherit",
-    // 	cwd: pkgJsonDir,
-    // });
-
-    console.log("🎉 Build complete!");
+    emojiLog("🎉", "Build complete! ✅");
   } catch (error) {
-    console.error("❌ Build failed:", error);
+    emojiLog("❌", `Build failed: ${error}`, "error");
     process.exit(1);
   }
 }
 
 // Run the script
 main().catch((error) => {
-  console.error("❌ Script failed:", error);
+  emojiLog("❌", `Script failed: ${error}`, "error");
   process.exit(1);
 });

@@ -1,7 +1,7 @@
 <p align="center">
 
-  <h1 align="center">⚜️<br/><code>zshy</code></h1>
-  <p align="center">The ultimate build tool for TypeScript libraries. Powered by <code>tsc</code>.
+  <h1 align="center">🐒<br/><code>zshy</code></h1>
+  <p align="center">The no-bundler build tool for TypeScript libraries. Powered by <code>tsc</code>.
     <br/>
     by <a href="https://x.com/colinhacks">@colinhacks</a>
   </p>
@@ -15,14 +15,14 @@
 <a href="https://github.com/colinhacks/zshy" rel="nofollow"><img src="https://img.shields.io/github/stars/colinhacks/zshy" alt="stars"></a>
 </p>
 
-<div align="center">
+<!-- <div align="center">
   <a href="https://github.com/colinhacks/zshy">GitHub</a>
   <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
   <a href="https://twitter.com/colinhacks">𝕏</a>
   <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
   <a href="https://bsky.app/profile/colinhacks.com">Bluesky</a>
   <br />
-</div>
+</div> -->
 
 <br/>
 <br/>
@@ -123,30 +123,30 @@ Specify your package entrypoint with the `"zshy"` key in `package.json`.
 ```bash
 $ npx zshy
 
-💎 Starting zshy build...
-⚙️  Detected project root: /Users/colinmcd94/Documents/projects/zshy
-📦 Reading package.json from ./package.json
-📁 Reading tsconfig from ./tsconfig.json
-🗑️  Cleaning up outDir...
-➡️  Determining entrypoints...
+→  Starting zshy build 🐒
+→  Detected project root: /Users/colinmcd94/Documents/projects/zshy
+→  Reading package.json from ./package.json
+→  Reading tsconfig from ./tsconfig.json
+→  Cleaning up outDir...
+→  Determining entrypoints...
    ╔════════════╤════════════════╗
    ║ Subpath    │ Entrypoint     ║
    ╟────────────┼────────────────╢
    ║ "my-pkg"   │ ./src/index.ts ║
    ╚════════════╧════════════════╝
-🔧 Resolved build paths:
-   ╔══════════╤═══════════════╗
-   ║ Location │ Resolved path ║
-   ╟──────────┼───────────────╢
-   ║ rootDir  │ ./src         ║
-   ║ outDir   │ ./out         ║
-   ╚══════════╧═══════════════╝
-🟨 Package is an ES module (package.json#/type is "module")
-🧱 Building CJS... (rewriting .ts -> .cjs/.d.cts)
-🧱 Building ESM...
-📦 Updating package.json#/exports...
-📦 Updating package.json#/bin...
-🎉 Build complete!
+→  Resolved build paths:
+   ╔══════════╤════════════════╗
+   ║ Location │ Resolved pathh ║
+   ╟──────────┼────────────────╢
+   ║ rootDir  │ ./src          ║
+   ║ outDir   │ ./dist         ║
+   ╚══════════╧════════════════╝
+→  Package is an ES module (package.json#/type is "module")
+→  Building CJS... (rewriting .ts -> .cjs/.d.cts)
+→  Building ESM...
+→  Updating package.json#/exports...
+→  Updating package.json#/bin...
+→  Build complete! ✅
 ```
 
 Alernatively, add a `"build"` script to your `package.json`:
@@ -210,16 +210,16 @@ Multi-entrypoint packages can specify subpaths or wildcard exports with `package
 <details>
 <summary>View typical build output</summary>
 
-When you run a build, you'll see something like this:
+When you run a build, you'''ll see something like this:
 
 ```bash
 $ npx zshy
 
-💎 Starting zshy build...
-⚙️ Detected project root: /path/to/my-pkg
-📦 Reading package.json from ./package.json
-📁 Reading tsconfig from ./tsconfig.json
-➡️ Determining entrypoints...
+→  Starting zshy build... 🐒
+→  Detected project root: /path/to/my-pkg
+→  Reading package.json from ./package.json
+→  Reading tsconfig from ./tsconfig.json
+→  Determining entrypoints...
    ╔════════════════════╤═════════════════════════════╗
    ║ Subpath            │ Entrypoint                  ║
    ╟────────────────────┼─────────────────────────────╢
@@ -227,18 +227,18 @@ $ npx zshy
    ║ "my-pkg/utils"     │ ./src/utils.ts              ║
    ║ "my-pkg/plugins/*" │ ./src/plugins/* (5 matches) ║
    ╚════════════════════╧═════════════════════════════╝
-🔧 Resolved build paths:
-   ╔══════════╤═══════════════╗
-   ║ Location │ Resolved path ║
-   ╟──────────┼───────────────╢
-   ║ rootDir  │ ./src         ║
-   ║ outDir   │ ./out         ║
-   ╚══════════╧═══════════════╝
-🟨 Package is ES module (package.json#/type is "module")
-🧱 Building CJS... (rewriting .ts -> .cjs/.d.cts)
-🧱 Building ESM...
-📦 Updating package.json exports...
-🎉 Build complete!
+→  Resolved build paths:
+   ╔══════════╤════════════════╗
+   ║ Location │ Resolved pathh ║
+   ╟──────────┼────────────────╢
+   ║ rootDir  │ ./src          ║
+   ║ outDir   │ ./dist         ║
+   ╚══════════╧════════════════╝
+→  Package is ES module (package.json#/type is "module")
+→  Building CJS... (rewriting .ts -> .cjs/.d.cts)
+→  Building ESM...
+→  Updating package.json exports...
+→  Build complete! ✅
 ```
 
 And the generated `"exports"` map will look like this:
@@ -497,7 +497,7 @@ Yes! This is one of the key reasons `zshy` was originally developed. Many enviro
 
 - Node.js v12.7 or earlier
 - React Native - The Metro bundler does not support `"exports"` by default
-- TypeScript projects with legacy configs — e.. `"module": "commonjs"`
+- TypeScript projects with legacy configs — e.g. `"module": "commonjs"`
 
 This causes issues for packages that want to use subpath imports to structure their package. Fortunately `zshy` unlocks a workaround I call a _flat build_:
 
@@ -506,12 +506,12 @@ This causes issues for packages that want to use subpath imports to structure th
 3. Set `outDir: "."` in your `tsconfig.json`
 4. Configure `"exclude"` in `package.json` to exclude all source files:
 
-- ```jsonc
-  {
-    // ...
-    "exclude": ["**/*.ts", "**/*.tsx", "**/*.cts", "**/*.mts", "node_modules"]
-  }
-  ```
+   ```jsonc
+   {
+     // ...
+     "exclude": ["**/*.ts", "**/*.tsx", "**/*.cts", "**/*.mts", "node_modules"]
+   }
+   ```
 
 With this setup, your build outputs (`index.js`, etc) will be written to disk alongside to their corresponding source files. Older environments will resolve imports like `"your-library/utils"` to `"your-library/utils/index.js"`, effectively simulating subpath imports in environments that don't support them.
 
@@ -521,5 +521,5 @@ With this setup, your build outputs (`index.js`, etc) will be written to disk al
 
 Not really. It uses `tsc` to typecheck your codebase, which is a lot slower than using a bundler that strips types. That said:
 
-1. you _should_ be type checking your code during builds;
+1. You _should_ be type checking your code during builds
 2. TypeScript is [about to get 10x faster](https://devblogs.microsoft.com/typescript/typescript-native-port/)

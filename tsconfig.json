@@ -7,7 +7,6 @@
     "moduleResolution": "bundler",
     "moduleDetection": "auto",
     "allowJs": true,
-    "outDir": "./out",
     "declaration": true,
     "jsx": "react-jsx",
 
