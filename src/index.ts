@@ -56,8 +56,8 @@ Options:
       --dry-run          Don't write any files, just log what would be done
 
 Examples:
-  zshy                                    # Use ./tsconfig.json or package.json#zshy.tsconfig
-  zshy --project ./tsconfig.build.json    # Use specific tsconfig file
+  zshy                                    # Run build
+  zshy --project ./tsconfig.build.json    # Use specific tsconfig file (defaults to tsconfig.json)
   zshy --verbose                          # Enable verbose logging
   zshy --dry-run                          # Preview changes without writing files
 		`);
@@ -139,10 +139,10 @@ Examples:
     if (typeof config.exports === "string") {
       config.exports = { ".": config.exports };
     } else if (typeof config.exports === "undefined") {
-      console.error(`❌ Missing "exports" key in package.json#${CONFIG_KEY}`);
+      console.error(`❌ Missing "exports" key in package.json#/${CONFIG_KEY}`);
       process.exit(1);
     } else if (typeof config.exports !== "object") {
-      console.error(`❌ Invalid "exports" key in package.json#${CONFIG_KEY}`);
+      console.error(`❌ Invalid "exports" key in package.json#/${CONFIG_KEY}`);
       process.exit(1);
     }
 
@@ -153,7 +153,7 @@ Examples:
       } else if (typeof config.bin === "object" && config.bin !== null) {
         // Object format is valid
       } else {
-        console.error(`❌ Invalid "bin" key in package.json#${CONFIG_KEY}, expected string or object`);
+        console.error(`❌ Invalid "bin" key in package.json#/${CONFIG_KEY}, expected string or object`);
         process.exit(1);
       }
     }
@@ -400,7 +400,7 @@ Examples:
     process.exit(1);
   }
   if (entryPoints.length === 0) {
-    console.error("❌ No entry points found matching the specified patterns in package.json#zshy exports");
+    console.error("❌ No entry points found matching the specified patterns in package.json#/zshy exports");
     process.exit(1);
   }
 
@@ -474,10 +474,10 @@ Examples:
 
   const isTypeModule = pkgJson.type === "module";
   if (isTypeModule) {
-    console.log(`🟨 Package is an ES module (package.json#type is \"module\")`);
+    console.log(`🟨 Package is an ES module (package.json#/type is \"module\")`);
   } else {
     console.log(
-      `🐢 Package is a CommonJS module (${pkgJson.type === "commonjs" ? 'package.json#type is "commonjs"' : 'package.json#type not set to "module"'})`
+      `🐢 Package is a CommonJS module (${pkgJson.type === "commonjs" ? 'package.json#/type is "commonjs"' : 'package.json#/type not set to "module"'})`
     );
   }
 
@@ -553,7 +553,7 @@ Examples:
     ///////////////////////////////
 
     // generate package.json exports
-    console.log("📦 Updating package.json#exports...");
+    console.log("📦 Updating package.json#/exports...");
 
     // Generate exports based on zshy config
     const newExports: Record<string, any> = {};
@@ -628,7 +628,7 @@ Examples:
 
     // Generate bin field based on zshy bin config
     if (config.bin) {
-      console.log("📦 Updating package.json#bin...");
+      console.log("📦 Updating package.json#/bin...");
       const newBin: Record<string, string> = {};
 
       // Convert config.bin to object format for processing
@@ -652,14 +652,14 @@ Examples:
         pkgJson.bin = Object.values(newBin)[0];
 
         if (isVerbose) {
-          console.log(`🗣️ Updated package.json#bin: "${Object.values(newBin)[0]}"`);
+          console.log(`🗣️ Updated package.json#/bin: "${Object.values(newBin)[0]}"`);
         }
       } else {
         // Output as object
         pkgJson.bin = newBin;
 
         if (isVerbose) {
-          console.log("🗣️  Updated package.json#bin: " + formatForLog(newBin));
+          console.log("🗣️  Updated package.json#/bin: " + formatForLog(newBin));
         }
       }
     }
@@ -677,9 +677,9 @@ Examples:
       fs.writeFileSync(packageJsonPath, JSON.stringify(pkgJson, null, 2) + "\n");
     }
 
-    // console.log("✅ Updating package.json#exports");
+    // console.log("✅ Updating package.json#/exports");
     if (isVerbose) {
-      console.log(`🗣️  Updated package.json#exports: ${formatForLog(newExports)}`);
+      console.log(`🗣️  Updated package.json#/exports: ${formatForLog(newExports)}`);
     }
 
     // // run `@arethetypeswrong/cli --pack .` to check types

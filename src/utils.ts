@@ -77,7 +77,7 @@ export function readTsconfig(tsconfigPath: string) {
   }
 
   if (!parsedConfig.options) {
-    throw new Error("❌ Error reading tsconfig.json#compilerOptions");
+    throw new Error("❌ Error reading tsconfig.json#/compilerOptions");
   }
   return parsedConfig.options!;
 }

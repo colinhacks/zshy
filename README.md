@@ -39,13 +39,13 @@
 - 🧱 **Dual-module builds** — Builds ESM and CJS outputs from a single TypeScript source file
 - 👑 **Powered by `tsc`** — No bundling, no extra configs, just good old-fashioned `tsc`
 - 🟦 **No config file** — Reads only from your `package.json` and `tsconfig.json` (configurable)
-- 📝 **Declarative entrypoint map** — Specify your TypeScript entrypoints in `package.json#zshy`
+- 📝 **Declarative entrypoint map** — Specify your TypeScript entrypoints in `package.json#/zshy`
 - 🤖 **Auto-generated `"exports"`** — Writes `"exports"` map directly into your `package.json`
 - 🐚 **CLI-friendly** — First-class `"bin"` support
 - 📂 **Supports any file structure** — Use any file structure you like
 - 🔗 **Supports extensionless imports** — Use any import syntax TypeScript supports: extensionless, `.js`, `.ts`
-- ⚛️ **Supports `.tsx`** — Rewrites to `.js/.cjs/.mjs` per your `tsconfig.json#jsx*` settings
-- 📱 **Supports React Native** — Supports a [flat build mode](#can-it-support-react-native-legacy-or-non-nodejs-environments) designed for bundlers that don't support `package.json#exports`
+- ⚛️ **Supports `.tsx`** — Rewrites to `.js/.cjs/.mjs` per your `tsconfig.json#/jsx*` settings
+- 📱 **Supports React Native** — Supports a [flat build mode](#can-it-support-react-native-legacy-or-non-nodejs-environments) designed for bundlers that don't support `package.json#/exports`
 - 🐌 **Blazing fast** — Just kidding, it's slow. But [it's worth it](#is-it-fast).
 
 <br/>
@@ -72,7 +72,7 @@ Specify your package entrypoint with the `"zshy"` key in `package.json`.
 {
   "name": "my-pkg",
   "version": "1.0.0",
-  "zshy": "./src/index.ts" // package entrypoint
+  "zshy": "./src/index.ts" // 👈 package entrypoint
 }
 ```
 
@@ -101,11 +101,11 @@ $ npx zshy
    ║ rootDir  │ ./src         ║
    ║ outDir   │ ./out         ║
    ╚══════════╧═══════════════╝
-🟨 Package is an ES module (package.json#type is "module")
+🟨 Package is an ES module (package.json#/type is "module")
 🧱 Building CJS... (rewriting .ts -> .cjs/.d.cts)
 🧱 Building ESM...
-📦 Updating package.json#exports...
-📦 Updating package.json#bin...
+📦 Updating package.json#/exports...
+📦 Updating package.json#/bin...
 🎉 Build complete!
 ```
 
@@ -130,7 +130,7 @@ $ npm run build
 
 ### Subpaths and wildcards
 
-Multi-entrypoint packages can specify subpaths or wildcard exports with `package.json#zshy/exports`:
+Multi-entrypoint packages can specify subpaths or wildcard exports with `package.json#/zshy/exports`:
 
 ```jsonc
 {
@@ -174,7 +174,7 @@ $ npx zshy
    ║ rootDir  │ ./src         ║
    ║ outDir   │ ./out         ║
    ╚══════════╧═══════════════╝
-🟨 Package is ES module (package.json#type is "module")
+🟨 Package is ES module (package.json#/type is "module")
 🧱 Building CJS... (rewriting .ts -> .cjs/.d.cts)
 🧱 Building ESM...
 📦 Updating package.json exports...
@@ -213,7 +213,7 @@ And the generated `"exports"` map will look like this:
 
 ### For CLIs (`"bin"` support)
 
-If your package is a CLI, specify your CLI entrypoint in `package.json#zshy/bin`. `zshy` will include this entrypoint in your builds and automatically set `"bin"` in your package.json.
+If your package is a CLI, specify your CLI entrypoint in `package.json#/zshy/bin`. `zshy` will include this entrypoint in your builds and automatically set `"bin"` in your package.json.
 
 ```json
 {
@@ -267,7 +267,7 @@ Options:
 
 ### How does `zshy` resolve entrypoints?
 
-It reads your `package.json#zshy` config:
+It reads your `package.json#/zshy` config:
 
 ```jsonc
 // package.json
@@ -317,7 +317,7 @@ No. You can organize your source however you like; `zshy` will transpile your en
 
 ### What files does `zshy` create?
 
-It depends on your `package.json#type` field. If your package is ESM (that is, `"type": "module"` in `package.json`):
+It depends on your `package.json#/type` field. If your package is ESM (that is, `"type": "module"` in `package.json`):
 
 - `.js` + `.d.ts` (ESM)
 - `.cjs` + `.d.cts` (CJS)
@@ -392,7 +392,7 @@ Use whatever you like; `zshy` will rewrite all imports/exports properly during t
 
 <br/>
 
-### How does it generate `package.json#exports`?
+### How does it generate `package.json#/exports`?
 
 Your exports map is automatically written into your `package.json` when you run `zshy`. The generated exports map looks like this:
 
@@ -445,7 +445,7 @@ By having `"types"` point to the `.d.cts` declarations, this error will never ha
 
 ### Can it support React Native legacy or non-Node.js environments?
 
-Yes! This is one of the key reasons `zshy` was originally developed. Many environments don't support `package.json#exports` yet:
+Yes! This is one of the key reasons `zshy` was originally developed. Many environments don't support `package.json#/exports` yet:
 
 - Node.js v12.7 or earlier
 - React Native - The Metro bundler does not support `"exports"` by default

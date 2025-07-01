@@ -39,7 +39,7 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
    ║ rootDir  │ ./src         ║
    ║ outDir   │ ./dist        ║
    ╚══════════╧═══════════════╝
-🟨 Package is an ES module (package.json#type is "module")
+🟨 Package is an ES module (package.json#/type is "module")
 🧱 Building CJS... (rewriting .ts -> .cjs/.d.cts)
 🗣️  Resolved entrypoints: [
      "./src/index.ts",
@@ -103,11 +103,11 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
    ./dist/utils.d.cts
    ./dist/utils.d.ts
    ./dist/utils.js
-📦 Updating package.json#exports...
-📦 Updating package.json#bin...
-🗣️ Updated package.json#bin: "./dist/index.cjs"
+📦 Updating package.json#/exports...
+📦 Updating package.json#/bin...
+🗣️ Updated package.json#/bin: "./dist/index.cjs"
 🔍 Skipping package.json modification (dry-run)
-🗣️  Updated package.json#exports: {
+🗣️  Updated package.json#/exports: {
      ".": {
        "@zod/source": "./src/index.ts",
        "types": "./dist/index.d.cts",
@@ -170,7 +170,7 @@ exports[`zshy with different tsconfig configurations > should work with bin.test
    ║ rootDir  │ ./src         ║
    ║ outDir   │ ./dist        ║
    ╚══════════╧═══════════════╝
-🟨 Package is an ES module (package.json#type is "module")
+🟨 Package is an ES module (package.json#/type is "module")
 🧱 Building CJS... (rewriting .ts -> .cjs/.d.cts)
 🗣️  Resolved entrypoints: [
      "./src/index.ts",
@@ -234,11 +234,11 @@ exports[`zshy with different tsconfig configurations > should work with bin.test
    ./dist/utils.d.cts
    ./dist/utils.d.ts
    ./dist/utils.js
-📦 Updating package.json#exports...
-📦 Updating package.json#bin...
-🗣️ Updated package.json#bin: "./dist/index.cjs"
+📦 Updating package.json#/exports...
+📦 Updating package.json#/bin...
+🗣️ Updated package.json#/bin: "./dist/index.cjs"
 🔍 Skipping package.json modification (dry-run)
-🗣️  Updated package.json#exports: {
+🗣️  Updated package.json#/exports: {
      ".": {
        "@zod/source": "./src/index.ts",
        "types": "./dist/index.d.cts",
@@ -301,7 +301,7 @@ exports[`zshy with different tsconfig configurations > should work with bin-stri
    ║ rootDir  │ ./src         ║
    ║ outDir   │ ./dist        ║
    ╚══════════╧═══════════════╝
-🟨 Package is an ES module (package.json#type is "module")
+🟨 Package is an ES module (package.json#/type is "module")
 🧱 Building CJS... (rewriting .ts -> .cjs/.d.cts)
 🗣️  Resolved entrypoints: [
      "./src/index.ts",
@@ -363,11 +363,11 @@ exports[`zshy with different tsconfig configurations > should work with bin-stri
    ./dist/utils.d.cts
    ./dist/utils.d.ts
    ./dist/utils.js
-📦 Updating package.json#exports...
-📦 Updating package.json#bin...
-🗣️ Updated package.json#bin: "./dist/index.cjs"
+📦 Updating package.json#/exports...
+📦 Updating package.json#/bin...
+🗣️ Updated package.json#/bin: "./dist/index.cjs"
 🔍 Skipping package.json modification (dry-run)
-🗣️  Updated package.json#exports: {
+🗣️  Updated package.json#/exports: {
      ".": {
        "@zod/source": "./src/index.ts",
        "types": "./dist/index.d.cts",
@@ -430,7 +430,7 @@ exports[`zshy with different tsconfig configurations > should work with legacy.t
    ║ rootDir  │ ./src         ║
    ║ outDir   │ ./lib         ║
    ╚══════════╧═══════════════╝
-🟨 Package is an ES module (package.json#type is "module")
+🟨 Package is an ES module (package.json#/type is "module")
 🧱 Building CJS... (rewriting .ts -> .cjs/.d.cts)
 🗣️  Resolved entrypoints: [
      "./src/index.ts",
@@ -492,11 +492,11 @@ exports[`zshy with different tsconfig configurations > should work with legacy.t
    ./lib/utils.d.cts
    ./lib/utils.d.ts
    ./lib/utils.js
-📦 Updating package.json#exports...
-📦 Updating package.json#bin...
-🗣️ Updated package.json#bin: "./lib/index.cjs"
+📦 Updating package.json#/exports...
+📦 Updating package.json#/bin...
+🗣️ Updated package.json#/bin: "./lib/index.cjs"
 🔍 Skipping package.json modification (dry-run)
-🗣️  Updated package.json#exports: {
+🗣️  Updated package.json#/exports: {
      ".": {
        "@zod/source": "./src/index.ts",
        "types": "./lib/index.d.cts",
@@ -560,7 +560,7 @@ exports[`zshy with different tsconfig configurations > should work with modern.t
    ║ outDir         │ ./output/js    ║
    ║ declarationDir │ ./output/types ║
    ╚════════════════╧════════════════╝
-🟨 Package is an ES module (package.json#type is "module")
+🟨 Package is an ES module (package.json#/type is "module")
 🧱 Building CJS... (rewriting .ts -> .cjs/.d.cts)
 🗣️  Resolved entrypoints: [
      "./src/index.ts",
@@ -632,11 +632,11 @@ exports[`zshy with different tsconfig configurations > should work with modern.t
    ./output/types/src/plugins/b.d.ts
    ./output/types/src/utils.d.cts
    ./output/types/src/utils.d.ts
-📦 Updating package.json#exports...
-📦 Updating package.json#bin...
-🗣️ Updated package.json#bin: "./output/js/src/index.cjs"
+📦 Updating package.json#/exports...
+📦 Updating package.json#/bin...
+🗣️ Updated package.json#/bin: "./output/js/src/index.cjs"
 🔍 Skipping package.json modification (dry-run)
-🗣️  Updated package.json#exports: {
+🗣️  Updated package.json#/exports: {
      ".": {
        "@zod/source": "./src/index.ts",
        "types": "./output/types/src/index.d.cts",
@@ -699,7 +699,7 @@ exports[`zshy with different tsconfig configurations > should work with root-out
    ║ rootDir  │ ./src         ║
    ║ outDir   │ .             ║
    ╚══════════╧═══════════════╝
-🟨 Package is an ES module (package.json#type is "module")
+🟨 Package is an ES module (package.json#/type is "module")
 🧱 Building CJS... (rewriting .ts -> .cjs/.d.cts)
 🗣️  Resolved entrypoints: [
      "./src/index.ts",
@@ -761,11 +761,11 @@ exports[`zshy with different tsconfig configurations > should work with root-out
    ./utils.d.cts
    ./utils.d.ts
    ./utils.js
-📦 Updating package.json#exports...
-📦 Updating package.json#bin...
-🗣️ Updated package.json#bin: "./index.cjs"
+📦 Updating package.json#/exports...
+📦 Updating package.json#/bin...
+🗣️ Updated package.json#/bin: "./index.cjs"
 🔍 Skipping package.json modification (dry-run)
-🗣️  Updated package.json#exports: {
+🗣️  Updated package.json#/exports: {
      ".": {
        "@zod/source": "./src/index.ts",
        "types": "./index.d.cts",
@@ -829,7 +829,7 @@ exports[`zshy with different tsconfig configurations > should work with separate
    ║ outDir         │ ./build       ║
    ║ declarationDir │ ./types       ║
    ╚════════════════╧═══════════════╝
-🟨 Package is an ES module (package.json#type is "module")
+🟨 Package is an ES module (package.json#/type is "module")
 🧱 Building CJS... (rewriting .ts -> .cjs/.d.cts)
 🗣️  Resolved entrypoints: [
      "./src/index.ts",
@@ -895,11 +895,11 @@ exports[`zshy with different tsconfig configurations > should work with separate
    ./types/plugins/b.d.ts
    ./types/utils.d.cts
    ./types/utils.d.ts
-📦 Updating package.json#exports...
-📦 Updating package.json#bin...
-🗣️ Updated package.json#bin: "./build/index.cjs"
+📦 Updating package.json#/exports...
+📦 Updating package.json#/bin...
+🗣️ Updated package.json#/bin: "./build/index.cjs"
 🔍 Skipping package.json modification (dry-run)
-🗣️  Updated package.json#exports: {
+🗣️  Updated package.json#/exports: {
      ".": {
        "@zod/source": "./src/index.ts",
        "types": "./types/index.d.cts",
