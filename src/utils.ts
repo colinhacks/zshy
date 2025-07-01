@@ -2,6 +2,9 @@ import { globby } from "globby";
 import * as path from "node:path";
 import * as ts from "typescript";
 
+export function formatForLog(data: unknown){
+	return JSON.stringify(data, null, 2).split('\n').join('\n   ')
+}
 export interface ProjectOptions {
 	configPath: string;
 	compilerOptions: ts.CompilerOptions &
@@ -10,6 +13,8 @@ export interface ProjectOptions {
 		>;
 	mode: "cts" | "ts" | "mts";
 	verbose?: boolean;
+	dryRun?: boolean;
+	packageRoot?: string; // Add package root for relative path display
 }
 
 // Get entry points using the same logic as esbuild.mts
@@ -83,7 +88,13 @@ export function readTsconfig(tsconfigPath: string) {
 export async function compileProject(
 	config: ProjectOptions,
 	entryPoints: string[],
-): Promise<void> {
+): Promise<string[]> {
+	// Deduplicate entry points before compilation
+	const uniqueEntryPoints = [...new Set(entryPoints)];
+	
+	// Track files that would be written
+	const writtenFiles: string[] = [];
+	
 	// Create compiler host
 	const host = ts.createCompilerHost(config.compilerOptions);
 	const originalWriteFile = host.writeFile;
@@ -107,22 +118,30 @@ export async function compileProject(
 		let outputFileName = fileName;
 		const processedData = data;
 
-		// if (config.jsExtension) {
+		
 		if (fileName.endsWith(".js")) {
 			outputFileName = fileName.replace(/\.js$/, jsExt);
 		}
-		// }
-		// if (config.dtsExtension) {
+		
+		
 		if (fileName.endsWith(".d.ts")) {
 			outputFileName = fileName.replace(/\.d\.ts$/, dtsExt);
 		}
-		// }
+		
 
-		if (config.verbose) {
-			console.log(`   Writing: ${outputFileName}`);
+		// Track the file that would be written
+		writtenFiles.push(outputFileName);
+
+		if (config.verbose || config.dryRun) {
+			// Display relative path from package root
+			const displayPath = config.packageRoot 
+				? "./" + path.relative(config.packageRoot, outputFileName)
+				: outputFileName;
+			const action = config.dryRun ? "[dryrun] Writing" : (config.verbose ? "Writing" : "Writing");
+			console.log(`   ${action}: ${displayPath}`);
 		}
 
-		if (originalWriteFile) {
+		if (!config.dryRun && originalWriteFile) {
 			originalWriteFile(
 				outputFileName,
 				processedData,
@@ -134,16 +153,14 @@ export async function compileProject(
 	};
 
 	if (config.verbose) {
-		console.log(`   Entry points: ${entryPoints.join(", ")}`);
-		console.log(`   Module: ${ts.ModuleKind[config.compilerOptions.module]}`);
-		console.log(
-			`   Target: ${ts.ScriptTarget[config.compilerOptions.target || ts.ScriptTarget.ES5]}`,
-		);
+		console.log(`   Resolved entrypoints: ${formatForLog(uniqueEntryPoints)}`);
+		console.log(`   Resolved compilerOptions: ${formatForLog(config.compilerOptions)}`);
+		
 	}
 
-	// Create the TypeScript program using entry points
+	// Create the TypeScript program using unique entry points
 	const program = ts.createProgram({
-		rootNames: entryPoints,
+		rootNames: uniqueEntryPoints,
 		options: config.compilerOptions,
 		host,
 	});
@@ -379,4 +396,7 @@ export async function compileProject(
 			);
 		}
 	}
+
+	// Return the list of files that were written or would be written
+	return writtenFiles;
 }

@@ -57,13 +57,14 @@ describe("zshy with different tsconfig configurations", () => {
 		let exitCode = 0;
 
 		try {
-			// Run zshy using tsx with --project flag in verbose mode
+			// Run zshy using tsx with --project flag in verbose mode and dry-run from test directory
 			const result = execSync(
-				`tsx src/index.ts --project ./${tsconfigFile} --verbose`,
+				`tsx ../src/index.ts --project ./${tsconfigFile} --verbose --dry-run`,
 				{
 					encoding: "utf-8",
 					stdio: "pipe",
 					timeout: 25000,
+					cwd: "/Users/colinmcd94/Documents/projects/zshy/test",
 				},
 			);
 			stdout = result;
@@ -122,13 +123,13 @@ function normalizeOutput(output: string): string {
 	return (
 		output
 			// Normalize file paths to be relative and use forward slashes
-			.replace(/\/Users\/[^/]+\/[^/\s]+\/projects\/zshy/g, "<project-root>")
+			.replace(/\/Users\/[^/]+\/[^/\s]+\/projects\/zshy/g, "<root>")
 			// Normalize any absolute paths
-			.replace(/\/[^\s]+\/zshy/g, "<project-root>")
+			// .replace(/\/[^\s]+\/zshy/g, "<root>")
 			// Normalize timestamps and timing info
 			.replace(/\d+ms/g, "<time>")
 			// Normalize any specific file counts that might vary
-			.replace(/\(\d+ matches\)/g, "(<count> matches)")
+			// .replace(/\(\d+ matches\)/g, "(<count> matches)")
 			// Remove any ANSI color codes
 			.replace(/\u001b\[[0-9;]*m/g, "")
 			// Normalize line endings

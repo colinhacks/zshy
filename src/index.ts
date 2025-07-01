@@ -6,7 +6,7 @@ import * as path from "node:path/posix";
 import * as ts from "typescript";
 import parseArgs from "arg";
 
-import { getEntryPoints, compileProject, readTsconfig } from "./utils";
+import { getEntryPoints, compileProject, readTsconfig, formatForLog } from "./utils";
 
 function isSourceFile(filePath: string): boolean {
 	return (
@@ -35,6 +35,7 @@ async function main(): Promise<void> {
 			"--help": Boolean,
 			"--verbose": Boolean,
 			"--project": String,
+			"--dry-run": Boolean,
 
 			// Aliases
 			"-h": "--help",
@@ -56,20 +57,27 @@ Usage: zshy [options]
 Options:
   -h, --help             Show this help message
   -p, --project <path>   Path to tsconfig.json file
-	    --verbose          Enable verbose output
+      --verbose          Enable verbose output
+      --dry-run          Don't write any files, just log what would be done
 
 Examples:
   zshy                                    # Use ./tsconfig.json or package.json#zshy.tsconfig
   zshy --project ./tsconfig.build.json    # Use specific tsconfig file
-	zshy --verbose                          # Enable verbose logging
+  zshy --verbose                          # Enable verbose logging
+  zshy --dry-run                          # Preview changes without writing files
 		`);
 		process.exit(0);
 	}
 
 	const isVerbose = args["--verbose"];
+	const isDryRun = args["--dry-run"];
 
 	if (isVerbose) {
-		console.log("🗣️ Verbose mode enabled");
+		console.log("🗣️  Verbose mode enabled");
+	}
+
+	if (isDryRun) {
+		console.log("🔍 Dry run mode enabled - no files will be written");
 	}
 
 	///////////////////////////////////
@@ -173,7 +181,7 @@ Examples:
 	}
 
 	if (isVerbose) {
-		console.log("🔧 Parsed zshy config:", JSON.stringify(config, null, 2));
+		console.log("🔧 Parsed zshy config:", formatForLog(config));
 	}
 
 	///////////////////////////
@@ -267,28 +275,21 @@ Examples:
 
 		// // print success mesage in verbose mode
 		if (isVerbose) {
-			if (!fs.existsSync(outDir)) {
-				console.log(`   ✅ Successfully cleaned up outDir: ${relOutDir}`);
-			} else {
+			if (fs.existsSync(outDir)) {
 				console.error(
 					`❌ Failed to clean up outDir: ${relOutDir}. Directory still exists.`,
 				);
 			}
 		}
 	} else {
-		if (isVerbose)
-			console.log(`🗑️  Skipping cleanup of outDir as it contains source files`);
+		console.log(`🗑️  Skipping cleanup of outDir as it contains source files`);
 	}
 	if (relDeclarationDir !== relOutDir && relDeclarationDir !== "") {
 		console.log(`🗑️  Cleaning up declarationDir...`);
 		fs.rmSync(declarationDir, { recursive: true, force: true });
 		// // print success mesage in verbose mode
 		if (isVerbose) {
-			if (!fs.existsSync(declarationDir)) {
-				console.log(
-					`   ✅ Successfully cleaned up declarationDir: ${relDeclarationDir}`,
-				);
-			} else {
+			if (fs.existsSync(declarationDir)) {
 				console.error(
 					`❌ Failed to clean up declarationDir: ${relDeclarationDir}. Directory still exists.`,
 				);
@@ -542,15 +543,20 @@ Examples:
 	///////////////////////////////
 
 	try {
+		// Track all written files
+		const allWrittenFiles: string[] = [];
+		
 		// CJS
 		console.log(
 			`🧱 Building CJS...${isTypeModule ? ` (rewriting .ts -> .cjs/.d.cts)` : ``}`,
 		);
-		await compileProject(
+		const cjsFiles = await compileProject(
 			{
 				configPath: tsconfigPath,
 				mode: isTypeModule ? "cts" : "ts",
 				verbose: isVerbose,
+				dryRun: isDryRun,
+				packageRoot: pkgJsonDir,
 				compilerOptions: {
 					...tsconfigJson,
 					module: ts.ModuleKind.CommonJS,
@@ -560,16 +566,19 @@ Examples:
 			},
 			entryPoints,
 		);
+		allWrittenFiles.push(...cjsFiles);
 
 		// ESM
 		console.log(
 			`🧱 Building ESM...${isTypeModule ? `` : ` (rewriting .ts -> .mjs/.d.mts)`}`,
 		);
-		await compileProject(
+		const esmFiles = await compileProject(
 			{
 				configPath: tsconfigPath,
 				mode: isTypeModule ? "ts" : "mts",
 				verbose: isVerbose,
+				dryRun: isDryRun,
+				packageRoot: pkgJsonDir,
 				compilerOptions: {
 					...tsconfigJson,
 					module: ts.ModuleKind.ESNext,
@@ -579,6 +588,7 @@ Examples:
 			},
 			entryPoints,
 		);
+		allWrittenFiles.push(...esmFiles);
 
 		///////////////////////////////
 		///   generate exports      ///
@@ -690,17 +700,14 @@ Examples:
 				pkgJson.bin = Object.values(newBin)[0];
 				
 				if (isVerbose) {
-					console.log(`   Generated bin (string): "${Object.values(newBin)[0]}"`);
+					console.log(`🗣️  Updated package.json#bin: "${Object.values(newBin)[0]}"`);
 				}
 			} else {
 				// Output as object
 				pkgJson.bin = newBin;
 				
 				if (isVerbose) {
-					console.log("   Generated bin (object):");
-					console.log(
-						"   " + JSON.stringify(newBin, null, 2).split("\n").join("\n   "),
-					);
+					console.log("🗣️  Updated package.json#bin: " + formatForLog(newBin));
 				}
 			}
 		}
@@ -711,14 +718,16 @@ Examples:
 
 		// Update package.json with new exports
 		pkgJson.exports = newExports;
-		fs.writeFileSync(packageJsonPath, JSON.stringify(pkgJson, null, 2) + "\n");
+		
+		if (isDryRun) {
+			console.log("🔍 Skipping package.json modification (dry-run)");
+		} else {
+			fs.writeFileSync(packageJsonPath, JSON.stringify(pkgJson, null, 2) + "\n");
+		}
 
 		// console.log("✅ Updating package.json#exports");
 		if (isVerbose) {
-			console.log("   Generated exports:");
-			console.log(
-				"   " + JSON.stringify(newExports, null, 2).split("\n").join("\n   "),
-			);
+			console.log(`🗣️  Updated package.json#exports: ${formatForLog(newExports)}`);
 		}
 
 		// // run `@arethetypeswrong/cli --pack .` to check types
@@ -730,72 +739,24 @@ Examples:
 		// });
 
 		///////////////////////////////////
-		///     print directory tree    ///
+		///      display written files  ///
 		///////////////////////////////////
 
-		if (isVerbose) {
-			// Recursively print directory contents
-			const printDirectoryTree = (
-				dirPath: string,
-				prefix = "",
-				isLast = true,
-			) => {
-				// Check if the directory exists
-				if (!fs.existsSync(dirPath)) {
-					console.error(`❌ ${prefix}└── [Error: Directory does not exist]`);
-					process.exit(1);
-				}
-				try {
-					const items = fs
-						.readdirSync(dirPath, { withFileTypes: true })
-						.sort((a, b) => {
-							// Directories first, then files, both alphabetically
-							if (a.isDirectory() && !b.isDirectory()) return -1;
-							if (!a.isDirectory() && b.isDirectory()) return 1;
-							return a.name.localeCompare(b.name);
-						});
-
-					items.forEach((item, index) => {
-						const isLastItem = index === items.length - 1;
-						const connector = isLastItem ? "└── " : "├── ";
-						console.log(`${prefix}${connector}${item.name}`);
-
-						if (item.isDirectory()) {
-							const extension = isLastItem ? "    " : "│   ";
-							printDirectoryTree(
-								path.join(dirPath, item.name),
-								prefix + extension,
-								isLastItem,
-							);
-						}
-					});
-				} catch (error) {
-					const errorMessage =
-						error instanceof Error ? error.message : String(error);
-					console.log(
-						`${prefix}└── [Error reading directory: ${errorMessage}]`,
-					);
-				}
-			};
-
-			// Print outDir if it's not inside or equal to rootDir
-			const shouldPrintOutDir = relOutDir !== "" && relOutDir !== relRootDir;
-
-			if (shouldPrintOutDir) {
-				console.log(`📁 Contents of outDir (${relOutDir}):`);
-				printDirectoryTree(outDir);
-			}
-
-			// Print declarationDir if it's different from outDir
-			const shouldPrintDeclarationDir =
-				relDeclarationDir !== relOutDir &&
-				relDeclarationDir !== "" &&
-				relDeclarationDir !== relRootDir;
-
-			if (shouldPrintDeclarationDir) {
-				console.log(`📁 Contents of declarationDir (${relDeclarationDir}):`);
-				printDirectoryTree(declarationDir);
-			}
+		// Display files that were written or would be written (only in verbose mode)
+		if (isVerbose && allWrittenFiles.length > 0) {
+			console.log(
+				`📄 [dryrun] Files written (${allWrittenFiles.length} total):`
+			);
+			
+			// Sort files by relative path for consistent display
+			const sortedFiles = [...allWrittenFiles]
+				.map(file => path.relative(pkgJsonDir, file))
+				.sort()
+				.map(relPath => relPath.startsWith('.') ? relPath : `./${relPath}`);
+			
+			sortedFiles.forEach(file => {
+				console.log(`   ${file}`);
+			});
 		}
 
 		console.log("🎉 Build complete!");

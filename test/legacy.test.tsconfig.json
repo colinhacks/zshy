@@ -9,8 +9,7 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "outDir": "./lib",
-    "declaration": true,
-    "sourceMap": true
+    "declaration": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "lib"]
