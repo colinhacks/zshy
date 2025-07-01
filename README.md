@@ -39,13 +39,13 @@
 ### Features
 
 - 🧱 **Dual-module builds** — Builds ESM and CJS outputs from a single TypeScript source file
-- 👑 **Powered by `tsc`** — No bundler, no extra configs, just good old-fashioned `tsc`
-- 🟦 **No config file** — Reads only from your `package.json` and `tsconfig.json` (configurable)
+- 👑 **Powered by `tsc`** — The gold standard for TypeScript transpilation
+- 📦 **Bundler-free** — No bundler or bundler configs involved
+- 🟦 **No config file** — Reads from your `package.json` and `tsconfig.json`
 - 📝 **Declarative entrypoint map** — Specify your TypeScript entrypoints in `package.json#/zshy`
 - 🤖 **Auto-generated `"exports"`** — Writes `"exports"` map directly into your `package.json`
 - 🐚 **CLI-friendly** — First-class `"bin"` support
-- 📂 **Supports any file structure** — Use any file structure you like
-- 🔗 **Supports extensionless imports** — Use any import syntax TypeScript supports: extensionless, `.js`, `.ts`
+- 📂 **Unopinionated** — Use any file structure or import extension syntax you like
 - ⚛️ **Supports `.tsx`** — Rewrites to `.js/.cjs/.mjs` per your `tsconfig.json#/jsx*` settings
 - 📱 **Supports React Native** — Supports a [flat build mode](#can-it-support-react-native-legacy-or-non-nodejs-environments) designed for bundlers that don't support `package.json#/exports`
 - 🐌 **Blazing fast** — Just kidding, it's slow. But [it's worth it](#is-it-fast).
