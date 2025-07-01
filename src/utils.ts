@@ -128,18 +128,8 @@ export async function compileProject(
 			outputFileName = fileName.replace(/\.d\.ts$/, dtsExt);
 		}
 		
-
 		// Track the file that would be written
 		writtenFiles.push(outputFileName);
-
-		if (config.verbose || config.dryRun) {
-			// Display relative path from package root
-			const displayPath = config.packageRoot 
-				? "./" + path.relative(config.packageRoot, outputFileName)
-				: outputFileName;
-			const action = config.dryRun ? "[dryrun] Writing" : (config.verbose ? "Writing" : "Writing");
-			console.log(`   ${action}: ${displayPath}`);
-		}
 
 		if (!config.dryRun && originalWriteFile) {
 			originalWriteFile(
@@ -153,9 +143,14 @@ export async function compileProject(
 	};
 
 	if (config.verbose) {
-		console.log(`   Resolved entrypoints: ${formatForLog(uniqueEntryPoints)}`);
-		console.log(`   Resolved compilerOptions: ${formatForLog(config.compilerOptions)}`);
-		
+		console.log(`🗣️  Resolved entrypoints: ${formatForLog(uniqueEntryPoints)}`);
+		console.log(`🗣️  Resolved compilerOptions: ${formatForLog({
+			...config.compilerOptions,
+			// resolve enum values to strings for better logging
+			module: ts.ModuleKind[config.compilerOptions.module!],
+			moduleResolution: ts.ModuleResolutionKind[config.compilerOptions.moduleResolution!],
+			target: ts.ScriptTarget[config.compilerOptions.target!],
+		})}`);
 	}
 
 	// Create the TypeScript program using unique entry points

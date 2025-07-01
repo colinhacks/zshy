@@ -590,16 +590,36 @@ Examples:
 		);
 		allWrittenFiles.push(...esmFiles);
 
+		///////////////////////////////////
+		///      display written files  ///
+		///////////////////////////////////
+
+		// Display files that were written or would be written (only in verbose mode)
+		if (isVerbose && allWrittenFiles.length > 0) {
+			console.log(
+				`📜 ${isDryRun ? '[dryrun] ' : ''}Writing files... (${allWrittenFiles.length} total):`
+			);
+			
+			// Sort files by relative path for consistent display
+			const sortedFiles = [...allWrittenFiles]
+				.map(file => path.relative(pkgJsonDir, file))
+				.sort()
+				.map(relPath => relPath.startsWith('.') ? relPath : `./${relPath}`);
+			
+			sortedFiles.forEach(file => {
+				console.log(`   ${file}`);
+			});
+		}
+
 		///////////////////////////////
 		///   generate exports      ///
 		///////////////////////////////
 
 		// generate package.json exports
-		console.log("📦 Updating package.json exports...");
+		console.log("📦 Updating package.json#exports...");
 
 		// Generate exports based on zshy config
 		const newExports: Record<string, any> = {};
-
 		const sourceDialects = config.sourceDialects || [];
 
 		for (const [exportPath, sourcePath] of Object.entries(config.exports)) {
@@ -674,7 +694,7 @@ Examples:
 
 		// Generate bin field based on zshy bin config
 		if (config.bin) {
-			console.log("📦 Updating package.json bin...");
+			console.log("📦 Updating package.json#bin...");
 			const newBin: Record<string, string> = {};
 
 			// Convert config.bin to object format for processing
@@ -700,7 +720,7 @@ Examples:
 				pkgJson.bin = Object.values(newBin)[0];
 				
 				if (isVerbose) {
-					console.log(`🗣️  Updated package.json#bin: "${Object.values(newBin)[0]}"`);
+					console.log(`🗣️ Updated package.json#bin: "${Object.values(newBin)[0]}"`);
 				}
 			} else {
 				// Output as object
@@ -738,26 +758,7 @@ Examples:
 		// 	cwd: pkgJsonDir,
 		// });
 
-		///////////////////////////////////
-		///      display written files  ///
-		///////////////////////////////////
-
-		// Display files that were written or would be written (only in verbose mode)
-		if (isVerbose && allWrittenFiles.length > 0) {
-			console.log(
-				`📄 [dryrun] Files written (${allWrittenFiles.length} total):`
-			);
-			
-			// Sort files by relative path for consistent display
-			const sortedFiles = [...allWrittenFiles]
-				.map(file => path.relative(pkgJsonDir, file))
-				.sort()
-				.map(relPath => relPath.startsWith('.') ? relPath : `./${relPath}`);
-			
-			sortedFiles.forEach(file => {
-				console.log(`   ${file}`);
-			});
-		}
+		
 
 		console.log("🎉 Build complete!");
 	} catch (error) {
