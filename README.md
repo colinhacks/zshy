@@ -81,12 +81,13 @@ All relative `import`/`export` statements are rewritten to the appropriate exten
 
 Existing build tools (tsup, tsdown, etc) perform a similar transform during their bundling step. Unfortunately vanilla `tsc` [does not support extension rewriting](https://github.com/microsoft/TypeScript/issues/16577#issuecomment-754941937), leaving library authors with no choice but to use a bundler...
 
-...until now. `zshy` implements extension rewriting during the `tsc` build step via the official [TypeScript Compiler API](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API)—specifically the `ts.TransformerFactory` API for defining AST-level code transforms. This obviates the need for a bundler. The result is a tool that I consider to be the "holy grail" of TypeScript library build tools:
+...until now. `zshy` implements extension rewriting during the `tsc` build step via the official [TypeScript Compiler API](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API) — specifically, the `ts.TransformerFactory` API for defining AST-level code transforms. This obviates the need for a bundler. The result is a tool that I consider to be the "holy grail" of TypeScript library build tools:
 
-- performs dual-module (ESM + CJS) builds with no bundler
+- performs dual-module (ESM + CJS) builds
 - type checks your code
 - leverages `tsc` for gold-standard transpilation
-- no config file (just `package.json` and `tsconfig.json`)
+- doesn't require a bundler
+- doesn't require another config file (just `package.json` and `tsconfig.json`)
 
 <br/>
 <br/>
