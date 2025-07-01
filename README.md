@@ -48,9 +48,24 @@
 - 📱 **Supports React Native** — Supports a [flat build mode](#can-it-support-react-native-legacy-or-non-nodejs-environments) designed for bundlers that don't support `package.json#/exports`
 - 🐌 **Blazing fast** — Just kidding, it's slow. But [it's worth it](#is-it-fast).
 
+It achieves all of these goals with no bundler. It uses the TypeScript Compiler API to _rewrite file extensions_ during the build step. Specifically:
+
+- 1. Each `.ts` file is transpiled to `.js` (ESM) and `.cjs` (CommonJS)
+- 2. Declarations files are also generated: `.d.ts` (ESM) and `.d.cts`
+- 2. All `import` statements are rewritten to the appropriate extension:
+  - `from "./util"` becomes `from "./util.js"` (ESM) / `from "./util.cjs"` (CJS)
+  - `from "./util.ts"` becomes `from "./util.js"` (ESM) / `from "./util.cjs"` (CJS)
+  - `from "./util.js"` becomes `from "./util.js"` (ESM) / `from "./util.cjs"` (CJS)
+- 3. All `export ... from` statements are similarly rewritten
+- 4. All dynamic `import()` calls are similarly rewritten
+
+Unfortunately vanilla `tsc` does not support extension rewriting and the TypeScript team has stated that this [is not on the roadmap](https://github.com/microsoft/TypeScript/issues/16577#issuecomment-754941937). As such, the vast majority of build tools in use today rely on bundlers to perform these transforms.
+
+But `zshy` takes a different approach. It uses the [TypeScript Compiler API](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API) to implement a very simple code transform (implemented via the official `ts.TransformerFactory` API) that achieves all the same things, no bundler required. It's the gold standard for transpiling TypeScript libraries: dual-module builds powered by `tsc` with full type-checking and a fresh DX.
+
 <br/>
 <br/>
-<h2 align="center">Usage</h2>
+<h2 align="center">Quickstart</h2>
 
 <br/>
 
@@ -124,6 +139,26 @@ Then, to run a build:
 
 ```bash
 $ npm run build
+```
+
+<br/>
+<br/>
+
+<h2 align="center">Usage</h2>
+
+<br/>
+
+### Flags
+
+```sh
+$ npm zshy --help
+Usage: zshy [options]
+
+Options:
+  -h, --help             Show this help message
+  -p, --project <path>   Path to tsconfig.json file
+      --verbose          Enable verbose output
+      --dry-run          Don't write any files or update package.json
 ```
 
 <br/>
@@ -211,7 +246,7 @@ And the generated `"exports"` map will look like this:
 
 <br/>
 
-### For CLIs (`"bin"` support)
+### Building CLIs (`"bin"` support)
 
 If your package is a CLI, specify your CLI entrypoint in `package.json#/zshy/bin`. `zshy` will include this entrypoint in your builds and automatically set `"bin"` in your package.json.
 
@@ -245,23 +280,10 @@ When you run `zshy`, it will automatically add the appropriate `"bin"` field to 
 
 <br/>
 
-### Flags
-
-```sh
-$ npm zshy --help
-Usage: zshy [options]
-
-Options:
-  -h, --help             Show this help message
-  -p, --project <path>   Path to tsconfig.json file
-      --verbose          Enable verbose output
-      --dry-run          Don't write any files or update package.json
-```
-
 <br/>
 <br/>
 
-<h2 align="center">FAQ</h2>
+<h2 align="center">FAQ for nerds</h2>
 
 <br/>
 
@@ -392,7 +414,7 @@ Use whatever you like; `zshy` will rewrite all imports/exports properly during t
 
 <br/>
 
-### How does it generate `package.json#/exports`?
+### What about `package.json#/exports`?
 
 Your exports map is automatically written into your `package.json` when you run `zshy`. The generated exports map looks like this:
 
