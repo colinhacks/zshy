@@ -39,7 +39,7 @@
 ### Features
 
 - 🧱 **Dual-module builds** — Builds ESM and CJS outputs from a single TypeScript source file
-- 👑 **Powered by `tsc`** — No bundling, no extra configs, just good old-fashioned `tsc`
+- 👑 **Powered by `tsc`** — No bundler, no extra configs, just good old-fashioned `tsc`
 - 🟦 **No config file** — Reads only from your `package.json` and `tsconfig.json` (configurable)
 - 📝 **Declarative entrypoint map** — Specify your TypeScript entrypoints in `package.json#/zshy`
 - 🤖 **Auto-generated `"exports"`** — Writes `"exports"` map directly into your `package.json`
@@ -137,7 +137,7 @@ $ npx zshy
    ╚════════════╧════════════════╝
 →  Resolved build paths:
    ╔══════════╤════════════════╗
-   ║ Location │ Resolved pathh ║
+   ║ Location │ Resolved path  ║
    ╟──────────┼────────────────╢
    ║ rootDir  │ ./src          ║
    ║ outDir   │ ./dist         ║
@@ -150,7 +150,7 @@ $ npx zshy
 →  Build complete! ✅
 ```
 
-Alernatively, add a `"build"` script to your `package.json`:
+Alternatively, add a `"build"` script to your `package.json`:
 
 ```diff
 {

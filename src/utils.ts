@@ -9,6 +9,17 @@ export function formatForLog(data: unknown) {
 export function emojiLog(_emoji: string, content: string, level: "log" | "warn" | "error" = "log") {
   console[level]("→  " + content);
 }
+
+export function isSourceFile(filePath: string): boolean {
+  return (
+    filePath.endsWith(".ts") || filePath.endsWith(".mts") || filePath.endsWith(".cts") || filePath.endsWith(".tsx")
+  );
+}
+
+export function removeExtension(filePath: string): string {
+  return filePath.split(".").slice(0, -1).join(".") || filePath;
+}
+
 export interface ProjectOptions {
   configPath: string;
   compilerOptions: ts.CompilerOptions & Required<Pick<ts.CompilerOptions, "module" | "moduleResolution" | "outDir">>;
