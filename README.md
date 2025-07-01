@@ -52,11 +52,9 @@
 
 <br/>
 
-### How does it work?
+<!-- ### How does it work? -->
 
-It achieves all of these goals with no bundler. It uses the TypeScript Compiler API to _rewrite file extensions_ during the build step. Specifically:
-
-**Each `.ts` file is transpiled to `.js` (ESM) and `.cjs` (CommonJS). Declarations files are also generated: `.d.ts` (ESM) and `.d.cts`.**
+It achieves all of these goals with no bundler required—just regular `tsc`. It uses the TypeScript Compiler API to _rewrite file extensions_ during the build step. Each `.ts` file is transpiled to `.js/.d.ts` (ESM) and `.cjs/.d.cts` (CommonJS).
 
 ```bash
 $ tree .
@@ -70,7 +68,7 @@ $ tree .
   └── index.d.cts
 ```
 
-**All `import` statements are rewritten to the appropriate extension:**
+All relative `import`/`export` statements are rewritten to the appropriate extension.
 
 | Original path      | Result (ESM)       | Result (CJS)        |
 | ------------------ | ------------------ | ------------------- |
@@ -78,16 +76,14 @@ $ tree .
 | `from "./util.ts"` | `from "./util.js"` | `from "./util.cjs"` |
 | `from "./util.js"` | `from "./util.js"` | `from "./util.cjs"` |
 
-Unfortunately vanilla `tsc` does not support extension rewriting and the TypeScript team has stated that this [is not on the roadmap](https://github.com/microsoft/TypeScript/issues/16577#issuecomment-754941937). As such, the vast majority of build tools in use today rely on bundlers to perform these transforms.
+All existing TS build tools perform a similar transform during their bundling step. Unfortunately vanilla `tsc` [does not support](https://github.com/microsoft/TypeScript/issues/16577#issuecomment-754941937), leaving library authors with no choice but to use a bundler.
 
-But `zshy` takes a different approach. It implements this simple set of transforms using the official [TypeScript Compiler API](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API) (specifically the `ts.TransformerFactory` API, which lets you define AST-level code transforms).
-
-The result is a tool that's the "holy grail" of TypeScript library build tools:
+The key innovation of `zshy` is that it implements extension rewriting on top of `tsc` itself via the official [TypeScript Compiler API](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API) (specifically the `ts.TransformerFactory` API, which lets you define AST-level code transforms). This obviates the need for a bundler. The result is a tool that I consider to be the "holy grail" of TypeScript library build tools:
 
 - performs dual-module (ESM + CJS) builds with no bundler
-- leverages `tsc`'s best-in-class transpilation engine
 - type checks your code
-- doesn't require another config file (just `package.json` and `tsconfig.json`)
+- leverages `tsc`'s best-in-class transpilation engine
+- no config file (just `package.json` and `tsconfig.json`)
 
 <br/>
 <br/>
