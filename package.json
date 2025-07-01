@@ -32,10 +32,7 @@
     "url": "https://github.com/sponsors/colinhacks"
   },
   "module": "./out/index.js",
-  "bin": {
-    "zshy": "./out/index.cjs",
-    "zshy-cli": "./out/index.cjs"
-  },
+  "bin": "./out/index.cjs",
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.2",
     "@biomejs/biome": "^2.0.5",
@@ -61,14 +58,9 @@
   },
   "zshy": {
     "exports": {
-      ".": "./src/index.ts",
-      "./utils": "./src/utils.ts",
-      "./plugins/*": "./src/plugins/*"
+      ".": "./src/index.ts"
     },
-    "bin": {
-      "zshy": "./src/index.ts",
-      "zshy-cli": "./src/index.ts"
-    },
+    "bin": "./src/index.ts",
     "sourceDialects": [
       "@zod/source"
     ],
@@ -82,18 +74,6 @@
       "types": "./out/index.d.cts",
       "import": "./out/index.js",
       "require": "./out/index.cjs"
-    },
-    "./utils": {
-      "@zod/source": "./src/utils.ts",
-      "types": "./out/utils.d.cts",
-      "import": "./out/utils.js",
-      "require": "./out/utils.cjs"
-    },
-    "./plugins/*": {
-      "@zod/source": "./src/plugins/*",
-      "types": "./out/plugins/*",
-      "import": "./out/plugins/*",
-      "require": "./out/plugins/*"
     }
   },
   "files": [
