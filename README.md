@@ -46,7 +46,7 @@
 - 🔗 **Supports extensionless imports** — Use any import syntax TypeScript supports: extensionless, `.js`, `.ts`
 - ⚛️ **Supports `.tsx`** — Rewrites to `.js/.cjs/.mjs` per your `tsconfig.json#jsx*` settings
 - 📱 **Supports React Native** — Supports a [flat build mode](#can-it-support-react-native-legacy-or-non-nodejs-environments) designed for bundlers that don't support `package.json#exports`
-- 🐌 **Blazing fast** — Just kidding, it's slow. But [it's worth it](#is-it-fast)
+- 🐌 **Blazing fast** — Just kidding, it's slow. But [it's worth it](#is-it-fast).
 
 <br/>
 <br/>
@@ -73,23 +73,6 @@ Specify your package entrypoint with the `"zshy"` key in `package.json`.
   "name": "my-pkg",
   "version": "1.0.0",
   "zshy": "./src/index.ts" // package entrypoint
-}
-```
-
-More complicated packages can specify subpaths or wildcard exports with `"zshy.exports"`:
-
-```jsonc
-{
-  "name": "my-pkg",
-  "version": "1.0.0",
-
-  "zshy": {
-    "exports": {
-      ".": "./src/index.ts", // root entrypoints
-      "./utils": "./src/utils.ts", // subpath
-      "./plugins/*": "./src/plugins/*" // wildcards
-    }
-  }
 }
 ```
 
@@ -225,6 +208,8 @@ And the generated `"exports"` map will look like this:
 ```
 
 </details>
+
+<br/>
 
 ### For CLIs (`"bin"` support)
 
