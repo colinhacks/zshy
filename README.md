@@ -215,18 +215,30 @@ And the generated `"exports"` map will look like this:
 
 If your package is a CLI, specify your CLI entrypoint in `package.json#zshy/bin`. `zshy` will include this entrypoint in your builds and automatically set `"bin"` in your package.json.
 
+```json
+{
+  // package.json
+  "name": "my-cli",
+  "version": "1.0.0",
+  "zshy": {
+    "bin": "./src/cli.ts" // 👈 specify CLI entrypoint
+  }
+}
+```
+
+When you run `zshy`, it will automatically add the appropriate `"bin"` field to your `package.json`:
+
 ```diff
 {
+  // package.json
   "name": "my-cli",
   "version": "1.0.0",
   "zshy": {
     "exports": "./src/index.ts",
-+   "bin": "./src/cli.ts" // CLI entrypoint
+    "bin": "./src/cli.ts"
   },
-
-  // (written by zshy)
 + "bin": {
-+   "my-cli": "./dist/cli.cjs"
++   "my-cli": "./out/cli.js" // CLI entrypoint
 + }
 }
 ```
