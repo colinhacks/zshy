@@ -1,6 +1,6 @@
 {
   "name": "zshy",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "type": "module",
   "description": "Gold-standard build tool for TypeScript libraries",
   "keywords": [
