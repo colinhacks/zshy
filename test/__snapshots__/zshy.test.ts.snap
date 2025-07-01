@@ -663,7 +663,10 @@ exports[`zshy with different tsconfig configurations > should work with modern.t
 exports[`zshy with different tsconfig configurations > should work with root-output.test.tsconfig.json 1`] = `
 {
   "exitCode": 0,
-  "stderr": "",
+  "stderr": "️  You're building your code to the project root. This means your compiled files will be generated alongside your source files.
+    Ensure that your "files" in package.json excludes TypeScript source files, or your users may experience .d.ts resolution issues in some environments:
+
+   "files": ["**/*.js", "**/*.mjs", "**/*.cjs", "**/*.d.ts", "**/*.d.mts", "**/*.d.cts"],",
   "stdout": "Starting zshy build...
 ️  Verbose mode enabled
  Dry run mode enabled - no files will be written
@@ -785,7 +788,12 @@ exports[`zshy with different tsconfig configurations > should work with root-out
        "require": "./plugins/*"
      }
    }
- Build complete!",
+ Build complete!
+
+️  You're building your code to the project root. This means your compiled files will be generated alongside your source files.
+    Ensure that your "files" in package.json excludes TypeScript source files, or your users may experience .d.ts resolution issues in some environments:
+
+   "files": ["**/*.js", "**/*.mjs", "**/*.cjs", "**/*.d.ts", "**/*.d.mts", "**/*.d.cts"],",
 }
 `;
 

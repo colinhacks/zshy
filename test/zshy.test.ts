@@ -1,4 +1,4 @@
-import { execSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import { existsSync, rmSync } from "node:fs";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
@@ -58,9 +58,8 @@ describe("zshy with different tsconfig configurations", () => {
 
     try {
       // Run zshy using tsx with --project flag in verbose mode and dry-run from test directory
-      const result = execSync(`tsx ../src/index.ts --project ./${tsconfigFile} --verbose --dry-run`, {
+      const result = spawnSync("tsx", ["../src/index.ts", "--project", `./${tsconfigFile}`, "--verbose", "--dry-run"], {
         encoding: "utf8",
-        stdio: "pipe", // Use 'pipe' instead of array for better CI compatibility
         timeout: 30000, // Increase timeout for CI
         cwd: process.cwd() + "/test", // Use relative path that works in CI
         env: {
@@ -70,41 +69,37 @@ describe("zshy with different tsconfig configurations", () => {
           LANG: "C.UTF-8",
         },
       });
-      stdout = result;
-    } catch (error: any) {
-      stderr = error.stderr || "";
-      stdout = error.stdout || "";
-      exitCode = error.status || 1;
-      
-      // Debug logging for CI issues
-      if (process.env.CI) {
-        console.log("DEBUG - Command failed:");
-        console.log("Exit code:", exitCode);
-        console.log("Stdout length:", stdout.length);
-        console.log("Stderr length:", stderr.length);
-        console.log("Error message:", error.message);
+
+      stdout = result.stdout || "";
+      stderr = result.stderr || "";
+      exitCode = result.status || 0;
+
+      // Handle spawn errors
+      if (result.error) {
+        stderr = result.error.message;
+        exitCode = 1;
       }
+    } catch (error: any) {
+      stderr = error.message || "";
+      exitCode = 1;
     }
 
     // Combine stdout and stderr for comprehensive output capture
     const combinedOutput = [stdout, stderr].filter(Boolean).join("\n");
-    
-    // If no output captured, create a fallback based on the config file
-    const fallbackOutput = combinedOutput.trim() || `Starting zshy build...
-Detected project root: <root>
-Reading package.json from ./package.json
-Reading tsconfig from ./${tsconfigFile}
-Cleaning up outDir...
-Determining entrypoints...
-Resolved build paths:
-Building CJS...
-Building ESM...
-Updating package.json#/exports...
-Build complete!`;
+
+    // Debug logging for CI issues
+    if (process.env.CI && !combinedOutput.trim()) {
+      console.log("DEBUG - No output captured:");
+      console.log("Exit code:", exitCode);
+      console.log("Stdout length:", stdout.length);
+      console.log("Stderr length:", stderr.length);
+      console.log("Combined output length:", combinedOutput.length);
+      console.log("Working directory:", process.cwd());
+    }
 
     return {
       exitCode,
-      stdout: normalizeOutput(fallbackOutput),
+      stdout: normalizeOutput(combinedOutput),
       stderr: normalizeOutput(stderr),
     };
   };
