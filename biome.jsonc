@@ -26,7 +26,8 @@
         "noMisleadingInstantiator": "off",
         "noEmptyInterface": "off",
         "noConfusingVoidType": "off",
-        "noThenProperty": "off"
+        "noThenProperty": "off",
+        "noImplicitAnyLet": "off"
       },
       "style": {
         "noUnusedTemplateLiteral": "off", // why is this even a best practice?
@@ -62,6 +63,7 @@
   "files": {
     "ignoreUnknown": true,
     "includes": [
+      "**/*.ts",
       "!*.js",
       "!*.mjs",
       "!*.cjs",

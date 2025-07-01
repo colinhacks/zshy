@@ -63,8 +63,7 @@
     "bin": "./src/index.ts",
     "sourceDialects": [
       "@zod/source"
-    ],
-    "tsconfig": "./tsconfig.build.json"
+    ]
   },
   "main": "./out/index.cjs",
   "types": "./out/index.d.cts",
