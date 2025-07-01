@@ -60,7 +60,7 @@ describe("zshy with different tsconfig configurations", () => {
       // Run zshy using tsx with --project flag in verbose mode and dry-run from test directory
       const result = execSync(`tsx ../src/index.ts --project ./${tsconfigFile} --verbose --dry-run`, {
         encoding: "utf-8",
-        stdio: "pipe",
+        stdio: ["pipe", "pipe", "pipe"],
         timeout: 25000,
         cwd: "/Users/colinmcd94/Documents/projects/zshy/test",
       });
@@ -71,9 +71,12 @@ describe("zshy with different tsconfig configurations", () => {
       exitCode = error.status || 1;
     }
 
+    // Combine stdout and stderr for comprehensive output capture
+    const combinedOutput = [stdout, stderr].filter(Boolean).join("\n");
+
     return {
       exitCode,
-      stdout: normalizeOutput(stdout),
+      stdout: normalizeOutput(combinedOutput),
       stderr: normalizeOutput(stderr),
     };
   };
