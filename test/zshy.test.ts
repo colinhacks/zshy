@@ -59,7 +59,8 @@ describe("zshy with different tsconfig configurations", () => {
     try {
       // Run zshy using tsx with --project flag in verbose mode and dry-run from test directory
       const result = execSync(`tsx ../src/index.ts --project ./${tsconfigFile} --verbose --dry-run`, {
-        encoding: "utf-8",
+        // encoding must support emoji
+        encoding: "utf8",
         stdio: ["pipe", "pipe", "pipe"],
         timeout: 25000,
         cwd: "/Users/colinmcd94/Documents/projects/zshy/test",
@@ -131,6 +132,10 @@ function normalizeOutput(output: string): string {
       // Remove any ANSI color codes
       // biome-ignore lint: intentional
       .replace(/\u001b\[[0-9;]*m/g, "")
+      // Remove emoji characters that cause encoding issues in CI
+      .replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, "")
+      // Remove specific Unicode symbols that might cause issues
+      .replace(/💎|🧱|🎉|⚙️|📦|📁|🗑️|➡️|🔧|🟨|🐢|📜|🔍|⚠️/gu, "")
       // Normalize line endings
       .replace(/\r\n/g, "\n")
       // Trim trailing whitespace

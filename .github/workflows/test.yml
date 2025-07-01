@@ -10,7 +10,6 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
-    
     strategy:
       matrix:
         node-version: [24]
