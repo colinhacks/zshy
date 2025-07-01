@@ -275,7 +275,7 @@ And the generated `"exports"` map will look like this:
 
 If your package is a CLI, specify your CLI entrypoint in `package.json#/zshy/bin`. `zshy` will include this entrypoint in your builds and automatically set `"bin"` in your package.json.
 
-```json
+```jsonc
 {
   // package.json
   "name": "my-cli",
