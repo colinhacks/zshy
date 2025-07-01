@@ -314,12 +314,11 @@ Examples:
       );
       pkgJson.files = ["**/*.js", "**/*.mjs", "**/*.cjs", "**/*.d.ts", "**/*.d.mts", "**/*.d.cts"];
     } else {
-      console.warn(
-        `⚠️  You\'re building your code to the project root. This means your compiled files will be generated alongside your source files.
-   ➜ Ensure that your "files" in package.json excludes TypeScript source files, or your users may experience .d.ts resolution issues in some environments:
-
-   "files": ["**/*.js", "**/*.mjs", "**/*.cjs", "**/*.d.ts", "**/*.d.mts", "**/*.d.cts"],
-`
+      emojiLog(
+        `⚠️`,
+        `You\'re building your code to the project root. This means your compiled files will be generated alongside your source files.
+   Ensure that your "files" in package.json excludes TypeScript source files, or your users may experience .d.ts resolution issues in some environments:
+     "files": ["**/*.js", "**/*.mjs", "**/*.cjs", "**/*.d.ts", "**/*.d.mts", "**/*.d.cts"]`
       );
     }
   } else {
