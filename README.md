@@ -141,9 +141,9 @@ $ npx zshy # use --dry-run to try it out without writing/updating files
 
 Vanilla `tsc` does not perform _extension rewriting_; it will only ever transpile a `.ts` file to a `.js` file (never `.cjs` or `.mjs`). This is the fundamental limitation that forces library authors to use bundlers or bundler-powered tools like `tsup`, `tsdown`, or `unbuild`...
 
-...until now! `zshy` works around this limitation using the official (TypeScript Compiler API)[https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API], which provides some powerful hooks for customizing file extensions during the `tsc` build process.
+...until now! `zshy` works around this limitation using the official [TypeScript Compiler API](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API), which provides some powerful (and criminally under-utilized) hooks for customizing file extensions during the `tsc` build process.
 
-Each `.ts` file is transpiled to `.js/.d.ts` (ESM) and `.cjs/.d.cts` (CommonJS):
+Using these hooks, `zshy` transpiles each `.ts` file to `.js/.d.ts` (ESM) and `.cjs/.d.cts` (CommonJS):
 
 ```bash
 $ tree .
@@ -157,7 +157,7 @@ $ tree .
   └── index.d.cts
 ```
 
-And all `import`/`export` statements are rewritten to use the appropriate explicit file extensions:
+All `import`/`export` statements are rewritten to include the appropriate explicit file extensions. (Other tools like `tsup` or `tsdown` do this as well, but they require a bundler to do so.)
 
 | Original path      | Result (ESM)       | Result (CJS)        |
 | ------------------ | ------------------ | ------------------- |
@@ -324,13 +324,12 @@ When you run `zshy`, it will automatically add the appropriate `"bin"` field to 
     "bin": "./src/cli.ts"
   },
 + "bin": {
-+   "my-cli": "./dist/cli.cjs" // CLI entrypoint
++   "my-cli": "./dist/cli.cjs" // CommonJS entrypoint
 + }
 }
 ```
 
 <br/>
-
 <br/>
 <br/>
 
@@ -509,14 +508,16 @@ Your exports map is automatically written into your `package.json` when you run 
 
 The `"types"` field always points to the CJS declaration file (`.d.cts`). This is an intentional design choice.
 
-**It solves "Masquerading as ESM" issue**. Put more simply, you can always `import` a CJS package from ESM, but you can't `require` an ES module from a CJS environment. You've likely seen this dreaded error before:
+**It solves the "Masquerading as ESM" issue**. You've likely seen this dreaded error before:
 
 ```ts
 import mod from "pkg";         ^^^^^
 //              ^ The current file is a CommonJS module whose imports will produce 'require' calls; however, the referenced file is an ECMAScript module and cannot be imported with 'require'. Consider writing a dynamic 'import("pkg")' call instead.
 ```
 
-By having `"types"` point to the `.d.cts` declarations, this error will never happen. Technically, we're lying to TypeScript and telling it to always assume our code is CommonJS; in practice, this has no real consequences and maximizes compatibility. To learn more, read the ["Masquerading as ESM"](https://github.com/arethetypeswrong/arethetypeswrong.github.io/blob/main/docs/problems/FalseESM.md) and ["Masquerading as CJS"](https://github.com/arethetypeswrong/arethetypeswrong.github.io/blob/main/docs/problems/FalseCJS.md) writeups from Are The Types Wrong.
+Simply put: ESM files can `require` CommonJS, but CommonJS files can't `import` ESM. By having `"types"` point to the `.d.cts` declarations, this error will never happen.
+
+Technically, we're lying to TypeScript and telling it to always assume our code is CommonJS; in practice, this has no real consequences and maximizes compatibility. To learn more, read the ["Masquerading as ESM"](https://github.com/arethetypeswrong/arethetypeswrong.github.io/blob/main/docs/problems/FalseESM.md) and ["Masquerading as CJS"](https://github.com/arethetypeswrong/arethetypeswrong.github.io/blob/main/docs/problems/FalseCJS.md) writeups from Are The Types Wrong.
 
 > **Comparison** — `tshy` generates independent (but identical) `.d.ts` files in `dist/esm` and `dist/cjs`. This can cause [Excessively Deep](https://github.com/colinhacks/zod/issues/4422) errors if users of the library use declaration merging (`declare module {}`) for plugins/extensions. [Zod](https://github.com/colinhacks/zod), [day.js](https://day.js.org/), and others rely on this pattern for plugins.
 
