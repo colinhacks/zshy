@@ -57,6 +57,8 @@
 
 <h2 align="center">Quickstart</h2>
 
+<br/>
+
 ### 1. Install `zshy` as a dev dependency:
 
 ```bash
@@ -64,6 +66,8 @@ npm install --save-dev zshy
 yarn add --dev zshy
 pnpm add --save-dev zshy
 ```
+
+<br/>
 
 ### 2. Specify your entrypoint(s) in `package.json#/zshy`:
 
@@ -76,6 +80,8 @@ pnpm add --save-dev zshy
   }
 }
 ```
+
+<br/>
 
 ### 3. Run a build
 
@@ -127,6 +133,8 @@ $ npx zshy
 > $ npm run build
 > ```
 
+<br/>
+
 ### **How it works**
 
 Each `.ts` file is transpiled to `.js/.d.ts` (ESM) and `.cjs/.d.cts` (CommonJS).
@@ -143,17 +151,9 @@ $ tree .
   └── index.d.cts
 ```
 
-Vanilla `tsc` does not perform _extension rewriting_; it will only ever transpile a `.ts` file to a `.js` file (never `.cjs` or `.mjs`). This is the fundamental limitation that forces library authors to use bundlers or bundler-powered tools like `tsup`, `tsdown`, or `unbuild`.
+Vanilla `tsc` does not perform _extension rewriting_; it will only ever transpile a `.ts` file to a `.js` file (never `.cjs` or `.mjs`). This is the fundamental limitation that forces library authors to use bundlers or bundler-powered tools like `tsup`, `tsdown`, or `unbuild`...
 
-Until now! `zshy` works around this limitation using the official TypeScript compiler API, which provides some [powerful hooks](<(https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API)>) for customizing file extensions during the `tsc` build process.
-
-<!-- All relative `import`/`export` statements are rewritten to the appropriate extension during the build.
-
-| Original path      | Result (ESM)       | Result (CJS)        |
-| ------------------ | ------------------ | ------------------- |
-| `from "./util"`    | `from "./util.js"` | `from "./util.cjs"` |
-| `from "./util.ts"` | `from "./util.js"` | `from "./util.cjs"` |
-| `from "./util.js"` | `from "./util.js"` | `from "./util.cjs"` | -->
+...until now! `zshy` works around this limitation using the official (TypeScript Compiler API)[https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API], which provides some powerful hooks for customizing file extensions during the `tsc` build process.
 
 <!-- **Key idea** — This _extension rewriting_ step is the secret sauce of `zshy`. Other popular build tools (`tsup`, `tsdown`, `unbuild`, etc) rely on bundlers to perform this transform. Vanilla `tsc` [does not support extension rewriting](https://github.com/microsoft/TypeScript/issues/16577#issuecomment-754941937), leaving library authors with no choice but to use a bundler...until now! -->
 
@@ -470,16 +470,22 @@ $ tree dist
 
 ### How does extension rewriting work?
 
-`zshy` uses the [TypeScript Compiler API](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API) to rewrite file extensions during the `tsc` build process. This makes it possible to generate CJS and ESM build outputs side-by-side.
+`zshy` uses the [TypeScript Compiler API](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API) to rewrite file extensions during the `tsc` emit step.
 
-Depending on the build format being targeted, `zshy` will:
+- If `"type": "module"`
+  - `.ts` becomes `.js`/`.d.ts` (ESM) and `.cjs`/`.d.cts` (CJS)
+- Otherwise:
+  - `.ts` becomes `.mjs`/`.d.mts` (ESM) and `.js`/`.d.ts` (CJS)
 
-- Rewrite `.ts` imports/exports to `.js`/`.cjs`/`.mjs`
-- Rewrite extensionless imports/exports to `.js`/`.cjs`/`.mjs`
-- Rewrite `.js` imports/exports to `.cjs`/`.mjs`
-- Rename build output files to `.cjs`/`.mjs`/`.d.cts`/`.d.mts`
+Similarly, all relative `import`/`export` statements are rewritten to account for the new file extensions.
 
-TypeScript provides dedicated hooks for performing such transforms (though they are criminally under-utilized).
+| Original path      | Result (ESM)       | Result (CJS)        |
+| ------------------ | ------------------ | ------------------- |
+| `from "./util"`    | `from "./util.js"` | `from "./util.cjs"` |
+| `from "./util.ts"` | `from "./util.js"` | `from "./util.cjs"` |
+| `from "./util.js"` | `from "./util.js"` | `from "./util.cjs"` |
+
+TypeScript's Compiler API provides dedicated hooks for performing such transforms (though they are criminally under-utilized).
 
 - **`ts.TransformerFactory`**: Provides AST transformations to rewrite import/export extensions before module conversion
 - **`ts.CompilerHost#writeFile`**: Handles output file extension changes (`.js` → `.cjs`/`.mjs`)
