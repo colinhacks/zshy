@@ -10,7 +10,7 @@ on:
 
 jobs:
   publish:
-    name: Test & Publish Canary
+    name: Main
     runs-on: ubuntu-latest
     
     permissions:
@@ -45,4 +45,4 @@ jobs:
         run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
         
       - name: Publish canary to npm
-        run: tsx versace.ts --canary --provenance --dry-run
+        run: pnpm tsx versace.ts --canary --provenance --dry-run
