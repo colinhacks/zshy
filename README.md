@@ -157,7 +157,7 @@ $ tree .
   └── index.d.cts
 ```
 
-All `import`/`export` statements are rewritten to include the appropriate explicit file extensions. (Other tools like `tsup` or `tsdown` do this as well, but they require a bundler to do so.)
+Similarly, all relative `import`/`export` statements are rewritten to include the appropriate file extension. (Other tools like `tsup` or `tsdown` do the same, but they require a bundler to do so.)
 
 | Original path      | Result (ESM)       | Result (CJS)        |
 | ------------------ | ------------------ | ------------------- |
