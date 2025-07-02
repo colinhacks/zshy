@@ -1,6 +1,6 @@
 {
   "name": "zshy",
-  "version": "0.0.9",
+  "version": "0.0.0",
   "type": "module",
   "description": "Gold-standard build tool for TypeScript libraries",
   "keywords": [
@@ -38,6 +38,7 @@
     "@biomejs/biome": "^2.0.5",
     "@types/node": "latest",
     "@types/react": "^19.1.8",
+    "@types/semver": "^7.7.0",
     "react": "^19.1.0",
     "tsx": "^4.20.3",
     "typescript": "^5.8.3",
@@ -49,6 +50,7 @@
   "dependencies": {
     "arg": "^5.0.2",
     "globby": "^14.1.0",
+    "semver": "^7.7.2",
     "string-width": "^7.2.0",
     "table": "^6.9.0"
   },

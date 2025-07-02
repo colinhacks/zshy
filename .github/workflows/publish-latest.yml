@@ -1,0 +1,50 @@
+name: Publish --latest
+
+on:
+  push:
+    paths:
+      - 'VERSION.txt'
+    branches:
+      - main
+
+  # Allow manual trigger for testing
+  workflow_dispatch:
+
+jobs:
+  publish:
+    name: Test & Publish
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      id-token: write # for npm provenance
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'latest'
+          registry-url: 'https://registry.npmjs.org'
+          
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+          
+      - name: Install dependencies
+        run: pnpm install
+        
+      - name: Run tests
+        run: pnpm test
+        
+      - name: Build project
+        run: pnpm build
+        
+      - name: Configure npm authentication
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+        
+      - name: Publish to npm
+        run: tsx versace.ts --latest --provenance --dry-run
