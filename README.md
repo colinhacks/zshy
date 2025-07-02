@@ -55,13 +55,64 @@
 <br/>
 <br/>
 
-<h2 align="center">How does it work?</h2>
+<h2 align="center">Quickstart</h2>
+
+First, install `zshy` as a dev dependency:
+
+```bash
+npm install --save-dev zshy
+yarn add --dev zshy
+pnpm add --save-dev zshy
+```
+
+Then specify your entrypoint(s) in `package.json#/zshy`:
+
+```jsonc
+{
+  "name": "my-pkg",
+  "version": "1.0.0",
+  "zshy": {
+    ".": "./src/index.ts" // 👈 package entrypoint
+  }
+}
+```
+
+Run a build with `npx zshy` (or `npx zshy --dry-run` if you just want to try it out without writing/changing any files). You'll see something like this:
+
+```bash
+$ npx zshy
+
+→  Starting zshy build 🐒
+→  Detected project root: /Users/colinmcd94/Documents/projects/zshy
+→  Reading package.json from ./package.json
+→  Reading tsconfig from ./tsconfig.json
+→  Cleaning up outDir...
+→  Determining entrypoints...
+   ╔════════════╤════════════════╗
+   ║ Subpath    │ Entrypoint     ║
+   ╟────────────┼────────────────╢
+   ║ "my-pkg"   │ ./src/index.ts ║
+   ╚════════════╧════════════════╝
+→  Resolved build paths:
+   ╔══════════╤════════════════╗
+   ║ Location │ Resolved path  ║
+   ╟──────────┼────────────────╢
+   ║ rootDir  │ ./src          ║
+   ║ outDir   │ ./dist         ║
+   ╚══════════╧════════════════╝
+→  Package is an ES module (package.json#/type is "module")
+→  Building CJS... (rewriting .ts -> .cjs/.d.cts)
+→  Building ESM...
+→  Updating package.json#/exports...
+→  Updating package.json#/bin...
+→  Build complete! ✅
+```
 
 Each `.ts` file is transpiled to `.js/.d.ts` (ESM) and `.cjs/.d.cts` (CommonJS).
 
 ```bash
 $ tree .
-├── package.json # if type == "module"
+├── package.json
 ├── src
 │   └── index.ts
 └── dist # generated
@@ -71,7 +122,9 @@ $ tree .
   └── index.d.cts
 ```
 
-All relative `import`/`export` statements are rewritten to the appropriate extension during the build:
+> **Note** — If you don't have `"type": "module"` in your `package.json`, the ESM build will be rewritten to `.mjs/.d.mts` and the CommonJS build will be `.js/.d.ts`.
+
+All relative `import`/`export` statements are rewritten to the appropriate extension during the build.
 
 | Original path      | Result (ESM)       | Result (CJS)        |
 | ------------------ | ------------------ | ------------------- |
@@ -79,16 +132,16 @@ All relative `import`/`export` statements are rewritten to the appropriate exten
 | `from "./util.ts"` | `from "./util.js"` | `from "./util.cjs"` |
 | `from "./util.js"` | `from "./util.js"` | `from "./util.cjs"` |
 
-This _extension rewriting_ transform is they key to producing separate ESM/CJS builds with proper import resolution. Existing build tools (`tsup`, `tsdown`, etc) perform a similar transform during their bundling phase. Unfortunately vanilla `tsc` [does not support extension rewriting](https://github.com/microsoft/TypeScript/issues/16577#issuecomment-754941937), leaving library authors with no choice but to use a bundler...
+**Key idea** — This _extension rewriting_ step is the secret sauce of `zshy`. Other popular build tools (`tsup`, `tsdown`, `unbuild`, etc) rely on bundlers to perform this transform. Vanilla `tsc` [does not support extension rewriting](https://github.com/microsoft/TypeScript/issues/16577#issuecomment-754941937), leaving library authors with no choice but to use a bundler...until now!
 
-...until now. `zshy` implements extension rewriting during the `tsc` build step via the official [TypeScript Compiler API](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API) — specifically, the `ts.TransformerFactory` API for defining AST-level code transforms. This obviates the need for a bundler. The result is a tool that I consider to be the "holy grail" of TypeScript library build tools:
+Instead of a bundler, `zshy` implements _extension rewriting_ during the `tsc` build step ysing the official [TypeScript Compiler API](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API). (Specifically, the `ts.TransformerFactory` API for defining AST-level code transforms.) The result is a tool that I consider to be the "holy grail" of TypeScript library build tools:
 
 - performs dual-module (ESM + CJS) builds
 - type checks your code
 - leverages `tsc` for gold-standard transpilation
 - doesn't require a bundler
 - doesn't require another config file (just `package.json` and `tsconfig.json`)
-
+<!-- 
 <br/>
 <br/>
 <h2 align="center">Quickstart</h2>
@@ -121,7 +174,7 @@ Specify your package entrypoint with the `"zshy"` key in `package.json`.
 
 ### 3. Run a build
 
-```bash
+````bash
 $ npx zshy
 
 →  Starting zshy build 🐒
@@ -148,24 +201,25 @@ $ npx zshy
 →  Updating package.json#/exports...
 →  Updating package.json#/bin...
 →  Build complete! ✅
-```
+``` -->
 
-Alternatively, add a `"build"` script to your `package.json`:
 
-```diff
-{
-  // ...
-  "scripts": {
-+   "build": "zshy"
-  }
-}
-```
-
-Then, to run a build:
-
-```bash
-$ npm run build
-```
+> **Add a `"build"` script to your `package.json`**
+>
+> ```diff
+> {
+>   // ...
+>   "scripts": {
+> +   "build": "zshy"
+>   }
+> }
+> ```
+>
+> Then, to run a build:
+>
+> ```bash
+> $ npm run build
+> ```
 
 <br/>
 <br/>
@@ -185,7 +239,7 @@ Options:
   -p, --project <path>   Path to tsconfig (default: ./tsconfig.json)
       --verbose          Enable verbose output
       --dry-run          Don't write any files or update package.json
-```
+````
 
 <br/>
 
