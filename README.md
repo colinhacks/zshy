@@ -555,3 +555,10 @@ Not really. It uses `tsc` to typecheck your codebase, which is a lot slower than
 
 1. You _should_ be type checking your code during builds
 2. TypeScript is [about to get 10x faster](https://devblogs.microsoft.com/typescript/typescript-native-port/)
+
+<br/>
+<br/>
+
+<h2 align="center">Acknowledgements</h2>
+
+The DX of `zshy` was heavily inspired by [tshy](https://github.com/isaacs/tshy) by [@isaacs](https://x.com/izs), particularly its declarative entrypoint map and auto-updating of `package.json#/exports`. It proved that there's a modern way to transpile libraries using pure `tsc` (and various `package.json` hacks). Unfortunately its approach necessarily involved certain constraints that made it unworkable for Zod (described in the FAQ in more detail). `zshy` borrows elements of `tshy`'s DX while using the Compiler API to relax these constraints and provide a more "batteries included" experience.
