@@ -515,9 +515,9 @@ import mod from "pkg";         ^^^^^
 //              ^ The current file is a CommonJS module whose imports will produce 'require' calls; however, the referenced file is an ECMAScript module and cannot be imported with 'require'. Consider writing a dynamic 'import("pkg")' call instead.
 ```
 
-Simply put: ESM files can `require` CommonJS, but CommonJS files can't `import` ESM. By having `"types"` point to the `.d.cts` declarations, this error will never happen.
+Simply put: ESM files can `require` CommonJS, but CommonJS files can't `import` ESM. By having `"types"` point to the `.d.cts` declarations, this error will never happen. Technically, we're tricking TypeScript into thinking our code is CommonJS; in practice, this has no real consequences and maximizes compatibility.
 
-Technically, we're lying to TypeScript and telling it to always assume our code is CommonJS; in practice, this has no real consequences and maximizes compatibility. To learn more, read the ["Masquerading as ESM"](https://github.com/arethetypeswrong/arethetypeswrong.github.io/blob/main/docs/problems/FalseESM.md) and ["Masquerading as CJS"](https://github.com/arethetypeswrong/arethetypeswrong.github.io/blob/main/docs/problems/FalseCJS.md) writeups from Are The Types Wrong.
+> To learn more, read the ["Masquerading as ESM"](https://github.com/arethetypeswrong/arethetypeswrong.github.io/blob/main/docs/problems/FalseESM.md) and ["Masquerading as CJS"](https://github.com/arethetypeswrong/arethetypeswrong.github.io/blob/main/docs/problems/FalseCJS.md) writeups from Are The Types Wrong.
 
 > **Comparison** — `tshy` generates independent (but identical) `.d.ts` files in `dist/esm` and `dist/cjs`. This can cause [Excessively Deep](https://github.com/colinhacks/zod/issues/4422) errors if users of the library use declaration merging (`declare module {}`) for plugins/extensions. [Zod](https://github.com/colinhacks/zod), [day.js](https://day.js.org/), and others rely on this pattern for plugins.
 
