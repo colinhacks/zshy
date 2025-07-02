@@ -57,7 +57,7 @@
 
 <h2 align="center">Quickstart</h2>
 
-First, install `zshy` as a dev dependency:
+### 1. Install `zshy` as a dev dependency:
 
 ```bash
 npm install --save-dev zshy
@@ -65,7 +65,7 @@ yarn add --dev zshy
 pnpm add --save-dev zshy
 ```
 
-Then specify your entrypoint(s) in `package.json#/zshy`:
+### 2. Specify your entrypoint(s) in `package.json#/zshy`:
 
 ```jsonc
 {
@@ -76,6 +76,8 @@ Then specify your entrypoint(s) in `package.json#/zshy`:
   }
 }
 ```
+
+### 3. Run a build
 
 Run a build with `npx zshy` (or `npx zshy --dry-run` if you just want to try it out without writing/changing any files). You'll see something like this:
 
@@ -108,6 +110,25 @@ $ npx zshy
 →  Build complete! ✅
 ```
 
+> **Add a `"build"` script to your `package.json`**
+>
+> ```diff
+> {
+>   // ...
+>   "scripts": {
+> +   "build": "zshy"
+>   }
+> }
+> ```
+>
+> Then, to run a build:
+>
+> ```bash
+> $ npm run build
+> ```
+
+### **How it works**
+
 Each `.ts` file is transpiled to `.js/.d.ts` (ESM) and `.cjs/.d.cts` (CommonJS).
 
 ```bash
@@ -122,19 +143,23 @@ $ tree .
   └── index.d.cts
 ```
 
-> **Note** — If you don't have `"type": "module"` in your `package.json`, the ESM build will be rewritten to `.mjs/.d.mts` and the CommonJS build will be `.js/.d.ts`.
+Vanilla `tsc` does not perform _extension rewriting_; it will only ever transpile a `.ts` file to a `.js` file (never `.cjs` or `.mjs`). This is the fundamental limitation that forces library authors to use bundlers or bundler-powered tools like `tsup`, `tsdown`, or `unbuild`.
 
-All relative `import`/`export` statements are rewritten to the appropriate extension during the build.
+Until now! `zshy` works around this limitation using the official TypeScript compiler API, which provides some [powerful hooks](<(https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API)>) for customizing file extensions during the `tsc` build process.
+
+<!-- All relative `import`/`export` statements are rewritten to the appropriate extension during the build.
 
 | Original path      | Result (ESM)       | Result (CJS)        |
 | ------------------ | ------------------ | ------------------- |
 | `from "./util"`    | `from "./util.js"` | `from "./util.cjs"` |
 | `from "./util.ts"` | `from "./util.js"` | `from "./util.cjs"` |
-| `from "./util.js"` | `from "./util.js"` | `from "./util.cjs"` |
+| `from "./util.js"` | `from "./util.js"` | `from "./util.cjs"` | -->
 
-**Key idea** — This _extension rewriting_ step is the secret sauce of `zshy`. Other popular build tools (`tsup`, `tsdown`, `unbuild`, etc) rely on bundlers to perform this transform. Vanilla `tsc` [does not support extension rewriting](https://github.com/microsoft/TypeScript/issues/16577#issuecomment-754941937), leaving library authors with no choice but to use a bundler...until now!
+<!-- **Key idea** — This _extension rewriting_ step is the secret sauce of `zshy`. Other popular build tools (`tsup`, `tsdown`, `unbuild`, etc) rely on bundlers to perform this transform. Vanilla `tsc` [does not support extension rewriting](https://github.com/microsoft/TypeScript/issues/16577#issuecomment-754941937), leaving library authors with no choice but to use a bundler...until now! -->
 
-Instead of a bundler, `zshy` implements _extension rewriting_ during the `tsc` build step ysing the official [TypeScript Compiler API](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API). (Specifically, the `ts.TransformerFactory` API for defining AST-level code transforms.) The result is a tool that I consider to be the "holy grail" of TypeScript library build tools:
+<!-- Instead of a bundler, `zshy` implements _extension rewriting_ during the `tsc` build step using the official [TypeScript Compiler API](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API). (Specifically, the `ts.TransformerFactory` API for defining AST-level code transforms.)  -->
+
+The result is a tool that I consider to be the "holy grail" of TypeScript library build tools:
 
 - performs dual-module (ESM + CJS) builds
 - type checks your code
@@ -202,24 +227,6 @@ $ npx zshy
 →  Updating package.json#/bin...
 →  Build complete! ✅
 ``` -->
-
-
-> **Add a `"build"` script to your `package.json`**
->
-> ```diff
-> {
->   // ...
->   "scripts": {
-> +   "build": "zshy"
->   }
-> }
-> ```
->
-> Then, to run a build:
->
-> ```bash
-> $ npm run build
-> ```
 
 <br/>
 <br/>
