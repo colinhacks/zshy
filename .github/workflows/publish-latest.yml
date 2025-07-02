@@ -47,4 +47,6 @@ jobs:
         run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
         
       - name: Publish to npm
-        run: pnpm tsx versace.ts --latest --provenance
+        run: |
+          npm whoami
+          pnpm tsx versace.ts --latest --provenance --verbose
