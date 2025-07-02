@@ -26,6 +26,8 @@ jobs:
         with:
           node-version: 'latest'
           registry-url: 'https://registry.npmjs.org'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -41,8 +43,8 @@ jobs:
       - name: Build project
         run: pnpm build
         
-      - name: Configure npm authentication
-        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+      # - name: Configure npm authentication
+      #   run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
         
       - name: Publish canary to npm
         run: pnpm tsx versace.ts --canary --provenance
