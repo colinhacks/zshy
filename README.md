@@ -69,7 +69,7 @@ pnpm add --save-dev zshy
 
 <br/>
 
-### 2. Specify your entrypoint(s) in `package.json#/zshy`:
+### 2. Specify your entrypoint(s) in `package.json#zshy`:
 
 ```diff
 {
