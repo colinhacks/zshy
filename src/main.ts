@@ -5,6 +5,7 @@ import { globby } from "globby";
 import { table } from "table";
 import * as ts from "typescript";
 
+import type { BuildContext } from "./utils";
 import { compileProject, emojiLog, formatForLog, isSourceFile, readTsconfig, removeExtension } from "./utils";
 
 export async function main(): Promise<void> {
@@ -20,6 +21,7 @@ export async function main(): Promise<void> {
       "--verbose": Boolean,
       "--project": String,
       "--dry-run": Boolean,
+      "--fail-threshold": String,
       // "--attw": Boolean,
 
       // Aliases
@@ -40,10 +42,14 @@ export async function main(): Promise<void> {
 Usage: zshy [options]
 
 Options:
-  -h, --help             Show this help message
-  -p, --project <path>   Path to tsconfig.json file
-      --verbose          Enable verbose output
-      --dry-run          Don't write any files, just log what would be done
+  -h, --help                        Show this help message
+  -p, --project <path>              Path to tsconfig.json file
+      --verbose                     Enable verbose output
+      --dry-run                     Don't write any files, just log what would be done
+      --fail-threshold <threshold>  When to exit with non-zero error code
+                                      "error" (default)
+                                      "warn"
+                                      "never"
 
 Examples:
   zshy                                    # Run build
@@ -67,8 +73,20 @@ Examples:
 
   emojiLog("💎", "Starting build... 🐒");
 
-  const isVerbose = args["--verbose"];
-  const isDryRun = args["--dry-run"];
+  const isVerbose = !!args["--verbose"];
+  const isDryRun = !!args["--dry-run"];
+  const failThreshold = args["--fail-threshold"] || "error"; // Default to 'error'
+
+  // Validate that the threshold value is one of the allowed values
+  if (failThreshold !== "never" && failThreshold !== "warn" && failThreshold !== "error") {
+    emojiLog(
+      "❌",
+      `Invalid value for --fail-threshold: "${failThreshold}". Valid values are "never", "warn", or "error"`,
+      "error"
+    );
+    process.exit(1);
+  }
+
   const isAttw = false; // args["--attw"];
 
   if (isVerbose) {
@@ -78,6 +96,15 @@ Examples:
 
   if (isDryRun) {
     emojiLog("🔍", "Dry run mode enabled - no files will be written");
+  }
+
+  // Display message about fail threshold setting
+  if (failThreshold === "never") {
+    emojiLog("ℹ️", "Build will always succeed regardless of errors or warnings");
+  } else if (failThreshold === "warn") {
+    emojiLog("⚠️", "Build will fail on warnings or errors");
+  } else {
+    emojiLog("ℹ️", "Build will fail only on errors (default)");
   }
 
   ///////////////////////////////////
@@ -510,18 +537,24 @@ Examples:
       );
     }
 
-    // Track all written files
-    const allWrittenFiles: string[] = [];
+    // Create a build context to track written files, copied assets, and compilation errors/warnings
+    const buildContext: BuildContext = {
+      writtenFiles: new Set<string>(),
+      copiedAssets: new Set<string>(),
+      errorCount: 0,
+      warningCount: 0,
+    };
 
     // CJS
     emojiLog("🧱", `Building CJS...${isTypeModule ? ` (rewriting .ts -> .cjs/.d.cts)` : ``}`);
-    const cjsFiles = await compileProject(
+    await compileProject(
       {
         configPath: tsconfigPath,
         mode: isTypeModule ? "cts" : "ts",
         verbose: isVerbose,
         dryRun: isDryRun,
-        packageRoot: pkgJsonDir,
+        pkgJsonDir,
+        rootDir,
         compilerOptions: {
           ...tsconfigJson,
           module: ts.ModuleKind.CommonJS,
@@ -529,19 +562,20 @@ Examples:
           outDir,
         },
       },
-      uniqueEntryPoints
+      uniqueEntryPoints,
+      buildContext
     );
-    allWrittenFiles.push(...cjsFiles);
 
     // ESM
     emojiLog("🧱", `Building ESM...${isTypeModule ? `` : ` (rewriting .ts -> .mjs/.d.mts)`}`);
-    const esmFiles = await compileProject(
+    await compileProject(
       {
         configPath: tsconfigPath,
         mode: isTypeModule ? "ts" : "mts",
         verbose: isVerbose,
         dryRun: isDryRun,
-        packageRoot: pkgJsonDir,
+        pkgJsonDir,
+        rootDir,
         compilerOptions: {
           ...tsconfigJson,
           module: ts.ModuleKind.ESNext,
@@ -549,20 +583,20 @@ Examples:
           outDir,
         },
       },
-      uniqueEntryPoints
+      uniqueEntryPoints,
+      buildContext
     );
-    allWrittenFiles.push(...esmFiles);
 
     ///////////////////////////////////
     ///      display written files  ///
     ///////////////////////////////////
 
     // Display files that were written or would be written (only in verbose mode)
-    if (isVerbose && allWrittenFiles.length > 0) {
-      emojiLog("📜", `${isDryRun ? "[dryrun] " : ""}Writing files (${allWrittenFiles.length} total)...`);
+    if (isVerbose && buildContext.writtenFiles.size > 0) {
+      emojiLog("📜", `${isDryRun ? "[dryrun] " : ""}Writing files (${buildContext.writtenFiles.size} total)...`);
 
       // Sort files by relative path for consistent display
-      const sortedFiles = [...allWrittenFiles]
+      const sortedFiles = [...buildContext.writtenFiles]
         .map((file) => path.relative(pkgJsonDir, file))
         .sort()
         .map((relPath) => (relPath.startsWith(".") ? relPath : `./${relPath}`));
@@ -702,7 +736,7 @@ Examples:
       const { promisify } = await import("node:util");
 
       const execFileAsync = promisify(execFile);
-      const [cmd, ...args] = `${pmExec} @arethetypeswrong/cli --pack ${pkgJsonDir}`.split(" ");
+      const [cmd, ...args] = `${pmExec} @arethetypeswrong/cli --pack ${pkgJsonDir} --format table-flipped`.split(" ");
       console.dir([cmd, ...args], { depth: null });
 
       let stdout = "";
@@ -738,7 +772,32 @@ Examples:
       }
     }
 
-    emojiLog("🎉", "Build complete! ✅");
+    // Report total compilation results
+    if (buildContext.errorCount > 0 || buildContext.warningCount > 0) {
+      emojiLog(
+        "📊",
+        `Compilation finished with ${buildContext.errorCount} error(s) and ${buildContext.warningCount} warning(s)`
+      );
+
+      // Apply threshold rules for exit code
+      if (failThreshold !== "never" && buildContext.errorCount > 0) {
+        // Both 'warn' and 'error' thresholds cause failure on errors
+        emojiLog("❌", `Build completed with errors`, "error");
+        process.exit(1);
+      } else if (failThreshold === "warn" && buildContext.warningCount > 0) {
+        // Only 'warn' threshold causes failure on warnings
+        emojiLog("⚠️", `Build completed with warnings (exiting with error due to --fail-threshold=warn)`, "warn");
+        process.exit(1);
+      } else if (buildContext.errorCount > 0) {
+        // If we got here with errors, we're in 'never' mode
+        emojiLog("⚠️", `Build completed with errors (continuing due to --fail-threshold=never)`, "warn");
+      } else {
+        // Just warnings and not failing on them
+        emojiLog("🎉", `Build complete with warnings`);
+      }
+    } else {
+      emojiLog("🎉", "Build complete! ✅");
+    }
   } catch (error) {
     emojiLog("❌", `Build failed: ${error}`, "error");
     process.exit(1);

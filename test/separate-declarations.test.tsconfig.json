@@ -11,7 +11,8 @@
     "outDir": "./build",
     "rootDir": "./src",
     "declaration": true,
-    "declarationDir": "./types"
+    "declarationDir": "./types",
+    "resolveJsonModule": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "build", "types"]

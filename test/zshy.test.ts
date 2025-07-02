@@ -138,6 +138,29 @@ describe("zshy with different tsconfig configurations", () => {
     const snapshot = runZshyWithTsconfig("bin-string.test.tsconfig.json");
     expect(snapshot).toMatchSnapshot();
   });
+
+  it("should copy assets during build", () => {
+    const snapshot = runZshyWithTsconfig("basic.test.tsconfig.json");
+
+    // Check that assets are being detected and copied
+    expect(snapshot.stdout).toContain("Found 5 asset import(s), copying to output directory...");
+    expect(snapshot.stdout).toContain("Copied asset: ./src/assets/styles.css");
+    expect(snapshot.stdout).toContain("Copied asset: ./src/assets/config.json");
+    expect(snapshot.stdout).toContain("Copied asset: ./src/assets/README.md");
+    expect(snapshot.stdout).toContain("Copied asset: ./src/plugins/plugin-a.css");
+    expect(snapshot.stdout).toContain("Copied asset: ./src/plugins/plugin-b.css");
+
+    expect(snapshot).toMatchSnapshot();
+  });
+
+  it("should handle asset imports in wildcard exports", () => {
+    const snapshot = runZshyWithTsconfig("modern.test.tsconfig.json");
+
+    // Should still copy assets even when using wildcard exports
+    expect(snapshot.stdout).toContain("asset import(s), copying to output directory...");
+
+    expect(snapshot).toMatchSnapshot();
+  });
 });
 
 function normalizeOutput(output: string): string {

@@ -1,3 +1,4 @@
+import * as fs from "node:fs";
 import * as path from "node:path";
 import * as ts from "typescript";
 
@@ -19,13 +20,21 @@ export function removeExtension(filePath: string): string {
   return filePath.split(".").slice(0, -1).join(".") || filePath;
 }
 
+export interface BuildContext {
+  writtenFiles: Set<string>;
+  copiedAssets: Set<string>;
+  errorCount: number;
+  warningCount: number;
+}
+
 export interface ProjectOptions {
   configPath: string;
   compilerOptions: ts.CompilerOptions & Required<Pick<ts.CompilerOptions, "module" | "moduleResolution" | "outDir">>;
   mode: "cts" | "ts" | "mts";
-  verbose?: boolean;
-  dryRun?: boolean;
-  packageRoot?: string; // Add package root for relative path display
+  pkgJsonDir: string; // Add package root for relative path display
+  rootDir: string; // Add source root for asset copying
+  verbose: boolean;
+  dryRun: boolean;
 }
 
 export function readTsconfig(tsconfigPath: string) {
@@ -79,11 +88,11 @@ export function readTsconfig(tsconfigPath: string) {
   return parsedConfig.options!;
 }
 
-export async function compileProject(config: ProjectOptions, entryPoints: string[]): Promise<string[]> {
+export async function compileProject(config: ProjectOptions, entryPoints: string[], ctx: BuildContext): Promise<void> {
   // Deduplicate entry points before compilation
 
-  // Track files that would be written
-  const writtenFiles: string[] = [];
+  // Track asset imports encountered during transformation
+  const assetImports = new Set<string>();
 
   // Create compiler host
   const host = ts.createCompilerHost(config.compilerOptions);
@@ -105,7 +114,7 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
     }
 
     // Track the file that would be written
-    writtenFiles.push(outputFileName);
+    ctx.writtenFiles.add(outputFileName);
 
     if (!config.dryRun && originalWriteFile) {
       originalWriteFile(outputFileName, processedData, writeByteOrderMark, onError, sourceFiles);
@@ -123,31 +132,45 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
   const extensionRewriteTransformer: ts.TransformerFactory<ts.SourceFile | ts.Bundle> = (context) => {
     return (sourceFile) => {
       const visitor = (node: ts.Node): ts.Node => {
-        if (ts.isImportDeclaration(node) && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier)) {
-          const originalText = node.moduleSpecifier.text;
+        const isImport = ts.isImportDeclaration(node);
+        const isExport = ts.isExportDeclaration(node);
+        const isDynamicImport = ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword;
+        // const isImportOrExport  = ts.isImportDeclaration(node) || ts.isExportDeclaration(node)
+        //  || (ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword);
 
-          if (originalText.endsWith(".js")) {
-            const newText = originalText.slice(0, -3) + jsExt;
-
-            return ts.factory.updateImportDeclaration(
-              node,
-              node.modifiers,
-              node.importClause,
-              ts.factory.createStringLiteral(newText),
-              node.assertClause
-            );
+        let originalText: string; // = isImport ? node.moduleSpecifier.text : isExport ? node.moduleSpecifier?.text :
+        if (isImport || isExport || isDynamicImport) {
+          if (isImport || isExport) {
+            if (!node.moduleSpecifier || !ts.isStringLiteral(node.moduleSpecifier)) {
+              return ts.visitEachChild(node, visitor, context);
+            }
+            originalText = node.moduleSpecifier.text;
+          } else if (isDynamicImport) {
+            const arg = node.arguments[0]!;
+            if (!ts.isStringLiteral(arg)) {
+              // continue
+              return ts.visitEachChild(node, visitor, context);
+            }
+            originalText = arg.text;
+          } else {
+            // If it's not an import, export, or dynamic import, just visit children
+            return ts.visitEachChild(node, visitor, context);
           }
 
-          // if import is extensionless, add .js extension
-          if (originalText.startsWith("./") || originalText.startsWith("../")) {
-            // console.dir("import", { depth: null });
-            // console.dir(originalText, { depth: null });
-            const hasExtension = path.extname(originalText) !== "";
+          // const originalText = node.moduleSpecifier.text;
 
-            if (!hasExtension) {
-              const newText = originalText + jsExt;
-              // console.dir(newText, { depth: null });
+          const isRelativeImport = originalText.startsWith("./") || originalText.startsWith("../");
+          if (!isRelativeImport) {
+            // If it's not a relative import, don't transform it
+            return node;
+          }
 
+          const ext = path.extname(originalText).toLowerCase();
+
+          // rewrite .js to resolved js extension
+          if (ext === ".js") {
+            const newText = originalText.slice(0, -3) + jsExt;
+            if (isImport) {
               return ts.factory.updateImportDeclaration(
                 node,
                 node.modifiers,
@@ -155,34 +178,7 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
                 ts.factory.createStringLiteral(newText),
                 node.assertClause
               );
-            }
-          }
-        }
-
-        // Handle export declarations
-        if (ts.isExportDeclaration(node) && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier)) {
-          const originalText = node.moduleSpecifier.text;
-
-          if (originalText.endsWith(".js")) {
-            const newText = originalText.slice(0, -3) + jsExt;
-
-            return ts.factory.updateExportDeclaration(
-              node,
-              node.modifiers,
-              node.isTypeOnly,
-              node.exportClause,
-              ts.factory.createStringLiteral(newText),
-              node.assertClause
-            );
-          }
-
-          // if export is extensionless, add .js extension
-          if (originalText.startsWith("./") || originalText.startsWith("../")) {
-            const hasExtension = path.extname(originalText) !== "";
-
-            if (!hasExtension) {
-              const newText = originalText + jsExt;
-
+            } else if (isExport) {
               return ts.factory.updateExportDeclaration(
                 node,
                 node.modifiers,
@@ -191,38 +187,149 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
                 ts.factory.createStringLiteral(newText),
                 node.assertClause
               );
-            }
-          }
-        }
-
-        // Handle dynamic imports
-        if (ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword) {
-          const arg = node.arguments[0]!;
-          if (ts.isStringLiteral(arg)) {
-            const originalText = arg.text;
-
-            if (originalText.endsWith(".js")) {
-              const newText = originalText.slice(0, -3) + jsExt;
+            } else if (isDynamicImport) {
               return ts.factory.updateCallExpression(node, node.expression, node.typeArguments, [
                 ts.factory.createStringLiteral(newText),
                 ...node.arguments.slice(1),
               ]);
             }
+          }
 
-            // if dynamic import is extensionless, add .js extension
-            if (originalText.startsWith("./") || originalText.startsWith("../")) {
-              const hasExtension = path.extname(originalText) !== "";
-
-              if (!hasExtension) {
-                const newText = originalText + jsExt;
-                return ts.factory.updateCallExpression(node, node.expression, node.typeArguments, [
-                  ts.factory.createStringLiteral(newText),
-                  ...node.arguments.slice(1),
-                ]);
-              }
+          // rewrite extensionless imports to .js
+          if (ext === "") {
+            const newText = originalText + jsExt;
+            if (isImport) {
+              return ts.factory.updateImportDeclaration(
+                node,
+                node.modifiers,
+                node.importClause,
+                ts.factory.createStringLiteral(newText),
+                node.assertClause
+              );
+            } else if (isExport) {
+              return ts.factory.updateExportDeclaration(
+                node,
+                node.modifiers,
+                node.isTypeOnly,
+                node.exportClause,
+                ts.factory.createStringLiteral(newText),
+                node.assertClause
+              );
+            } else if (isDynamicImport) {
+              return ts.factory.updateCallExpression(node, node.expression, node.typeArguments, [
+                ts.factory.createStringLiteral(newText),
+                ...node.arguments.slice(1),
+              ]);
             }
           }
+
+          // copy asset files
+          if (isAssetFile(originalText)) {
+            // it's an asset
+            if (ts.isSourceFile(sourceFile)) {
+              const sourceFileDir = path.dirname(sourceFile.fileName);
+              const resolvedAssetPath = path.resolve(sourceFileDir, originalText);
+              // Make it relative to the source root (rootDir)
+              const relAssetPath = path.relative(config.rootDir, resolvedAssetPath);
+              assetImports.add(relAssetPath);
+            }
+            // Don't transform asset dynamic imports, leave them as-is
+            return node;
+          }
         }
+
+        // // Handle export declarations
+        // if (ts.isExportDeclaration(node) && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier)) {
+        //   const originalText = node.moduleSpecifier.text;
+
+        //   // Check if this is an asset export (relative path with asset extension)
+        //   if ((originalText.startsWith("./") || originalText.startsWith("../")) && isAssetFile(originalText)) {
+        //     // Resolve the asset path relative to the source file's directory
+        //     if (ts.isSourceFile(sourceFile)) {
+        //       const sourceFileDir = path.dirname(sourceFile.fileName);
+        //       const resolvedAssetPath = path.resolve(sourceFileDir, originalText);
+        //       // Make it relative to the source root (rootDir)
+        //       const relAssetPath = path.relative(config.rootDir, resolvedAssetPath);
+        //       assetImports.add(relAssetPath);
+        //     }
+        //     // Don't transform asset exports, leave them as-is
+        //     return node;
+        //   }
+
+        //   if (originalText.endsWith(".js")) {
+        //     const newText = originalText.slice(0, -3) + jsExt;
+
+        //     return ts.factory.updateExportDeclaration(
+        //       node,
+        //       node.modifiers,
+        //       node.isTypeOnly,
+        //       node.exportClause,
+        //       ts.factory.createStringLiteral(newText),
+        //       node.assertClause
+        //     );
+        //   }
+
+        //   // if export is extensionless, add .js extension
+        //   if (originalText.startsWith("./") || originalText.startsWith("../")) {
+        //     const hasExtension = path.extname(originalText) !== "";
+
+        //     if (!hasExtension) {
+        //       const newText = originalText + jsExt;
+
+        //       return ts.factory.updateExportDeclaration(
+        //         node,
+        //         node.modifiers,
+        //         node.isTypeOnly,
+        //         node.exportClause,
+        //         ts.factory.createStringLiteral(newText),
+        //         node.assertClause
+        //       );
+        //     }
+        //   }
+        // }
+
+        // Handle dynamic imports
+        // if (ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword) {
+        //   const arg = node.arguments[0]!;
+        //   if (ts.isStringLiteral(arg)) {
+        //     const originalText = arg.text;
+
+        //     // Check if this is an asset dynamic import (relative path with asset extension)
+        //     if ((originalText.startsWith("./") || originalText.startsWith("../")) && isAssetFile(originalText)) {
+        //       // Resolve the asset path relative to the source file's directory
+        //       if (ts.isSourceFile(sourceFile)) {
+        //         const sourceFileDir = path.dirname(sourceFile.fileName);
+        //         const resolvedAssetPath = path.resolve(sourceFileDir, originalText);
+        //         // Make it relative to the source root (rootDir)
+        //         const relAssetPath = path.relative(config.rootDir, resolvedAssetPath);
+        //         assetImports.add(relAssetPath);
+        //       }
+        //       // Don't transform asset dynamic imports, leave them as-is
+        //       return node;
+        //     }
+
+        //     if (originalText.endsWith(".js")) {
+        //       const newText = originalText.slice(0, -3) + jsExt;
+        //       return ts.factory.updateCallExpression(node, node.expression, node.typeArguments, [
+        //         ts.factory.createStringLiteral(newText),
+        //         ...node.arguments.slice(1),
+        //       ]);
+        //     }
+
+        //     // if dynamic import is extensionless, add .js extension
+        //     if (originalText.startsWith("./") || originalText.startsWith("../")) {
+        //       const hasExtension = path.extname(originalText) !== "";
+
+        //       if (!hasExtension) {
+        //         const newText = originalText + jsExt;
+        //         return ts.factory.updateCallExpression(node, node.expression, node.typeArguments, [
+        //           ts.factory.createStringLiteral(newText),
+        //           ...node.arguments.slice(1),
+        //         ]);
+        //       }
+        //     }
+        //   }
+        // }
 
         return ts.visitEachChild(node, visitor, context);
       };
@@ -238,9 +345,12 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
     const errorCount = diagnostics.filter((d) => d.category === ts.DiagnosticCategory.Error).length;
     const warningCount = diagnostics.filter((d) => d.category === ts.DiagnosticCategory.Warning).length;
 
+    // Update the build context with error and warning counts
+    ctx.errorCount += errorCount;
+    ctx.warningCount += warningCount;
+
     if (errorCount > 0 || warningCount > 0) {
       emojiLog("⚠️", `Found ${errorCount} error(s) and ${warningCount} warning(s)`, "warn");
-      console.log();
     }
 
     // Format diagnostics with color and context like tsc, keeping original order
@@ -278,6 +388,10 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
     const emitErrors = emitResult.diagnostics.filter((d) => d.category === ts.DiagnosticCategory.Error);
     const emitWarnings = emitResult.diagnostics.filter((d) => d.category === ts.DiagnosticCategory.Warning);
 
+    // Update the build context with emit error and warning counts
+    ctx.errorCount += emitErrors.length;
+    ctx.warningCount += emitWarnings.length;
+
     emojiLog("❌", `Found ${emitErrors.length} error(s) and ${emitWarnings.length} warning(s) during emit:`, "error");
     console.log();
 
@@ -297,6 +411,127 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
     }
   }
 
-  // Return the list of files that were written or would be written
-  return writtenFiles;
+  // Copy assets if any were found and rootDir is provided
+  if (assetImports.size > 0) {
+    if (config.verbose) {
+      emojiLog("📄", `Found ${assetImports.size} asset import(s), copying to output directory...`);
+    }
+
+    copyAssets(assetImports, config, ctx);
+  }
+}
+
+// export function isAssetFile(filePath: string): boolean {
+//   const ext = path.extname(filePath).toLowerCase();
+//   const assetExtensions = [
+//     // Stylesheets
+//     ".css",
+//     ".scss",
+//     ".sass",
+//     ".less",
+//     ".styl",
+//     ".stylus",
+//     // Images
+//     ".png",
+//     ".jpg",
+//     ".jpeg",
+//     ".gif",
+//     ".svg",
+//     ".webp",
+//     ".avif",
+//     ".ico",
+//     ".bmp",
+//     ".tiff",
+//     ".tif",
+//     // Fonts
+//     ".woff",
+//     ".woff2",
+//     ".ttf",
+//     ".otf",
+//     ".eot",
+//     // WebAssembly
+//     ".wasm",
+//     // Audio/Video
+//     ".mp3",
+//     ".mp4",
+//     ".avi",
+//     ".mov",
+//     ".webm",
+//     ".ogg",
+//     ".wav",
+//     ".flac",
+//     // Data formats
+//     ".json",
+//     ".xml",
+//     ".yaml",
+//     ".yml",
+//     ".toml",
+//     ".csv",
+//     ".txt",
+//     ".md",
+//     // Other assets
+//     ".pdf",
+//     ".zip",
+//     ".tar",
+//     ".gz",
+//     ".glb",
+//     ".gltf",
+//     ".fbx",
+//     ".obj",
+//   ];
+//   return assetExtensions.includes(ext);
+// }
+
+export const jsExtensions: Set<string> = new Set([".js", ".mjs", ".cjs", ".ts", ".mts", ".cts", ".tsx"]);
+
+export function isAssetFile(filePath: string): boolean {
+  const ext = path.extname(filePath).toLowerCase();
+  if (ext === "") return false;
+  return !jsExtensions.has(ext);
+}
+
+export function copyAssets(assetPaths: Set<string>, config: ProjectOptions, ctx: BuildContext): void {
+  for (const assetPath of assetPaths) {
+    try {
+      // Asset paths are now relative to rootDir
+      const sourceFile = path.resolve(config.rootDir, assetPath);
+
+      if (!fs.existsSync(sourceFile)) {
+        if (config.verbose) {
+          emojiLog("⚠️", `Asset not found: ${assetPath} (resolved to ${sourceFile})`, "warn");
+        }
+        continue;
+      }
+
+      // Create the destination path in outDir, maintaining the same relative structure
+      const destFile = path.resolve(config.compilerOptions.outDir, assetPath);
+
+      // Skip if this asset has already been copied
+      if (ctx.copiedAssets.has(destFile)) {
+        continue;
+      }
+
+      const destDir = path.dirname(destFile);
+
+      // Track the file that would be copied
+      ctx.writtenFiles.add(destFile);
+      ctx.copiedAssets.add(destFile);
+
+      if (!config.dryRun) {
+        // Ensure destination directory exists
+        fs.mkdirSync(destDir, { recursive: true });
+
+        // Copy the file
+        fs.copyFileSync(sourceFile, destFile);
+      }
+
+      if (config.verbose) {
+        const relativeSource = config.pkgJsonDir ? path.relative(config.pkgJsonDir, sourceFile) : sourceFile;
+        const relativeDest = config.pkgJsonDir ? path.relative(config.pkgJsonDir, destFile) : destFile;
+        emojiLog("📄", `${config.dryRun ? "[dryrun] " : ""}Copied asset: ./${relativeSource} → ./${relativeDest}`);
+      }
+    } catch (error) {
+      emojiLog("❌", `Failed to copy asset ${assetPath}: ${error}`, "error");
+    }
+  }
 }

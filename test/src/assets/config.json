@@ -1,0 +1,10 @@
+{
+  "appName": "Test Application",
+  "version": "1.0.0",
+  "features": ["asset-bundling", "typescript", "testing"],
+  "config": {
+    "theme": "dark",
+    "language": "en",
+    "debug": true
+  }
+}

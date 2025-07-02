@@ -1,5 +1,312 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`zshy with different tsconfig configurations > should copy assets during build 1`] = `
+{
+  "exitCode": 0,
+  "stderr": "→  Found 1 error(s) and 0 warning(s)
+→  Found 1 error(s) and 0 warning(s)",
+  "stdout": "→  Starting build...
+→  Verbose mode enabled
+→  Detected package manager: npx
+→  Dry run mode enabled - no files will be written
+→  Detected project root: <root>/test
+→  Reading package.json from ./package.json
+→  Parsed zshy config: {
+     "exports": {
+       ".": "./src/index.ts",
+       "./utils": "./src/utils.ts",
+       "./plugins/*": "./src/plugins/*"
+     },
+     "bin": "./src/index.ts",
+     "sourceDialects": [
+       "@zod/source"
+     ]
+   }
+→  Reading tsconfig from ./basic.test.tsconfig.json
+→  Cleaning up outDir...
+→  Skipping cleanup of declarationDir as it contains source files
+→  Determining entrypoints...
+   ╔═══════════════════════════════╤═════════════════════════════╗
+   ║ Subpath                       │ Entrypoint                  ║
+   ╟───────────────────────────────┼─────────────────────────────╢
+   ║ "zshy-test-fixture"           │ ./src/index.ts              ║
+   ║ "zshy-test-fixture/utils"     │ ./src/utils.ts              ║
+   ║ "zshy-test-fixture/plugins/*" │ ./src/plugins/* (2 matches) ║
+   ║ bin:zshy-test-fixture         │ ./src/index.ts              ║
+   ╚═══════════════════════════════╧═════════════════════════════╝
+→  Resolved build paths:
+   ╔══════════╤═══════════════╗
+   ║ Location │ Resolved path ║
+   ╟──────────┼───────────────╢
+   ║ rootDir  │ ./src         ║
+   ║ outDir   │ ./dist        ║
+   ╚══════════╧═══════════════╝
+→  Package is an ES module (package.json#/type is "module")
+→  Resolved entrypoints: [
+     "./src/index.ts",
+     "./src/utils.ts",
+     "./src/plugins/a.ts",
+     "./src/plugins/b.ts"
+   ]
+→  Resolved compilerOptions: {
+     "target": "ES2020",
+     "module": "ESNext",
+     "moduleResolution": "Node10",
+     "strict": true,
+     "esModuleInterop": true,
+     "skipLibCheck": true,
+     "forceConsistentCasingInFileNames": true,
+     "outDir": "<root>/test/dist",
+     "rootDir": "<root>/test/src",
+     "declaration": true,
+     "resolveJsonModule": true,
+     "noEmit": false,
+     "emitDeclarationOnly": false,
+     "rewriteRelativeImportExtensions": true,
+     "verbatimModuleSyntax": false
+   }
+→  Building CJS... (rewriting .ts -> .cjs/.d.cts)
+
+[<time>rc/utils.ts:7:31 - error TS2307: Cannot find module './assets/README.md' or its corresponding type declarations.
+
+7   const readme = await import('./assets/README.md');
+                                ~~~~~~~~~~~~~~~~~~~~
+
+→  Found 5 asset import(s), copying to output directory...
+→  [dryrun] Copied asset: ./src/assets/README.md → ./dist/assets/README.md
+→  [dryrun] Copied asset: ./src/assets/styles.css → ./dist/assets/styles.css
+→  [dryrun] Copied asset: ./src/assets/config.json → ./dist/assets/config.json
+→  [dryrun] Copied asset: ./src/plugins/plugin-a.css → ./dist/plugins/plugin-a.css
+→  [dryrun] Copied asset: ./src/plugins/plugin-b.css → ./dist/plugins/plugin-b.css
+→  Building ESM...
+
+[<time>rc/utils.ts:7:31 - error TS2307: Cannot find module './assets/README.md' or its corresponding type declarations.
+
+7   const readme = await import('./assets/README.md');
+                                ~~~~~~~~~~~~~~~~~~~~
+
+→  Found 5 asset import(s), copying to output directory...
+→  [dryrun] Copied asset: ./src/assets/README.md → ./dist/assets/README.md
+→  [dryrun] Copied asset: ./src/assets/styles.css → ./dist/assets/styles.css
+→  [dryrun] Copied asset: ./src/assets/config.json → ./dist/assets/config.json
+→  [dryrun] Copied asset: ./src/plugins/plugin-a.css → ./dist/plugins/plugin-a.css
+→  [dryrun] Copied asset: ./src/plugins/plugin-b.css → ./dist/plugins/plugin-b.css
+→  [dryrun] Writing files (28 total)...
+     ./dist/assets/README.md
+     ./dist/assets/README.md
+     ./dist/assets/config.json
+     ./dist/assets/config.json
+     ./dist/assets/config.json
+     ./dist/assets/config.json
+     ./dist/assets/styles.css
+     ./dist/assets/styles.css
+     ./dist/index.cjs
+     ./dist/index.d.cts
+     ./dist/index.d.ts
+     ./dist/index.js
+     ./dist/plugins/a.cjs
+     ./dist/plugins/a.d.cts
+     ./dist/plugins/a.d.ts
+     ./dist/plugins/a.js
+     ./dist/plugins/b.cjs
+     ./dist/plugins/b.d.cts
+     ./dist/plugins/b.d.ts
+     ./dist/plugins/b.js
+     ./dist/plugins/plugin-a.css
+     ./dist/plugins/plugin-a.css
+     ./dist/plugins/plugin-b.css
+     ./dist/plugins/plugin-b.css
+     ./dist/utils.cjs
+     ./dist/utils.d.cts
+     ./dist/utils.d.ts
+     ./dist/utils.js
+→  [dryrun] Updating package.json#/exports...
+→  Generated "exports": {
+     ".": {
+       "@zod/source": "./src/index.ts",
+       "types": "./dist/index.d.cts",
+       "import": "./dist/index.js",
+       "require": "./dist/index.cjs"
+     },
+     "./utils": {
+       "@zod/source": "./src/utils.ts",
+       "types": "./dist/utils.d.cts",
+       "import": "./dist/utils.js",
+       "require": "./dist/utils.cjs"
+     },
+     "./plugins/*": {
+       "@zod/source": "./src/plugins/*",
+       "types": "./dist/plugins/*",
+       "import": "./dist/plugins/*",
+       "require": "./dist/plugins/*"
+     }
+   }
+→  [dryrun] Updating package.json#/bin...
+→  Generated "bin": "./dist/index.cjs"
+→  [dryrun] Skipping package.json modification
+→  Build complete!
+
+→  Found 1 error(s) and 0 warning(s)
+→  Found 1 error(s) and 0 warning(s)",
+}
+`;
+
+exports[`zshy with different tsconfig configurations > should handle asset imports in wildcard exports 1`] = `
+{
+  "exitCode": 0,
+  "stderr": "→  Found 1 error(s) and 0 warning(s)
+→  Found 1 error(s) and 0 warning(s)",
+  "stdout": "→  Starting build...
+→  Verbose mode enabled
+→  Detected package manager: npx
+→  Dry run mode enabled - no files will be written
+→  Detected project root: <root>/test
+→  Reading package.json from ./package.json
+→  Parsed zshy config: {
+     "exports": {
+       ".": "./src/index.ts",
+       "./utils": "./src/utils.ts",
+       "./plugins/*": "./src/plugins/*"
+     },
+     "bin": "./src/index.ts",
+     "sourceDialects": [
+       "@zod/source"
+     ]
+   }
+→  Reading tsconfig from ./modern.test.tsconfig.json
+→  Cleaning up outDir...
+→  Cleaning up declarationDir...
+→  Determining entrypoints...
+   ╔═══════════════════════════════╤═════════════════════════════╗
+   ║ Subpath                       │ Entrypoint                  ║
+   ╟───────────────────────────────┼─────────────────────────────╢
+   ║ "zshy-test-fixture"           │ ./src/index.ts              ║
+   ║ "zshy-test-fixture/utils"     │ ./src/utils.ts              ║
+   ║ "zshy-test-fixture/plugins/*" │ ./src/plugins/* (2 matches) ║
+   ║ bin:zshy-test-fixture         │ ./src/index.ts              ║
+   ╚═══════════════════════════════╧═════════════════════════════╝
+→  Resolved build paths:
+   ╔════════════════╤════════════════╗
+   ║ Location       │ Resolved path  ║
+   ╟────────────────┼────────────────╢
+   ║ rootDir        │ .              ║
+   ║ outDir         │ ./output/js    ║
+   ║ declarationDir │ ./output/types ║
+   ╚════════════════╧════════════════╝
+→  Package is an ES module (package.json#/type is "module")
+→  Resolved entrypoints: [
+     "./src/index.ts",
+     "./src/utils.ts",
+     "./src/plugins/a.ts",
+     "./src/plugins/b.ts"
+   ]
+→  Resolved compilerOptions: {
+     "target": "ES2022",
+     "module": "ESNext",
+     "moduleResolution": "Bundler",
+     "strict": true,
+     "esModuleInterop": true,
+     "allowSyntheticDefaultImports": true,
+     "skipLibCheck": true,
+     "forceConsistentCasingInFileNames": true,
+     "outDir": "<root>/test/output/js",
+     "rootDir": "<root>/test",
+     "declaration": true,
+     "declarationDir": "<root>/test/output/types",
+     "emitDecoratorMetadata": true,
+     "experimentalDecorators": true,
+     "resolveJsonModule": true,
+     "noEmit": false,
+     "emitDeclarationOnly": false,
+     "rewriteRelativeImportExtensions": true,
+     "verbatimModuleSyntax": false
+   }
+→  Building CJS... (rewriting .ts -> .cjs/.d.cts)
+
+[<time>rc/utils.ts:7:31 - error TS2307: Cannot find module './assets/README.md' or its corresponding type declarations.
+
+7   const readme = await import('./assets/README.md');
+                                ~~~~~~~~~~~~~~~~~~~~
+
+→  Found 5 asset import(s), copying to output directory...
+→  [dryrun] Copied asset: ./src/assets/README.md → ./output/js/src/assets/README.md
+→  [dryrun] Copied asset: ./src/assets/styles.css → ./output/js/src/assets/styles.css
+→  [dryrun] Copied asset: ./src/assets/config.json → ./output/js/src/assets/config.json
+→  [dryrun] Copied asset: ./src/plugins/plugin-a.css → ./output/js/src/plugins/plugin-a.css
+→  [dryrun] Copied asset: ./src/plugins/plugin-b.css → ./output/js/src/plugins/plugin-b.css
+→  Building ESM...
+
+[<time>rc/utils.ts:7:31 - error TS2307: Cannot find module './assets/README.md' or its corresponding type declarations.
+
+7   const readme = await import('./assets/README.md');
+                                ~~~~~~~~~~~~~~~~~~~~
+
+→  Found 5 asset import(s), copying to output directory...
+→  [dryrun] Copied asset: ./src/assets/README.md → ./output/js/src/assets/README.md
+→  [dryrun] Copied asset: ./src/assets/styles.css → ./output/js/src/assets/styles.css
+→  [dryrun] Copied asset: ./src/assets/config.json → ./output/js/src/assets/config.json
+→  [dryrun] Copied asset: ./src/plugins/plugin-a.css → ./output/js/src/plugins/plugin-a.css
+→  [dryrun] Copied asset: ./src/plugins/plugin-b.css → ./output/js/src/plugins/plugin-b.css
+→  [dryrun] Writing files (28 total)...
+     ./output/js/src/assets/README.md
+     ./output/js/src/assets/README.md
+     ./output/js/src/assets/config.json
+     ./output/js/src/assets/config.json
+     ./output/js/src/assets/config.json
+     ./output/js/src/assets/config.json
+     ./output/js/src/assets/styles.css
+     ./output/js/src/assets/styles.css
+     ./output/js/src/index.cjs
+     ./output/js/src/index.js
+     ./output/js/src/plugins/a.cjs
+     ./output/js/src/plugins/a.js
+     ./output/js/src/plugins/b.cjs
+     ./output/js/src/plugins/b.js
+     ./output/js/src/plugins/plugin-a.css
+     ./output/js/src/plugins/plugin-a.css
+     ./output/js/src/plugins/plugin-b.css
+     ./output/js/src/plugins/plugin-b.css
+     ./output/js/src/utils.cjs
+     ./output/js/src/utils.js
+     ./output/types/src/index.d.cts
+     ./output/types/src/index.d.ts
+     ./output/types/src/plugins/a.d.cts
+     ./output/types/src/plugins/a.d.ts
+     ./output/types/src/plugins/b.d.cts
+     ./output/types/src/plugins/b.d.ts
+     ./output/types/src/utils.d.cts
+     ./output/types/src/utils.d.ts
+→  [dryrun] Updating package.json#/exports...
+→  Generated "exports": {
+     ".": {
+       "@zod/source": "./src/index.ts",
+       "types": "./output/types/src/index.d.cts",
+       "import": "./output/js/src/index.js",
+       "require": "./output/js/src/index.cjs"
+     },
+     "./utils": {
+       "@zod/source": "./src/utils.ts",
+       "types": "./output/types/src/utils.d.cts",
+       "import": "./output/js/src/utils.js",
+       "require": "./output/js/src/utils.cjs"
+     },
+     "./plugins/*": {
+       "@zod/source": "./src/plugins/*",
+       "types": "./output/types/src/plugins/*",
+       "import": "./output/js/src/plugins/*",
+       "require": "./output/js/src/plugins/*"
+     }
+   }
+→  [dryrun] Updating package.json#/bin...
+→  Generated "bin": "./output/js/src/index.cjs"
+→  [dryrun] Skipping package.json modification
+→  Build complete!
+
+→  Found 1 error(s) and 0 warning(s)
+→  Found 1 error(s) and 0 warning(s)",
+}
+`;
+
 exports[`zshy with different tsconfig configurations > should work with basic.test.tsconfig.json 1`] = `
 {
   "exitCode": 0,

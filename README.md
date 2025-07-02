@@ -205,10 +205,14 @@ $ npm zshy --help
 Usage: zshy [options]
 
 Options:
-  -h, --help             Show this help message
-  -p, --project <path>   Path to tsconfig (default: ./tsconfig.json)
-      --verbose          Enable verbose output
-      --dry-run          Don't write any files or update package.json
+  -h, --help                        Show this help message
+  -p, --project <path>              Path to tsconfig (default: ./tsconfig.json)
+      --verbose                     Enable verbose output
+      --dry-run                     Don't write any files or update package.json
+      --fail-threshold <threshold>  When to exit with non-zero error code
+                                      "error" (default)
+                                      "warn"
+                                      "never"
 ```
 
 <br/>
