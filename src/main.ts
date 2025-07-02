@@ -5,15 +5,7 @@ import { globby } from "globby";
 import { table } from "table";
 import * as ts from "typescript";
 
-import {
-  compileProject,
-  emojiLog,
-  formatForLog,
-  getEntryPoints,
-  isSourceFile,
-  readTsconfig,
-  removeExtension,
-} from "./utils";
+import { compileProject, emojiLog, formatForLog, isSourceFile, readTsconfig, removeExtension } from "./utils";
 
 export async function main(): Promise<void> {
   ///////////////////////////////////
@@ -334,7 +326,7 @@ Examples:
 
   // Extract entry points from zshy exports config
   emojiLog("➡️", "Determining entrypoints...");
-  const entryPatterns: string[] = [];
+  const entryPoints: string[] = [];
 
   const rows: string[][] = [["Subpath", "Entrypoint"]];
   for (const [exportPath, sourcePath] of Object.entries(config.exports)) {
@@ -356,15 +348,15 @@ Examples:
         }
         const pattern = sourcePath.slice(0, -2) + "/*.{ts,tsx,mts,cts}";
         const wildcardFiles = await globby([pattern], {
-          ignore: ["**/*.d.ts"],
+          ignore: ["**/*.d.ts", "**/*.d.mts", "**/*.d.cts"],
           cwd: pkgJsonDir,
           deep: 1,
         });
-        entryPatterns.push(...wildcardFiles);
+        entryPoints.push(...wildcardFiles);
 
         rows.push([`"${cleanExportPath}"`, `${sourcePath} (${wildcardFiles.length} matches)`]);
       } else if (isSourceFile(sourcePath)) {
-        entryPatterns.push(sourcePath);
+        entryPoints.push(sourcePath);
 
         rows.push([`"${cleanExportPath}"`, sourcePath]);
       }
@@ -376,14 +368,14 @@ Examples:
     if (typeof config.bin === "string") {
       // Single bin entry
       if (isSourceFile(config.bin)) {
-        entryPatterns.push(config.bin);
+        entryPoints.push(config.bin);
         rows.push([`bin:${pkgJson.name}`, config.bin]);
       }
     } else {
       // Multiple bin entries
       for (const [binName, sourcePath] of Object.entries(config.bin as Record<string, string>)) {
         if (typeof sourcePath === "string" && isSourceFile(sourcePath)) {
-          entryPatterns.push(sourcePath);
+          entryPoints.push(sourcePath);
           rows.push([`bin:${binName}`, sourcePath]);
         }
       }
@@ -407,12 +399,6 @@ Examples:
         .trim()
   );
 
-  ///////////////////////////////
-  ///   compute entry points  ///
-  ///////////////////////////////
-
-  // compute entry points
-  const entryPoints = await getEntryPoints(entryPatterns);
   // disallow .mts and .cts files
   if (entryPoints.some((ep) => ep.endsWith(".mts") || ep.endsWith(".cts"))) {
     emojiLog(

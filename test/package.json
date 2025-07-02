@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "description": "Test fixture for zshy - represents a typical TypeScript library",
   "type": "module",
-  "main": "./dist/index.cjs",
-  "types": "./dist/index.d.cts",
-  "bin": "./dist/index.cjs",
+  "main": "./index.cjs",
+  "types": "./index.d.cts",
+  "bin": "./index.cjs",
   "scripts": {
     "build": "zshy"
   },
@@ -26,25 +26,25 @@
   "files": [
     "dist"
   ],
-  "module": "./dist/index.js",
+  "module": "./index.js",
   "exports": {
     ".": {
       "@zod/source": "./src/index.ts",
-      "types": "./dist/index.d.cts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "types": "./index.d.cts",
+      "import": "./index.js",
+      "require": "./index.cjs"
     },
     "./utils": {
       "@zod/source": "./src/utils.ts",
-      "types": "./dist/utils.d.cts",
-      "import": "./dist/utils.js",
-      "require": "./dist/utils.cjs"
+      "types": "./utils.d.cts",
+      "import": "./utils.js",
+      "require": "./utils.cjs"
     },
     "./plugins/*": {
       "@zod/source": "./src/plugins/*",
-      "types": "./dist/plugins/*",
-      "import": "./dist/plugins/*",
-      "require": "./dist/plugins/*"
+      "types": "./plugins/*",
+      "import": "./plugins/*",
+      "require": "./plugins/*"
     }
   }
 }

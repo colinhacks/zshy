@@ -1,5 +1,4 @@
 import * as path from "node:path";
-import { globby } from "globby";
 import * as ts from "typescript";
 
 export function formatForLog(data: unknown) {
@@ -27,24 +26,6 @@ export interface ProjectOptions {
   verbose?: boolean;
   dryRun?: boolean;
   packageRoot?: string; // Add package root for relative path display
-}
-
-// Get entry points using the same logic as esbuild.mts
-export async function getEntryPoints(patterns: string[]): Promise<string[]> {
-  const results: string[] = [];
-  for (const pattern of patterns) {
-    const _results = await globby(pattern, {
-      ignore: ["**/*.d.ts"],
-    });
-
-    if (!pattern.endsWith("/*") && _results.length === 0) {
-      emojiLog("❌", `File does not exist: ${pattern}`, "error");
-      process.exit(1);
-    }
-
-    results.push(..._results);
-  }
-  return results;
 }
 
 export function readTsconfig(tsconfigPath: string) {
