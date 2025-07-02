@@ -71,13 +71,13 @@ pnpm add --save-dev zshy
 
 ### 2. Specify your entrypoint(s) in `package.json#/zshy`:
 
-```jsonc
+```diff
 {
   "name": "my-pkg",
   "version": "1.0.0",
-  "zshy": {
-    ".": "./src/index.ts" // 👈 package entrypoint
-  }
++ "zshy": {
++   ".": "./src/index.ts" // 👈 package entrypoint
++ }
 }
 ```
 
@@ -312,7 +312,7 @@ If your package is a CLI, specify your CLI entrypoint in `package.json#/zshy/bin
 }
 ```
 
-When you run `zshy`, it will automatically add the appropriate `"bin"` field to your `package.json`:
+The `"bin"` field is automatically written into your `package.json`:
 
 ```diff
 {
