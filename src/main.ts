@@ -7,8 +7,6 @@ import * as ts from "typescript";
 import { type BuildContext, compileProject } from "./compile";
 import { emojiLog, formatForLog, isSourceFile, readTsconfig, removeExtension } from "./utils";
 
-type asdf = "unused";
-
 export async function main(): Promise<void> {
   ///////////////////////////////////
   ///    parse command line args  ///
