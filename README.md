@@ -535,9 +535,8 @@ Yes! This is one of the key reasons `zshy` was originally developed. Many enviro
 This causes issues for packages that want to use subpath imports to structure their package. Fortunately `zshy` unlocks a workaround I call a _flat build_:
 
 1. Remove `"type": "module"` from your `package.json` (if present)
-2. Put your source files in your package root (not in a `src` directory)
-3. Set `outDir: "."` in your `tsconfig.json`
-4. Configure `"exclude"` in `package.json` to exclude all source files:
+2. Set `outDir: "."` in your `tsconfig.json`
+3. Configure `"exclude"` in `package.json` to exclude all source files:
 
    ```jsonc
    {
@@ -546,7 +545,7 @@ This causes issues for packages that want to use subpath imports to structure th
    }
    ```
 
-With this setup, your build outputs (`index.js`, etc) will be written to disk alongside to their corresponding source files. Older environments will resolve imports like `"your-library/utils"` to `"your-library/utils/index.js"`, effectively simulating subpath imports in environments that don't support them.
+With this setup, your build outputs (`index.js`, etc) will be written to the package root. Older environments will resolve imports like `"your-library/utils"` to `"your-library/utils/index.js"`, effectively simulating subpath imports in environments that don't support them.
 
 <br/>
 
