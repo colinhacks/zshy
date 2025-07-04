@@ -7,7 +7,7 @@
   "types": "./dist/index.d.cts",
   "bin": "./dist/index.cjs",
   "scripts": {
-    "build": "zshy"
+    "build": "tsx ../src/index.ts"
   },
   "devDependencies": {
     "typescript": "^5.8.3"
@@ -16,6 +16,7 @@
     "exports": {
       ".": "./src/index.ts",
       "./utils": "./src/utils.ts",
+      "./plugins": "./src/plugins/index.ts",
       "./plugins/*": "./src/plugins/*"
     },
     "bin": "./src/index.ts",
@@ -39,6 +40,12 @@
       "types": "./dist/utils.d.cts",
       "import": "./dist/utils.js",
       "require": "./dist/utils.cjs"
+    },
+    "./plugins": {
+      "@zod/source": "./src/plugins/index.ts",
+      "types": "./dist/plugins/index.d.cts",
+      "import": "./dist/plugins/index.js",
+      "require": "./dist/plugins/index.cjs"
     },
     "./plugins/*": {
       "@zod/source": "./src/plugins/*",

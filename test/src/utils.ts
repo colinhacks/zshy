@@ -15,7 +15,8 @@ export const formatMessage = (message: string): string => {
 };
 
 export const isProduction = (): boolean => {
-  return process.env.NODE_ENV === "production";
+  // biome-ignore lint: ts
+  return process.env["NODE_ENV"] === "production";
 };
 
 export const delay = (ms: number): Promise<void> => {

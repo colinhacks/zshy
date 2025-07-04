@@ -1,16 +1,9 @@
 {
   "description": "Test: Root directory output configuration with outDir set to current directory. Tests zshy's handling of building to project root with declaration maps and inline sources.",
+  "extends": "./tsconfig.json",
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "outDir": ".",
-    "declaration": true,
-    "resolveJsonModule": true
+    "rootDir": "src",
+    "outDir": "."
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules"]

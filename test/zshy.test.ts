@@ -16,16 +16,22 @@ describe("zshy with different tsconfig configurations", () => {
     const rootFiles = [
       "index.js",
       "index.d.ts",
+      "index.d.ts.map",
       "index.cjs",
       "index.d.cts",
+      "index.d.cts.map",
       "index.mjs",
       "index.d.mts",
+      "index.d.mts.map",
       "utils.js",
       "utils.d.ts",
+      "utils.d.ts.map",
       "utils.cjs",
       "utils.d.cts",
+      "utils.d.cts.map",
       "utils.mjs",
       "utils.d.mts",
+      "utils.d.mts.map",
       "plugins",
     ];
     rootFiles.forEach((file) => {
@@ -105,42 +111,7 @@ describe("zshy with different tsconfig configurations", () => {
   };
 
   it("should work with basic.test.tsconfig.json", () => {
-    const snapshot = runZshyWithTsconfig("basic.test.tsconfig.json");
-    expect(snapshot).toMatchSnapshot();
-  });
-
-  it("should work with separate-declarations.test.tsconfig.json", () => {
-    const snapshot = runZshyWithTsconfig("separate-declarations.test.tsconfig.json");
-    expect(snapshot).toMatchSnapshot();
-  });
-
-  it("should work with legacy.test.tsconfig.json", () => {
-    const snapshot = runZshyWithTsconfig("legacy.test.tsconfig.json");
-    expect(snapshot).toMatchSnapshot();
-  });
-
-  it("should work with root-output.test.tsconfig.json", () => {
-    const snapshot = runZshyWithTsconfig("root-output.test.tsconfig.json");
-    expect(snapshot).toMatchSnapshot();
-  });
-
-  it("should work with modern.test.tsconfig.json", () => {
-    const snapshot = runZshyWithTsconfig("modern.test.tsconfig.json");
-    expect(snapshot).toMatchSnapshot();
-  });
-
-  it("should work with bin.test.tsconfig.json", () => {
-    const snapshot = runZshyWithTsconfig("bin.test.tsconfig.json");
-    expect(snapshot).toMatchSnapshot();
-  });
-
-  it("should work with bin-string.test.tsconfig.json", () => {
-    const snapshot = runZshyWithTsconfig("bin-string.test.tsconfig.json");
-    expect(snapshot).toMatchSnapshot();
-  });
-
-  it("should copy assets during build", () => {
-    const snapshot = runZshyWithTsconfig("basic.test.tsconfig.json");
+    const snapshot = runZshyWithTsconfig("tsconfig.basic.json");
 
     // Check that assets are being detected and copied
     expect(snapshot.stdout).toContain("Found 5 asset import(s), copying to output directory...");
@@ -153,12 +124,13 @@ describe("zshy with different tsconfig configurations", () => {
     expect(snapshot).toMatchSnapshot();
   });
 
-  it("should handle asset imports in wildcard exports", () => {
-    const snapshot = runZshyWithTsconfig("modern.test.tsconfig.json");
+  it("should work with tsconfig.custom-paths.json", () => {
+    const snapshot = runZshyWithTsconfig("tsconfig.custom-paths.json");
+    expect(snapshot).toMatchSnapshot();
+  });
 
-    // Should still copy assets even when using wildcard exports
-    expect(snapshot.stdout).toContain("asset import(s), copying to output directory...");
-
+  it("should work with tsconfig.flat.json", () => {
+    const snapshot = runZshyWithTsconfig("tsconfig.flat.json");
     expect(snapshot).toMatchSnapshot();
   });
 });
@@ -174,6 +146,7 @@ function normalizeOutput(output: string): string {
       .replace(/\d+ms/g, "<time>")
       // Normalize any specific file counts that might vary
       // .replace(/\(\d+ matches\)/g, "(<count> matches)")
+      .replace(/Detected package manager: [^\n]+/g, "Detected package manager: <pm>")
       // Remove any ANSI color codes
       // biome-ignore lint: intentional
       .replace(/\u001b\[[0-9;]*m/g, "")

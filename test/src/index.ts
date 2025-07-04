@@ -3,6 +3,13 @@
  */
 import "./assets/styles.css";
 import appConfig from "./assets/config.json";
+import * as utilsC from "./utils";
+import * as utilsA from "./utils.js";
+import * as utilsB from "./utils.ts";
+
+utilsA.delay(5);
+utilsB.delay(5);
+utilsC.delay(5);
 
 export interface Config {
   name: string;

@@ -6,21 +6,24 @@
     "module": "esnext",
     "moduleResolution": "bundler",
     "moduleDetection": "auto",
+    "allowJs": true,
+    "declaration": true,
     "jsx": "react-jsx",
 
     // Bundler mode
     "allowImportingTsExtensions": true,
     "rewriteRelativeImportExtensions": true,
     "verbatimModuleSyntax": false,
-    "allowJs": true,
+    "noEmit": false,
     
     
     // Best practices
     "strict": true,
-    "skipLibCheck": true,
+    "skipLibCheck": false,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true,
     "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
 
     // Some stricter flags (disabled by default)
     "noUnusedLocals": true,
@@ -28,12 +31,11 @@
     "noPropertyAccessFromIndexSignature": false,
 
     // Build options
-    "declaration": true,
-    "noEmit": false,
-    "emitDeclarationOnly": false,
     "sourceMap": true,
     "declarationMap": true,
-    "resolveJsonModule": true 
+    "resolveJsonModule": true,
+    "noImplicitOverride": true,
+    "noImplicitThis": true
   },
-  "include": ["./**/*.ts", "test/src/plugins/b.cts"],
+  "include": ["./**/*.ts", "src/plugins/b.cts"]
 }

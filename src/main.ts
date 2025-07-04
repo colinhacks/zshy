@@ -4,9 +4,10 @@ import parseArgs from "arg";
 import { globby } from "globby";
 import { table } from "table";
 import * as ts from "typescript";
+import { type BuildContext, compileProject } from "./compile";
+import { emojiLog, formatForLog, isSourceFile, readTsconfig, removeExtension } from "./utils";
 
-import type { BuildContext } from "./utils";
-import { compileProject, emojiLog, formatForLog, isSourceFile, readTsconfig, removeExtension } from "./utils";
+type asdf = "unused";
 
 export async function main(): Promise<void> {
   ///////////////////////////////////
@@ -76,6 +77,7 @@ Examples:
   const isVerbose = !!args["--verbose"];
   const isDryRun = !!args["--dry-run"];
   const failThreshold = args["--fail-threshold"] || "error"; // Default to 'error'
+  const dryRunPrefix = isDryRun ? "[dryrun] " : "";
 
   // Validate that the threshold value is one of the allowed values
   if (failThreshold !== "never" && failThreshold !== "warn" && failThreshold !== "error") {
@@ -95,7 +97,7 @@ Examples:
   }
 
   if (isDryRun) {
-    emojiLog("🔍", "Dry run mode enabled - no files will be written");
+    emojiLog("🔍", "Dry run mode enabled. No files will be written or modified.");
   }
 
   // Display message about fail threshold setting
@@ -283,33 +285,6 @@ Examples:
   const declarationDir = path.resolve(pkgJsonDir, _parsedConfig?.declarationDir || relOutDir);
   const relDeclarationDir = path.relative(pkgJsonDir, declarationDir);
 
-  // clean up outDir and declarationDir
-  if (relOutDir !== "") {
-    emojiLog("🗑️", `Cleaning up outDir...`);
-    fs.rmSync(outDir, { recursive: true, force: true });
-
-    // // print success mesage in verbose mode
-    if (isVerbose) {
-      if (fs.existsSync(outDir)) {
-        emojiLog("❌", `Failed to clean up outDir: ${relOutDir}. Directory still exists.`, "error");
-      }
-    }
-  } else {
-    emojiLog("🗑️", `Skipping cleanup of outDir as it contains source files`);
-  }
-  if (relDeclarationDir !== relOutDir && relDeclarationDir !== "") {
-    emojiLog("🗑️", `Cleaning up declarationDir...`);
-    fs.rmSync(declarationDir, { recursive: true, force: true });
-    // // print success mesage in verbose mode
-    if (isVerbose) {
-      if (fs.existsSync(declarationDir)) {
-        emojiLog("❌", `Failed to clean up declarationDir: ${relDeclarationDir}. Directory still exists.`, "error");
-      }
-    }
-  } else {
-    if (isVerbose) emojiLog("🗑️", `Skipping cleanup of declarationDir as it contains source files`);
-  }
-
   const tsconfigJson: ts.CompilerOptions = {
     ..._parsedConfig,
     outDir,
@@ -427,14 +402,14 @@ Examples:
   );
 
   // disallow .mts and .cts files
-  if (entryPoints.some((ep) => ep.endsWith(".mts") || ep.endsWith(".cts"))) {
-    emojiLog(
-      "❌",
-      "Source files with .mts or .cts extensions are not supported. Please use regular .ts files.",
-      "error"
-    );
-    process.exit(1);
-  }
+  // if (entryPoints.some((ep) => ep.endsWith(".mts") || ep.endsWith(".cts"))) {
+  //   emojiLog(
+  //     "❌",
+  //     "Source files with .mts or .cts extensions are not supported. Please use regular .ts files.",
+  //     "error"
+  //   );
+  //   process.exit(1);
+  // }
   if (entryPoints.length === 0) {
     emojiLog("❌", "No entry points found matching the specified patterns in package.json#/zshy exports", "error");
     process.exit(1);
@@ -475,15 +450,12 @@ Examples:
 
   const relRootDir = path.relative(pkgJsonDir, rootDir);
 
-  // Display resolved paths table
+  //////////////////////////////////
+  ///   display resolved paths   ///
+  //////////////////////////////////
   emojiLog("🔧", "Resolved build paths:");
   const pathRows: string[][] = [["Location", "Resolved path"]];
 
-  // pathRows.push([
-  // 	"package.json",
-  // 	`./${path.relative(pkgJsonDir, packageJsonPath)}`,
-  // ]);
-  // pathRows.push(["tsconfig", `./${path.relative(pkgJsonDir, tsconfigPath)}`]);
   pathRows.push(["rootDir", relRootDir ? `./${relRootDir}` : "."]);
   pathRows.push(["outDir", relOutDir ? `./${relOutDir}` : "."]);
 
@@ -516,6 +488,44 @@ Examples:
       "🐢",
       `Package is a CommonJS module (${pkgJson.type === "commonjs" ? 'package.json#/type is "commonjs"' : 'package.json#/type not set to "module"'})`
     );
+  }
+
+  //////////////////////////////////////////////
+  ///   clean up outDir and declarationDir   ///
+  //////////////////////////////////////////////
+  console.log({ relOutDir, relRootDir, relDeclarationDir });
+  if (relRootDir.startsWith(relOutDir)) {
+    emojiLog("🗑️", `${dryRunPrefix}Skipping cleanup of outDir as it contains source files`);
+  } else {
+    // source files are in the outDir, so skip cleanup
+    // clean up outDir and declarationDir
+    emojiLog("🗑️", `${dryRunPrefix}Cleaning up outDir...`);
+    if (!isDryRun) {
+      fs.rmSync(outDir, { recursive: true, force: true });
+
+      // // print success mesage in verbose mode
+      if (isVerbose) {
+        if (fs.existsSync(outDir)) {
+          emojiLog("❌", `Failed to clean up outDir: ${relOutDir}. Directory still exists.`, "error");
+        }
+      }
+    }
+  }
+  if (relDeclarationDir !== relOutDir) {
+    // already done
+  } else if (relRootDir.startsWith(relDeclarationDir)) {
+    emojiLog("🗑️", `${dryRunPrefix}Skipping cleanup of declarationDir as it contains source files`);
+  } else {
+    emojiLog("🗑️", `${dryRunPrefix}Cleaning up declarationDir...`);
+    if (!isDryRun) {
+      fs.rmSync(declarationDir, { recursive: true, force: true });
+      // // print success mesage in verbose mode
+      if (isVerbose) {
+        if (fs.existsSync(declarationDir)) {
+          emojiLog("❌", `Failed to clean up declarationDir: ${relDeclarationDir}. Directory still exists.`, "error");
+        }
+      }
+    }
   }
 
   ///////////////////////////////
@@ -593,7 +603,7 @@ Examples:
 
     // Display files that were written or would be written (only in verbose mode)
     if (isVerbose && buildContext.writtenFiles.size > 0) {
-      emojiLog("📜", `${isDryRun ? "[dryrun] " : ""}Writing files (${buildContext.writtenFiles.size} total)...`);
+      emojiLog("📜", `${dryRunPrefix}Writing files (${buildContext.writtenFiles.size} total)...`);
 
       // Sort files by relative path for consistent display
       const sortedFiles = [...buildContext.writtenFiles]
@@ -611,7 +621,7 @@ Examples:
     ///////////////////////////////
 
     // generate package.json exports
-    emojiLog("📦", `${isDryRun ? "[dryrun] " : ""}Updating package.json#/exports...`);
+    emojiLog("📦", `${dryRunPrefix}Updating package.json#/exports...`);
 
     // Generate exports based on zshy config
     const newExports: Record<string, any> = {};
@@ -683,7 +693,7 @@ Examples:
 
     // Generate bin field based on zshy bin config
     if (config.bin) {
-      emojiLog("📦", `${isDryRun ? "[dryrun] " : ""}Updating package.json#/bin...`);
+      emojiLog("📦", `${dryRunPrefix}Updating package.json#/bin...`);
       const newBin: Record<string, string> = {};
 
       // Convert config.bin to object format for processing
@@ -709,10 +719,10 @@ Examples:
         // Output as object
         pkgJson.bin = newBin;
       }
-    }
 
-    if (isVerbose) {
-      emojiLog("🔧", `Generated "bin": ${formatForLog(pkgJson.bin)}`);
+      if (isVerbose) {
+        emojiLog("🔧", `Generated "bin": ${formatForLog(pkgJson.bin)}`);
+      }
     }
 
     ///////////////////////////////

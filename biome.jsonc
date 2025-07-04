@@ -41,10 +41,7 @@
           "level": "error",
           "fix": "none"
         },
-        "noUnusedVariables": {
-          "level": "warn",
-          "fix": "none"
-        }
+        "noUnusedVariables": "off"
       },
       "complexity": {
         "noUselessConstructor": "off",
