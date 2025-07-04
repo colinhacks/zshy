@@ -34,24 +34,21 @@
 
 `zshy` is a simple, zero-config build tool for transpiling TypeScript libraries. It was originally created as internal build tool for [Zod](https://github.com/colinhacks/zod) but is now available as a general-purpose tool for TypeScript libraries.
 
-<br/>
-
-### Features
-
 - 🧱 **Dual-module builds** — Builds ESM and CJS outputs from a single TypeScript source file
 - 👑 **Powered by `tsc`** — The gold standard for TypeScript transpilation
 - 📦 **Bundler-free** — No bundler or bundler configs involved
 - 🟦 **No config file** — Reads from your `package.json` and `tsconfig.json`
 - 📝 **Declarative entrypoint map** — Specify your TypeScript entrypoints in `package.json#/zshy`
 - 🤖 **Auto-generated `"exports"`** — Writes `"exports"` map directly into your `package.json`
-- 🐚 **CLI-friendly** — First-class `"bin"` support
 - 📂 **Unopinionated** — Use any file structure or import extension syntax you like
+- 📦 **Asset handling** — Non-JS assets are copied to the output directory
 - ⚛️ **Supports `.tsx`** — Rewrites to `.js/.cjs/.mjs` per your `tsconfig.json#/jsx*` settings
-- 📱 **Supports React Native** — Supports a [flat build mode](#can-it-support-react-native-legacy-or-non-nodejs-environments) designed for bundlers that don't support `package.json#/exports`
-- 🐌 **Blazing fast** — Just kidding, it's slow. But [it's worth it](#is-it-fast).
+- 🐚 **CLI-friendly** — First-class `"bin"` support
+- 🐌 **Blazing fast** — Just kidding, it's slow. But [it's worth it](#is-it-fast)
+
+<!-- - 📱 **Supports React Native** — Supports a [flat build mode](#can-it-support-react-native-legacy-or-non-nodejs-environments) designed for bundlers that don't support `package.json#/exports` -->
 
 <br/>
-
 <br/>
 <br/>
 
