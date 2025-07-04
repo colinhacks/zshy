@@ -524,7 +524,7 @@ Simply put: ESM files can `require` CommonJS, but CommonJS files can't `import` 
 
 <br/>
 
-### Can it support React Native legacy or non-Node.js environments?
+### Can it support React Native or non-Node.js environments?
 
 Yes! This is one of the key reasons `zshy` was originally developed. Many environments don't support `package.json#/exports` yet:
 
