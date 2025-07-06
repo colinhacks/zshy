@@ -370,13 +370,11 @@ Yes! With some strategic overrides:
 - **`declaration`/`noEmit`/`emitDeclarationOnly`**: Overridden to ensure proper output
 - **`verbatimModuleSyntax`**: Set to `false` to allow multiple build formats
 
-All other options are respected, including:
+All other options are respected as defined, though `zshy` will also set the following reasonable defaults if they are not explicitly set:
 
-- `rootDir` (defaults to the common ancestor directory of all entrypoints)
 - `outDir` (defaults to `./dist`)
-- `declarationDir` (defaults to `./dist` — you probably shouldn't set this explicitly)
+- `declarationDir` (defaults to `outDir` — you probably shouldn't set this explicitly)
 - `target` (defaults to `es2020`)
-- `jsx`
 
 <br/>
 
