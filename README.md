@@ -73,7 +73,9 @@ pnpm add --save-dev zshy
   "name": "my-pkg",
   "version": "1.0.0",
 + "zshy": {
-+   ".": "./src/index.ts"
++   "exports" : {
++     ".": "./src/index.ts"
++   }
 + }
 }
 ```
