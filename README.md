@@ -339,6 +339,14 @@ The `"bin"` field is automatically written into your `package.json`:
 }
 ```
 
+Be sure to include a [shebang](<https://en.wikipedia.org/wiki/Shebang_(Unix)>) as the first line of your CLI entrypoint file:
+
+```ts
+#!/usr/bin/env node
+
+// CLI code here
+```
+
 <br/>
 <br/>
 <br/>
