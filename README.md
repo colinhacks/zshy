@@ -72,9 +72,16 @@ pnpm add --save-dev zshy
 {
   "name": "my-pkg",
   "version": "1.0.0",
+
+  // with a single entrypoint
++ "zshy": "./src/index.ts"
+
+  // with multiple entrypoints (subpaths, wildcards)
 + "zshy": {
-+   "exports" : {
-+     ".": "./src/index.ts"
++   "exports": {
++     ".": "./src/index.ts",
++     "./utils": "./src/utils.ts"
++     "./plugins/*": "./src/plugins/*"
 +   }
 + }
 }
