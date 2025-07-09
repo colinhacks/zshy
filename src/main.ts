@@ -491,7 +491,6 @@ Examples:
   //////////////////////////////////////////////
   ///   clean up outDir and declarationDir   ///
   //////////////////////////////////////////////
-  console.log({ relOutDir, relRootDir, relDeclarationDir });
   if (relRootDir.startsWith(relOutDir)) {
     emojiLog("🗑️", `${dryRunPrefix}Skipping cleanup of outDir as it contains source files`);
   } else {

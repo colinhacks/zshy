@@ -42,7 +42,6 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
    ║ outDir   │ ./dist        ║
    ╚══════════╧═══════════════╝
 →  Package is an ES module (package.json#/type is "module")
-{ relOutDir: 'dist', relRootDir: 'src', relDeclarationDir: 'dist' }
 →  [dryrun] Cleaning up outDir...
 →  [dryrun] Cleaning up declarationDir...
 →  Resolved entrypoints: [
@@ -218,7 +217,6 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
    ║ declarationDir │ ./types       ║
    ╚════════════════╧═══════════════╝
 →  Package is an ES module (package.json#/type is "module")
-{ relOutDir: 'build', relRootDir: '', relDeclarationDir: 'types' }
 →  [dryrun] Cleaning up outDir...
 →  Resolved entrypoints: [
      "./src/index.ts",
@@ -396,7 +394,6 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
    ║ outDir   │ .             ║
    ╚══════════╧═══════════════╝
 →  Package is an ES module (package.json#/type is "module")
-{ relOutDir: '', relRootDir: 'src', relDeclarationDir: '' }
 →  [dryrun] Skipping cleanup of outDir as it contains source files
 →  [dryrun] Skipping cleanup of declarationDir as it contains source files
 →  Resolved entrypoints: [
