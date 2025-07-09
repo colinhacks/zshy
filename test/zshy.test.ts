@@ -57,14 +57,18 @@ describe("zshy with different tsconfig configurations", () => {
   });
 
   // Helper function to run zshy with a specific tsconfig
-  const runZshyWithTsconfig = (tsconfigFile: string) => {
+  const runZshyWithTsconfig = (tsconfigFile: string, opts: { dryRun: boolean } = { dryRun: false }) => {
     let stdout = "";
     let stderr = "";
     let exitCode = 0;
 
     try {
       // Run zshy using tsx with --project flag in verbose mode and dry-run from test directory
-      const result = spawnSync("tsx", ["../src/index.ts", "--project", `./${tsconfigFile}`, "--verbose", "--dry-run"], {
+      const args = ["../src/index.ts", "--project", `./${tsconfigFile}`, "--verbose", "--dry-run"];
+      if (opts.dryRun) {
+        args.push("--dry-run");
+      }
+      const result = spawnSync("tsx", args, {
         encoding: "utf8",
         timeout: 30000, // Increase timeout for CI
         cwd: process.cwd() + "/test", // Use relative path that works in CI
@@ -111,7 +115,9 @@ describe("zshy with different tsconfig configurations", () => {
   };
 
   it("should work with basic.test.tsconfig.json", () => {
-    const snapshot = runZshyWithTsconfig("tsconfig.basic.json");
+    // only run this one with dryRun: false
+    // results are tracked in git
+    const snapshot = runZshyWithTsconfig("tsconfig.basic.json", { dryRun: false });
 
     // Check that assets are being detected and copied
     expect(snapshot.stdout).toContain("Found 5 asset import(s), copying to output directory...");
@@ -125,12 +131,12 @@ describe("zshy with different tsconfig configurations", () => {
   });
 
   it("should work with tsconfig.custom-paths.json", () => {
-    const snapshot = runZshyWithTsconfig("tsconfig.custom-paths.json");
+    const snapshot = runZshyWithTsconfig("tsconfig.custom-paths.json", { dryRun: true });
     expect(snapshot).toMatchSnapshot();
   });
 
   it("should work with tsconfig.flat.json", () => {
-    const snapshot = runZshyWithTsconfig("tsconfig.flat.json");
+    const snapshot = runZshyWithTsconfig("tsconfig.flat.json", { dryRun: true });
     expect(snapshot).toMatchSnapshot();
   });
 });
