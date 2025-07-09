@@ -3,6 +3,7 @@ node_modules
 
 # output
 out
+# dist
 *.tgz
 
 # code coverage
@@ -31,22 +32,3 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 
 # Finder (MacOS) folder config
 .DS_Store
-
-**/*.js
-**/*.mjs
-**/*.cjs
-**/*.d.ts
-**/*.d.mts
-**/*.d.cts
-# source maps
-*.js.map
-*.mjs.map
-*.cjs.map
-*.d.ts.map
-*.d.mts.map
-*.d.cts.map
-
-# declaration maps
-*.d.ts.map
-*.d.mts.map
-*.d.cts.map
