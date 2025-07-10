@@ -32,7 +32,7 @@
 
 <h2 align="center">What is <code>zshy</code>?</h2>
 
-`zshy` is a bundler-free batteries-included build tool for transpiling TypeScript libraries. It was originally created as an internal build tool for [Zod](https://github.com/colinhacks/zod) but is now available as a general-purpose tool for TypeScript libraries.
+`zshy` (zee-shy) is a bundler-free batteries-included build tool for transpiling TypeScript libraries. It was originally created as an internal build tool for [Zod](https://github.com/colinhacks/zod) but is now available as a general-purpose tool for TypeScript libraries.
 
 - 🧱 **Dual-module builds** — Builds ESM and CJS outputs from a single TypeScript source file
 - 👑 **Powered by `tsc`** — The gold standard for TypeScript transpilation
