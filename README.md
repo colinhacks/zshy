@@ -522,20 +522,26 @@ Your exports map is automatically written into your `package.json` when you run 
 
 ### Why `.d.cts` for `"types"`?
 
-The `"types"` field always points to the CJS declaration file (`.d.cts`). This is an intentional design choice.
-
-**It solves the "Masquerading as ESM" issue**. You've likely seen this dreaded error before:
+The `"types"` field always points to the CJS declaration file (`.d.cts`). This is an intentional design choice. **It solves the "Masquerading as ESM" issue**. You've likely seen this dreaded error before:
 
 ```ts
 import mod from "pkg";         ^^^^^
 //              ^ The current file is a CommonJS module whose imports will produce 'require' calls; however, the referenced file is an ECMAScript module and cannot be imported with 'require'. Consider writing a dynamic 'import("pkg")' call instead.
 ```
 
-Simply put: ESM files can `require` CommonJS, but CommonJS files can't `import` ESM. By having `"types"` point to the `.d.cts` declarations, this error will never happen. Technically, we're tricking TypeScript into thinking our code is CommonJS; in practice, this has no real consequences and maximizes compatibility.
+Simply put, an ESM file can `import` CommonJS, but CommonJS files can't `require` ESM. By having `"types"` point to the `.d.cts` declarations, we can always avoid the error above. Technically we're tricking TypeScript into thinking our code is CommonJS; in practice, this has no real consequences and maximizes compatibility.
 
-> To learn more, read the ["Masquerading as ESM"](https://github.com/arethetypeswrong/arethetypeswrong.github.io/blob/main/docs/problems/FalseESM.md) and ["Masquerading as CJS"](https://github.com/arethetypeswrong/arethetypeswrong.github.io/blob/main/docs/problems/FalseCJS.md) writeups from Are The Types Wrong.
+To learn more, read the ["Masquerading as ESM"](https://github.com/arethetypeswrong/arethetypeswrong.github.io/blob/main/docs/problems/FalseESM.md) writeup from ATTW.
 
 > **Comparison to `tshy`** — `tshy` generates independent (but identical) `.d.ts` files in `dist/esm` and `dist/cjs`. This can cause [Excessively Deep](https://github.com/colinhacks/zod/issues/4422) errors if users of the library use declaration merging (`declare module {}`) for plugins/extensions. [Zod](https://github.com/colinhacks/zod), [day.js](https://day.js.org/), and others rely on this pattern for plugins.
+
+<br/>
+
+### Why do I see "Masquerading as CJS"?
+
+This is expected behavior when running the "Are The Types Wrong" tool. This warning does not cause any resolution issues (unlike "Masquerading as ESM"). Technically, we're tricking TypeScript into thinking our code is CommonJS; when in fact it may be ESM. The ATTW tool is very rigorous and flags this; in practice, this has no real consequences and maximizes compatibility (Zod has relied on the CJS masquerading trick since it's earliest days.)
+
+To learn more, read the ["Masquerading as CJS"](https://github.com/arethetypeswrong/arethetypeswrong.github.io/blob/main/docs/problems/FalseCJS.md) writeup from ATTW.
 
 <br/>
 
