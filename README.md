@@ -225,7 +225,7 @@ Options:
 
 ### Subpaths and wildcards
 
-Multi-entrypoint packages can specify subpaths or wildcard exports with `package.json#/zshy/exports`:
+Multi-entrypoint packages can specify subpaths or wildcard exports in the `"zshy" > "exports"` field of their `package.json`:
 
 ```jsonc
 {
