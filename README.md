@@ -580,7 +580,7 @@ To tell `zshy` to specify a custom condition pointing to your _source files_, us
     "exports": {
       ".": "./src/index.ts"
     },
-+   "sourceDialects": ["@zod/source"] // 👈 add this
++   "sourceDialects": ["my-source"] // 👈 add this
   }
 }
 ```
@@ -602,6 +602,8 @@ With this addition, `zshy` will add the `"my-source"` condition to the generated
 ```
 
 Specifying additional dialects for `"import"` and `"require"` is not yet supported (create an issue if you need this).
+
+<br />
 
 ### Is it fast?
 
