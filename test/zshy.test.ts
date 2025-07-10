@@ -64,7 +64,7 @@ describe("zshy with different tsconfig configurations", () => {
 
     try {
       // Run zshy using tsx with --project flag in verbose mode and dry-run from test directory
-      const args = ["../src/index.ts", "--project", `./${tsconfigFile}`, "--verbose", "--dry-run"];
+      const args = ["../src/index.ts", "--project", `./${tsconfigFile}`, "--verbose"];
       if (opts.dryRun) {
         args.push("--dry-run");
       }
