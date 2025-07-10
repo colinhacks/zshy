@@ -32,7 +32,7 @@
 
 <h2 align="center">What is <code>zshy</code>?</h2>
 
-`zshy` is a bundler-free batteries-included build tool for transpiling TypeScript libraries. It was originally created as internal build tool for [Zod](https://github.com/colinhacks/zod) but is now available as a general-purpose tool for TypeScript libraries.
+`zshy` is a bundler-free batteries-included build tool for transpiling TypeScript libraries. It was originally created as an internal build tool for [Zod](https://github.com/colinhacks/zod) but is now available as a general-purpose tool for TypeScript libraries.
 
 - 🧱 **Dual-module builds** — Builds ESM and CJS outputs from a single TypeScript source file
 - 👑 **Powered by `tsc`** — The gold standard for TypeScript transpilation
@@ -207,7 +207,7 @@ The result is a tool that I consider to be the "holy grail" of TypeScript librar
 ### Flags
 
 ```sh
-$ npm zshy --help
+$ npx zshy --help
 Usage: zshy [options]
 
 Options:
@@ -234,7 +234,7 @@ Multi-entrypoint packages can specify subpaths or wildcard exports with `package
 
   "zshy": {
     "exports": {
-      ".": "./src/index.ts", // root entrypoints
+      ".": "./src/index.ts", // root entrypoint
       "./utils": "./src/utils.ts", // subpath
       "./plugins/*": "./src/plugins/*" // wildcards
     }
@@ -245,7 +245,7 @@ Multi-entrypoint packages can specify subpaths or wildcard exports with `package
 <details>
 <summary>View typical build output</summary>
 
-When you run a build, you'''ll see something like this:
+When you run a build, you'll see something like this:
 
 ```bash
 $ npx zshy
@@ -420,7 +420,7 @@ $ tree dist
 └── dist
     ├── index.js
     ├── index.d.ts
-    ├── index.cts
+    ├── index.cjs
     └── index.d.cts
 ```
 
