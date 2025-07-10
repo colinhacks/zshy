@@ -49,6 +49,11 @@ exports.appConfig = config_json_1.default;
 const utilsC = __importStar(require("./utils.cjs"));
 const utilsA = __importStar(require("./utils.cjs"));
 const utilsB = __importStar(require("./utils.cjs"));
+// Test import.meta shims for CJS builds
+console.log(require("url").pathToFileURL(__filename));
+console.log(__dirname);
+console.log(__filename);
+console.log("🚀 Hello from zshy test fixture!");
 utilsA.delay(5);
 utilsB.delay(5);
 utilsC.delay(5);

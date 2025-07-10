@@ -7,7 +7,6 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
   "stdout": "→  Starting build...
 →  Verbose mode enabled
 →  Detected package manager: <pm>
-→  Dry run mode enabled. No files will be written or modified.
 →  Build will fail only on errors (default)
 →  Detected project root: <root>/test
 →  Reading package.json from ./package.json
@@ -42,8 +41,8 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
    ║ outDir   │ ./dist        ║
    ╚══════════╧═══════════════╝
 →  Package is an ES module (package.json#/type is "module")
-→  [dryrun] Cleaning up outDir...
-→  [dryrun] Cleaning up declarationDir...
+→  Cleaning up outDir...
+→  Cleaning up declarationDir...
 →  Resolved entrypoints: [
      "./src/index.ts",
      "./src/utils.ts",
@@ -87,14 +86,14 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
    }
 →  Building CJS... (rewriting .ts -> .cjs/.d.cts)
 →  Found 5 asset import(s), copying to output directory...
-→  [dryrun] Copied asset: ./src/assets/README.md → ./dist/assets/README.md
-→  [dryrun] Copied asset: ./src/assets/styles.css → ./dist/assets/styles.css
-→  [dryrun] Copied asset: ./src/assets/config.json → ./dist/assets/config.json
-→  [dryrun] Copied asset: ./src/plugins/plugin-a.css → ./dist/plugins/plugin-a.css
-→  [dryrun] Copied asset: ./src/plugins/plugin-b.css → ./dist/plugins/plugin-b.css
+→  Copied asset: ./src/assets/README.md → ./dist/assets/README.md
+→  Copied asset: ./src/assets/styles.css → ./dist/assets/styles.css
+→  Copied asset: ./src/assets/config.json → ./dist/assets/config.json
+→  Copied asset: ./src/plugins/plugin-a.css → ./dist/plugins/plugin-a.css
+→  Copied asset: ./src/plugins/plugin-b.css → ./dist/plugins/plugin-b.css
 →  Building ESM...
 →  Found 5 asset import(s), copying to output directory...
-→  [dryrun] Writing files (45 total)...
+→  Writing files (45 total)...
      ./dist/assets/README.md
      ./dist/assets/config.json
      ./dist/assets/styles.css
@@ -140,7 +139,7 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
      ./dist/utils.d.ts.map
      ./dist/utils.js
      ./dist/utils.js.map
-→  [dryrun] Updating package.json#/exports...
+→  Updating package.json#/exports...
 →  Generated "exports": {
      ".": {
        "@zod/source": "./src/index.ts",
@@ -167,9 +166,8 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
        "require": "./dist/plugins/*"
      }
    }
-→  [dryrun] Updating package.json#/bin...
+→  Updating package.json#/bin...
 →  Generated "bin": "./dist/index.cjs"
-→  [dryrun] Skipping package.json modification
 →  Build complete!",
 }
 `;
