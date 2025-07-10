@@ -570,6 +570,39 @@ With this setup, your build outputs (`index.js`, etc) will be written to the pac
 
 <br/>
 
+### How to include custom conditions in `package.json#/exports`?
+
+To tell `zshy` to specify a custom condition pointing to your _source files_, use `"sourceDialects"`:
+
+```diff
+{
+  "zshy": {
+    "exports": {
+      ".": "./src/index.ts"
+    },
++   "sourceDialects": ["@zod/source"] // 👈 add this
+  }
+}
+```
+
+With this addition, `zshy` will add the `"my-source"` condition to the generated `"exports"` map:
+
+```diff
+// package.json
+{
+  "exports": {
+    ".": {
++     "my-source": "./src/index.ts",
+      "types": "./dist/index.d.cts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  }
+}
+```
+
+Specifying additional dialects for `"import"` and `"require"` is not yet supported (create an issue if you need this).
+
 ### Is it fast?
 
 Not really. It uses `tsc` to typecheck your codebase, which is a lot slower than using a bundler that strips types. That said:
