@@ -1,6 +1,6 @@
 import * as path from "node:path";
 import * as ts from "typescript";
-import * as utils from "./utils";
+import * as utils from "./utils.js";
 
 export const createExtensionRewriteTransformer =
   (config: {

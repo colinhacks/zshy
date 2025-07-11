@@ -1,12 +1,12 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import * as ts from "typescript";
-import { createCjsInteropTransformer } from "./tx-cjs-interop";
-import { createCjsInteropDeclarationTransformer } from "./tx-cjs-interop-declaration";
-import { createExportEqualsTransformer } from "./tx-export-equals";
-import { createExtensionRewriteTransformer } from "./tx-extension-rewrite";
-import { createImportMetaShimTransformer } from "./tx-import-meta-shim";
-import * as utils from "./utils";
+import { createCjsInteropTransformer } from "./tx-cjs-interop.js";
+import { createCjsInteropDeclarationTransformer } from "./tx-cjs-interop-declaration.js";
+import { createExportEqualsTransformer } from "./tx-export-equals.js";
+import { createExtensionRewriteTransformer } from "./tx-extension-rewrite.js";
+import { createImportMetaShimTransformer } from "./tx-import-meta-shim.js";
+import * as utils from "./utils.js";
 
 export interface BuildContext {
   writtenFiles: Set<string>;

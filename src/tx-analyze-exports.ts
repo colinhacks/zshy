@@ -1,14 +1,16 @@
 import * as ts from "typescript";
 
 // Shared function to analyze exports in a source file
-export const analyzeExports = (sourceFile: ts.SourceFile): { hasDefaultExport: boolean; hasNamedExports: boolean } => {
-  let hasDefaultExport = false;
+export const analyzeExports = (
+  sourceFile: ts.SourceFile
+): { defaultExportNode: ts.Statement | null; hasNamedExports: boolean } => {
+  let defaultExportNode: ts.Statement | null = null;
   let hasNamedExports = false;
 
   const visitor = (node: ts.Node): void => {
     // 1) export default <expr>;
     if (ts.isExportAssignment(node) && !node.isExportEquals) {
-      hasDefaultExport = true;
+      defaultExportNode = node;
     }
     // 2) export default function/class/interface/type/enum …
     else if (
@@ -20,7 +22,7 @@ export const analyzeExports = (sourceFile: ts.SourceFile): { hasDefaultExport: b
       node.modifiers?.some((m) => m.kind === ts.SyntaxKind.ExportKeyword) &&
       node.modifiers.some((m) => m.kind === ts.SyntaxKind.DefaultKeyword)
     ) {
-      hasDefaultExport = true;
+      defaultExportNode = node;
     }
     // 3) named re-exports (`export { a, b } from …` or `export { x }`)
     else if (ts.isExportDeclaration(node) && node.exportClause) {
@@ -51,5 +53,5 @@ export const analyzeExports = (sourceFile: ts.SourceFile): { hasDefaultExport: b
   };
 
   ts.forEachChild(sourceFile, visitor);
-  return { hasDefaultExport, hasNamedExports };
+  return { defaultExportNode, hasNamedExports };
 };

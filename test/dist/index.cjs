@@ -46,7 +46,7 @@ exports.appConfig = exports.defaultConfig = exports.createConfig = exports.utils
 require("./assets/styles.css");
 const config_json_1 = __importDefault(require("./assets/config.json"));
 exports.appConfig = config_json_1.default;
-const hello_1 = __importDefault(require("./hello.cjs"));
+// import hello from "./hello";
 const utilsC = __importStar(require("./utils.cjs"));
 const utilsA = __importStar(require("./utils.cjs"));
 const utilsB = __importStar(require("./utils.cjs"));
@@ -55,7 +55,7 @@ exports.utilsA = __importStar(require("./utils.cjs"));
 // code
 console.log("🚀 Hello from zshy test fixture!");
 // test default export
-(0, hello_1.default)();
+// hello();
 // test import.meta shims for CJS builds
 console.log(require("url").pathToFileURL(__filename));
 console.log(__dirname);

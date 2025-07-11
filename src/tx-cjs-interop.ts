@@ -1,52 +1,54 @@
 import * as ts from "typescript";
-import type { ProjectOptions } from "./compile";
-import { analyzeExports } from "./tx-analyze-exports";
-import * as utils from "./utils";
+import { analyzeExports } from "./tx-analyze-exports.js";
 
-// Create CJS interop transformer for single default exports
-export const createCjsInteropTransformer =
-  (config: ProjectOptions): ts.TransformerFactory<ts.SourceFile> =>
-  (context) => {
-    return (sourceFile) => {
-      // Use shared export analysis function
-      const { hasDefaultExport, hasNamedExports } = analyzeExports(sourceFile);
+export const createCjsInteropTransformer = (): ts.TransformerFactory<ts.SourceFile | ts.Bundle> => (context) => {
+  return (sourceFile) => {
+    if (!ts.isSourceFile(sourceFile)) return sourceFile;
 
-      // Only apply transformation if we have exactly one default export and no named exports
-      const shouldApplyInterop = hasDefaultExport && !hasNamedExports;
+    const { defaultExportNode, hasNamedExports } = analyzeExports(sourceFile);
 
-      // Debug logging
-      if (shouldApplyInterop && config.verbose) {
-        utils.emojiLog("🔄", `Applying cjsInterop transform to ${sourceFile.fileName}`);
-      }
+    // Only apply transformation if we have exactly one default export and no named exports
+    const shouldApplyInterop = defaultExportNode && !hasNamedExports;
 
-      const visitor = (node: ts.Node): ts.Node => {
-        // For CJS builds, we'll handle export = transformation in the afterDeclarations phase
-        // For now, just pass through the node
-        return ts.visitEachChild(node, visitor, context);
-      };
+    if (!shouldApplyInterop) {
+      return sourceFile;
+    }
 
-      const transformedSourceFile = ts.visitNode(sourceFile, visitor) as ts.SourceFile;
+    const visitor = (node: ts.Node): ts.Node => {
+      // Add module.exports = exports.default at the end of the file
+      if (ts.isSourceFile(node)) {
+        const statements = [...node.statements];
 
-      // For CJS builds, inject module.exports = exports.default at the end
-      if (shouldApplyInterop) {
-        const moduleExportsStatement = ts.factory.createExpressionStatement(
-          ts.factory.createBinaryExpression(
-            ts.factory.createPropertyAccessExpression(
-              ts.factory.createIdentifier("module"),
-              ts.factory.createIdentifier("exports")
-            ),
-            ts.factory.createToken(ts.SyntaxKind.EqualsToken),
-            ts.factory.createPropertyAccessExpression(
-              ts.factory.createIdentifier("exports"),
-              ts.factory.createIdentifier("default")
+        // Add the CJS interop line at the end
+        statements.push(
+          ts.factory.createExpressionStatement(
+            ts.factory.createAssignment(
+              ts.factory.createPropertyAccessExpression(
+                ts.factory.createIdentifier("module"),
+                ts.factory.createIdentifier("exports")
+              ),
+              ts.factory.createPropertyAccessExpression(
+                ts.factory.createIdentifier("exports"),
+                ts.factory.createIdentifier("default")
+              )
             )
           )
         );
 
-        const statements = [...transformedSourceFile.statements, moduleExportsStatement];
-        return ts.factory.updateSourceFile(transformedSourceFile, statements);
+        return ts.factory.updateSourceFile(
+          node,
+          statements,
+          node.isDeclarationFile,
+          node.referencedFiles,
+          node.typeReferenceDirectives,
+          node.hasNoDefaultLib,
+          node.libReferenceDirectives
+        );
       }
 
-      return transformedSourceFile;
+      return ts.visitEachChild(node, visitor, context);
     };
+
+    return ts.visitNode(sourceFile, visitor) as ts.SourceFile;
   };
+};

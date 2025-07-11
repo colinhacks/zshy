@@ -4,8 +4,8 @@ import parseArgs from "arg";
 import { globby } from "globby";
 import { table } from "table";
 import * as ts from "typescript";
-import { type BuildContext, compileProject } from "./compile";
-import { emojiLog, formatForLog, isSourceFile, readTsconfig, removeExtension } from "./utils";
+import { type BuildContext, compileProject } from "./compile.js";
+import { emojiLog, formatForLog, isSourceFile, readTsconfig, removeExtension } from "./utils.js";
 
 export async function main(): Promise<void> {
   ///////////////////////////////////
