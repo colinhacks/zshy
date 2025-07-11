@@ -558,7 +558,8 @@ Examples:
     await compileProject(
       {
         configPath: tsconfigPath,
-        mode: isTypeModule ? "cts" : "ts",
+        ext: isTypeModule ? "cjs" : "js",
+        format: "cjs",
         verbose: isVerbose,
         dryRun: isDryRun,
         pkgJsonDir,
@@ -579,7 +580,8 @@ Examples:
     await compileProject(
       {
         configPath: tsconfigPath,
-        mode: isTypeModule ? "ts" : "mts",
+        ext: isTypeModule ? "js" : "mjs",
+        format: "esm",
         verbose: isVerbose,
         dryRun: isDryRun,
         pkgJsonDir,

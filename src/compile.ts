@@ -14,7 +14,8 @@ export interface BuildContext {
 export interface ProjectOptions {
   configPath: string;
   compilerOptions: ts.CompilerOptions & Required<Pick<ts.CompilerOptions, "module" | "moduleResolution" | "outDir">>;
-  mode: "cts" | "ts" | "mts";
+  ext: "cjs" | "js" | "mjs";
+  format: "cjs" | "esm";
   pkgJsonDir: string; // Add package root for relative path display
   rootDir: string; // Add source root for asset copying
   verbose: boolean;
@@ -81,8 +82,8 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
   const host = ts.createCompilerHost(config.compilerOptions);
   const originalWriteFile = host.writeFile;
 
-  const jsExt = config.mode === "mts" ? ".mjs" : config.mode === "cts" ? ".cjs" : ".js";
-  const dtsExt = config.mode === "mts" ? ".d.mts" : config.mode === "cts" ? ".d.cts" : ".d.ts";
+  const jsExt = "." + config.ext;
+  const dtsExt = config.ext === "mjs" ? ".d.mts" : config.ext === "cjs" ? ".d.cts" : ".d.ts";
 
   // Track if we should write files (will be set after diagnostics check)
   let shouldWriteFiles = true;
@@ -117,8 +118,7 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
 
   // Create the TypeScript program using unique entry points
   // For CJS builds, set noEmitOnError to false to allow emission despite ts1343 errors
-  const programOptions =
-    config.mode === "cts" ? { ...config.compilerOptions, noEmitOnError: false } : config.compilerOptions;
+  const programOptions = config.compilerOptions;
 
   const program = ts.createProgram({
     rootNames: entryPoints,
@@ -249,10 +249,11 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
 
   if (diagnostics.length > 0) {
     // Filter out ts1343 errors for CJS builds
-    const filteredDiagnostics =
-      config.mode === "cts"
-        ? diagnostics.filter((d) => d.code !== 1343) // Ignore ts1343 (import.meta not available) for CJS
-        : diagnostics;
+    const filteredDiagnostics = diagnostics.filter((d) => {
+      if (config.format === "cjs") {
+        return d.code !== 1343 && d.code !== 1259;
+      }
+    }); // Ignore ts1343 (import.meta not available) for CJS
 
     const errorCount = filteredDiagnostics.filter((d) => d.category === ts.DiagnosticCategory.Error).length;
     const warningCount = filteredDiagnostics.filter((d) => d.category === ts.DiagnosticCategory.Warning).length;
@@ -293,7 +294,7 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
   ];
 
   // Add import.meta shim transformer for CJS builds
-  if (config.mode === "cts") {
+  if (config.format === "cjs") {
     transformers.unshift(createImportMetaShimTransformer());
   }
 
@@ -314,7 +315,7 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
   if (emitResult.diagnostics.length > 0) {
     // Filter out ts1343 errors for CJS builds
     const filteredEmitDiagnostics =
-      config.mode === "cts"
+      config.format === "cjs"
         ? emitResult.diagnostics.filter((d) => d.code !== 1343) // Ignore ts1343 for CJS
         : emitResult.diagnostics;
 

@@ -5,10 +5,14 @@
     "target": "es2020",
     "module": "esnext",
     "moduleResolution": "bundler",
+    // "module": "commonjs",
+    // "moduleResolution": "node",
+    
     "moduleDetection": "auto",
     "allowJs": true,
     "declaration": true,
     "jsx": "react-jsx",
+    
 
     // Bundler mode
     "allowImportingTsExtensions": true,
