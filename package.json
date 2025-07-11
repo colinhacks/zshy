@@ -40,6 +40,7 @@
     "@types/react": "^19.1.8",
     "@types/semver": "^7.7.0",
     "react": "^19.1.0",
+    "semver": "^7.7.2",
     "tsx": "^4.20.3",
     "typescript": "^5.8.3",
     "vitest": "^2.1.5"
@@ -50,8 +51,6 @@
   "dependencies": {
     "arg": "^5.0.2",
     "globby": "^14.1.0",
-    "semver": "^7.7.2",
-    "string-width": "^7.2.0",
     "table": "^6.9.0"
   },
   "scripts": {
