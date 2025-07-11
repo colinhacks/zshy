@@ -72,6 +72,24 @@ const createImportMetaShimTransformer = (): ts.TransformerFactory<ts.SourceFile>
   };
 };
 
+// Create export = to export default transformer for ESM builds
+const createExportEqualsTransformer =
+  <T extends ts.SourceFile | ts.Bundle>(): ts.TransformerFactory<T> =>
+  (context) => {
+    return (sourceFile) => {
+      const visitor = (node: ts.Node): ts.Node => {
+        // Handle export = syntax
+        if (ts.isExportAssignment(node) && node.isExportEquals) {
+          return ts.factory.createExportDefault(node.expression);
+        }
+
+        return ts.visitEachChild(node, visitor, context);
+      };
+
+      return ts.visitNode(sourceFile, visitor) as T;
+    };
+  };
+
 export async function compileProject(config: ProjectOptions, entryPoints: string[], ctx: BuildContext): Promise<void> {
   // Deduplicate entry points before compilation
 
@@ -289,19 +307,28 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
   }
 
   // Prepare transformers
-  const transformers: ts.TransformerFactory<ts.SourceFile>[] = [
+  const before: ts.TransformerFactory<ts.SourceFile>[] = [
     extensionRewriteTransformer as ts.TransformerFactory<ts.SourceFile>,
   ];
+  const after: ts.TransformerFactory<ts.SourceFile>[] = [];
+  const afterDeclarations: ts.TransformerFactory<ts.SourceFile | ts.Bundle>[] = [extensionRewriteTransformer];
 
   // Add import.meta shim transformer for CJS builds
   if (config.format === "cjs") {
-    transformers.unshift(createImportMetaShimTransformer());
+    before.unshift(createImportMetaShimTransformer());
+  }
+
+  // Add export = to export default transformer for ESM builds
+  if (config.format === "esm") {
+    before.push(createExportEqualsTransformer<ts.SourceFile>());
+    afterDeclarations.push(createExportEqualsTransformer<ts.SourceFile | ts.Bundle>());
   }
 
   // emit the files
   const emitResult = program.emit(undefined, undefined, undefined, undefined, {
-    before: transformers,
-    afterDeclarations: [extensionRewriteTransformer],
+    before,
+    after,
+    afterDeclarations,
   });
 
   if (emitResult.emitSkipped) {

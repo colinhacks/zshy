@@ -1,3 +1,3 @@
-export default function hello() {
+export = function hello() {
   console.log("hello");
-}
+};
