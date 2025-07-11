@@ -349,15 +349,27 @@ Examples:
     }
     if (typeof sourcePath === "string") {
       if (sourcePath.includes("*")) {
-        if (!sourcePath.endsWith("/*")) {
-          emojiLog("❌", `Wildcard paths should not contain file extensions: ${sourcePath}`, "error");
+        if (!sourcePath.endsWith("/*") && !sourcePath.endsWith("/**/*")) {
+          emojiLog("❌", `Wildcard paths should end with /* or /**/* (for deep globs): ${sourcePath}`, "error");
           process.exit(1);
         }
-        const pattern = sourcePath.slice(0, -2) + "/*.{ts,tsx,mts,cts}";
+
+        let pattern: string;
+
+        if (sourcePath.endsWith("/**/*")) {
+          // Handle deep glob patterns like "./src/**/*"
+          pattern = sourcePath.slice(0, -5) + "/**/*.{ts,tsx,mts,cts}";
+        } else {
+          // Handle shallow glob patterns like "./src/plugins/*"
+          pattern = sourcePath.slice(0, -2) + "/*.{ts,tsx,mts,cts}";
+        }
+
+        if (isVerbose) {
+          emojiLog("🔍", `Matching glob: ${pattern}`);
+        }
         const wildcardFiles = await globby([pattern], {
           ignore: ["**/*.d.ts", "**/*.d.mts", "**/*.d.cts"],
           cwd: pkgJsonDir,
-          deep: 1,
         });
         entryPoints.push(...wildcardFiles);
 
@@ -644,28 +656,46 @@ Examples:
       const relSourcePath = path.relative(rootDir, absSourcePath);
       const absJsPath = path.resolve(outDir, relSourcePath);
       const absDtsPath = path.resolve(declarationDir, relSourcePath);
-      const relJsPath = "./" + path.relative(pkgJsonDir, absJsPath);
-      const relDtsPath = "./" + path.relative(pkgJsonDir, absDtsPath);
+      let relJsPath = "./" + path.relative(pkgJsonDir, absJsPath);
+      let relDtsPath = "./" + path.relative(pkgJsonDir, absDtsPath);
 
       if (typeof sourcePath === "string") {
-        if (sourcePath.endsWith("/*")) {
+        if (sourcePath.endsWith("/*") || sourcePath.endsWith("/**/*")) {
           // Handle wildcard exports
+          let finalExportPath = exportPath;
 
-          newExports[exportPath] = {
+          // Convert deep glob patterns to simple wildcard patterns in the final export
+          if (sourcePath.endsWith("/**/*")) {
+            // Convert "./some/path/**/*" export patterns to simple "/*" patterns
+            // e.g., "./utils/**/*" becomes "./utils/*"
+            if (exportPath.endsWith("/**/*")) {
+              finalExportPath = exportPath.slice(0, -5) + "/*";
+            }
+
+            // Also convert the output paths from /**/* to /*
+            if (relJsPath.endsWith("/**/*")) {
+              relJsPath = relJsPath.slice(0, -5) + "/*";
+            }
+            if (relDtsPath.endsWith("/**/*")) {
+              relDtsPath = relDtsPath.slice(0, -5) + "/*";
+            }
+          }
+
+          newExports[finalExportPath] = {
             types: relDtsPath,
             import: relJsPath,
             require: relJsPath,
           };
           for (const sd of sourceDialects) {
-            newExports[exportPath] = {
+            newExports[finalExportPath] = {
               [sd]: sourcePath,
-              ...newExports[exportPath],
+              ...newExports[finalExportPath],
             };
           }
         } else if (isSourceFile(sourcePath)) {
           const esmPath = removeExtension(relJsPath) + (isTypeModule ? `.js` : `.mjs`);
           const cjsPath = removeExtension(relJsPath) + (isTypeModule ? `.cjs` : `.js`);
-          const dtsPath = removeExtension(relDtsPath) + (isTypeModule ? `.d.cts` : `.d.ts`); // ./
+          const dtsPath = removeExtension(relDtsPath) + (isTypeModule ? `.d.cts` : `.d.ts`);
 
           newExports[exportPath] = {
             types: dtsPath,

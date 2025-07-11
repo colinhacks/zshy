@@ -76,12 +76,13 @@ pnpm add --save-dev zshy
   // with a single entrypoint
 + "zshy": "./src/index.ts"
 
-  // with multiple entrypoints (subpaths, wildcards)
+  // with multiple entrypoints (subpaths, wildcards, deep wildcards)
 + "zshy": {
 +   "exports": {
 +     ".": "./src/index.ts",
 +     "./utils": "./src/utils.ts",
 +     "./plugins/*": "./src/plugins/*"
++     "./components/**/*": "./src/components/**/*" // deep wildcard
 +   }
 + }
 }
@@ -236,7 +237,7 @@ Multi-entrypoint packages can specify subpaths or wildcard exports in `package.j
     "exports": {
       ".": "./src/index.ts", // root entrypoint
       "./utils": "./src/utils.ts", // subpath
-      "./plugins/*": "./src/plugins/*" // wildcards
+      "./plugins/*": "./src/plugins/*" // wildcard
     }
   }
 }
@@ -368,11 +369,30 @@ It reads your `package.json#/zshy` config:
     "exports": {
       ".": "./src/index.ts",
       "./utils": "./src/utils.ts",
-      "./plugins/*": "./src/plugins/*" // matches all .ts/.tsx files in ./src/plugins
+      "./plugins/*": "./src/plugins/*", // shallow match {.ts,.tsx,.cts,.mts} files
+      "./components/*": "./src/components/**/*" // deep match *.{.ts,.tsx,.cts,.mts} files
     }
   }
 }
 ```
+
+A few important notes about `package.json#/zshy/exports`:
+
+- All keys should start with `"./"`
+- All values should be relative paths to source files (resolved relative to the `package.json` file)
+
+A few notes on wildcards exports:
+
+- The _key_ should always end in `"/*"`
+- The _value_ should correspond to a glob-like path value that ends in either `"/*"` (shallow match) or `"/**/*"` (deep match)
+- Do not include a file extensions! `zshy` matches source files with the following extensions:
+  - `.ts`, `.tsx`, `.cts`, `.mts`
+- A shallow match (`./<dir>/*`) will match both:
+  - `./<dir>/*.{ts,tsx,cts,mts}`
+  - `./<dir>/*/index.{ts,tsx,cts,mts}`.
+- A deep match (`./<dir>/**/*`) will match all files recursively in the specified directory, including subdirectories:
+  - `./<dir>/**/*.{ts,tsx,cts,mts}`
+  - `./<dir>/**/*/index.{ts,tsx,cts,mts}`
 
 **Note** — Since `zshy` computes an exact set of resolved entrypoints, your `"files"`, `"include"`, and `"exclude"` settings in `tsconfig.json` are ignored during the build.
 

@@ -18,7 +18,7 @@
       "./hello": "./src/hello.ts",
       "./utils": "./src/utils.ts",
       "./plugins": "./src/plugins/index.ts",
-      "./plugins/*": "./src/plugins/*",
+      "./plugins/*": "./src/plugins/**/*",
       "./default-function": "./src/default-function.ts",
       "./default-class": "./src/default-class.ts",
       "./default-object": "./src/default-object.ts",
@@ -63,7 +63,7 @@
       "require": "./dist/plugins/index.cjs"
     },
     "./plugins/*": {
-      "@zod/source": "./src/plugins/*",
+      "@zod/source": "./src/plugins/**/*",
       "types": "./dist/plugins/*",
       "import": "./dist/plugins/*",
       "require": "./dist/plugins/*"

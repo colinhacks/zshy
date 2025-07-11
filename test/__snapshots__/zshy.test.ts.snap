@@ -19,7 +19,7 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
        "./hello": "./src/hello.ts",
        "./utils": "./src/utils.ts",
        "./plugins": "./src/plugins/index.ts",
-       "./plugins/*": "./src/plugins/*",
+       "./plugins/**/*": "./src/plugins/**/*",
        "./default-function": "./src/default-function.ts",
        "./default-class": "./src/default-class.ts",
        "./default-object": "./src/default-object.ts",
@@ -36,6 +36,7 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
    }
 »  Reading tsconfig from ./tsconfig.basic.json
 »  Determining entrypoints...
+»  Matching glob: ./src/plugins/**/*.{ts,tsx,mts,cts}
    ╔════════════════════════════════╤════════════════════════════════╗
    ║ Subpath                        │ Entrypoint                     ║
    ╟────────────────────────────────┼────────────────────────────────╢
@@ -43,7 +44,7 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
    ║ "my-pkg/hello"                 │ ./src/hello.ts                 ║
    ║ "my-pkg/utils"                 │ ./src/utils.ts                 ║
    ║ "my-pkg/plugins"               │ ./src/plugins/index.ts         ║
-   ║ "my-pkg/plugins/*"             │ ./src/plugins/* (4 matches)    ║
+   ║ "my-pkg/plugins/**/*"          │ ./src/plugins/**/* (5 matches) ║
    ║ "my-pkg/default-function"      │ ./src/default-function.ts      ║
    ║ "my-pkg/default-class"         │ ./src/default-class.ts         ║
    ║ "my-pkg/default-object"        │ ./src/default-object.ts        ║
@@ -72,6 +73,7 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
      "./src/plugins/a.ts",
      "./src/plugins/b.cts",
      "./src/plugins/c.mts",
+     "./src/plugins/deep/d.ts",
      "./src/default-function.ts",
      "./src/default-class.ts",
      "./src/default-object.ts",
@@ -124,7 +126,7 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
 »  Copied asset: ./src/plugins/plugin-b.css → ./dist/plugins/plugin-b.css
 »  Building ESM...
 »  Found 5 asset import(s), copying to output directory...
-»  Writing files (117 total)...
+»  Writing files (125 total)...
      ./dist/assets/README.md
      ./dist/assets/config.json
      ./dist/assets/styles.css
@@ -224,6 +226,14 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
      ./dist/plugins/c.d.mts.map
      ./dist/plugins/c.mjs
      ./dist/plugins/c.mjs.map
+     ./dist/plugins/deep/d.cjs
+     ./dist/plugins/deep/d.cjs.map
+     ./dist/plugins/deep/d.d.cts
+     ./dist/plugins/deep/d.d.cts.map
+     ./dist/plugins/deep/d.d.ts
+     ./dist/plugins/deep/d.d.ts.map
+     ./dist/plugins/deep/d.js
+     ./dist/plugins/deep/d.js.map
      ./dist/plugins/index.cjs
      ./dist/plugins/index.cjs.map
      ./dist/plugins/index.d.cts
@@ -269,7 +279,7 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
        "require": "./dist/plugins/index.cjs"
      },
      "./plugins/*": {
-       "@zod/source": "./src/plugins/*",
+       "@zod/source": "./src/plugins/**/*",
        "types": "./dist/plugins/*",
        "import": "./dist/plugins/*",
        "require": "./dist/plugins/*"
@@ -349,7 +359,7 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
        "./hello": "./src/hello.ts",
        "./utils": "./src/utils.ts",
        "./plugins": "./src/plugins/index.ts",
-       "./plugins/*": "./src/plugins/*",
+       "./plugins/**/*": "./src/plugins/**/*",
        "./default-function": "./src/default-function.ts",
        "./default-class": "./src/default-class.ts",
        "./default-object": "./src/default-object.ts",
@@ -366,6 +376,7 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
    }
 »  Reading tsconfig from ./tsconfig.custom-paths.json
 »  Determining entrypoints...
+»  Matching glob: ./src/plugins/**/*.{ts,tsx,mts,cts}
    ╔════════════════════════════════╤════════════════════════════════╗
    ║ Subpath                        │ Entrypoint                     ║
    ╟────────────────────────────────┼────────────────────────────────╢
@@ -373,7 +384,7 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
    ║ "my-pkg/hello"                 │ ./src/hello.ts                 ║
    ║ "my-pkg/utils"                 │ ./src/utils.ts                 ║
    ║ "my-pkg/plugins"               │ ./src/plugins/index.ts         ║
-   ║ "my-pkg/plugins/*"             │ ./src/plugins/* (4 matches)    ║
+   ║ "my-pkg/plugins/**/*"          │ ./src/plugins/**/* (5 matches) ║
    ║ "my-pkg/default-function"      │ ./src/default-function.ts      ║
    ║ "my-pkg/default-class"         │ ./src/default-class.ts         ║
    ║ "my-pkg/default-object"        │ ./src/default-object.ts        ║
@@ -402,6 +413,7 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
      "./src/plugins/a.ts",
      "./src/plugins/b.cts",
      "./src/plugins/c.mts",
+     "./src/plugins/deep/d.ts",
      "./src/default-function.ts",
      "./src/default-class.ts",
      "./src/default-object.ts",
@@ -455,7 +467,7 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
 »  [dryrun] Copied asset: ./src/plugins/plugin-b.css → ./build/src/plugins/plugin-b.css
 »  Building ESM...
 »  Found 5 asset import(s), copying to output directory...
-»  [dryrun] Writing files (117 total)...
+»  [dryrun] Writing files (125 total)...
      ./build/src/assets/README.md
      ./build/src/assets/config.json
      ./build/src/assets/styles.css
@@ -507,6 +519,10 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
      ./build/src/plugins/b.cjs.map
      ./build/src/plugins/c.mjs
      ./build/src/plugins/c.mjs.map
+     ./build/src/plugins/deep/d.cjs
+     ./build/src/plugins/deep/d.cjs.map
+     ./build/src/plugins/deep/d.js
+     ./build/src/plugins/deep/d.js.map
      ./build/src/plugins/index.cjs
      ./build/src/plugins/index.cjs.map
      ./build/src/plugins/index.js
@@ -565,6 +581,10 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
      ./types/src/plugins/b.d.cts.map
      ./types/src/plugins/c.d.mts
      ./types/src/plugins/c.d.mts.map
+     ./types/src/plugins/deep/d.d.cts
+     ./types/src/plugins/deep/d.d.cts.map
+     ./types/src/plugins/deep/d.d.ts
+     ./types/src/plugins/deep/d.d.ts.map
      ./types/src/plugins/index.d.cts
      ./types/src/plugins/index.d.cts.map
      ./types/src/plugins/index.d.ts
@@ -600,7 +620,7 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
        "require": "./build/src/plugins/index.cjs"
      },
      "./plugins/*": {
-       "@zod/source": "./src/plugins/*",
+       "@zod/source": "./src/plugins/**/*",
        "types": "./types/src/plugins/*",
        "import": "./build/src/plugins/*",
        "require": "./build/src/plugins/*"
@@ -681,7 +701,7 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
        "./hello": "./src/hello.ts",
        "./utils": "./src/utils.ts",
        "./plugins": "./src/plugins/index.ts",
-       "./plugins/*": "./src/plugins/*",
+       "./plugins/**/*": "./src/plugins/**/*",
        "./default-function": "./src/default-function.ts",
        "./default-class": "./src/default-class.ts",
        "./default-object": "./src/default-object.ts",
@@ -701,6 +721,7 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
    Ensure that your "files" in package.json excludes TypeScript source files, or your users may experience .d.ts resolution issues in some environments:
      "files": ["**/*.js", "**/*.mjs", "**/*.cjs", "**/*.d.ts", "**/*.d.mts", "**/*.d.cts"]
 »  Determining entrypoints...
+»  Matching glob: ./src/plugins/**/*.{ts,tsx,mts,cts}
    ╔════════════════════════════════╤════════════════════════════════╗
    ║ Subpath                        │ Entrypoint                     ║
    ╟────────────────────────────────┼────────────────────────────────╢
@@ -708,7 +729,7 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
    ║ "my-pkg/hello"                 │ ./src/hello.ts                 ║
    ║ "my-pkg/utils"                 │ ./src/utils.ts                 ║
    ║ "my-pkg/plugins"               │ ./src/plugins/index.ts         ║
-   ║ "my-pkg/plugins/*"             │ ./src/plugins/* (4 matches)    ║
+   ║ "my-pkg/plugins/**/*"          │ ./src/plugins/**/* (5 matches) ║
    ║ "my-pkg/default-function"      │ ./src/default-function.ts      ║
    ║ "my-pkg/default-class"         │ ./src/default-class.ts         ║
    ║ "my-pkg/default-object"        │ ./src/default-object.ts        ║
@@ -737,6 +758,7 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
      "./src/plugins/a.ts",
      "./src/plugins/b.cts",
      "./src/plugins/c.mts",
+     "./src/plugins/deep/d.ts",
      "./src/default-function.ts",
      "./src/default-class.ts",
      "./src/default-object.ts",
@@ -789,7 +811,7 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
 »  [dryrun] Copied asset: ./src/plugins/plugin-b.css → ./plugins/plugin-b.css
 »  Building ESM...
 »  Found 5 asset import(s), copying to output directory...
-»  [dryrun] Writing files (117 total)...
+»  [dryrun] Writing files (125 total)...
      ./assets/README.md
      ./assets/config.json
      ./assets/styles.css
@@ -889,6 +911,14 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
      ./plugins/c.d.mts.map
      ./plugins/c.mjs
      ./plugins/c.mjs.map
+     ./plugins/deep/d.cjs
+     ./plugins/deep/d.cjs.map
+     ./plugins/deep/d.d.cts
+     ./plugins/deep/d.d.cts.map
+     ./plugins/deep/d.d.ts
+     ./plugins/deep/d.d.ts.map
+     ./plugins/deep/d.js
+     ./plugins/deep/d.js.map
      ./plugins/index.cjs
      ./plugins/index.cjs.map
      ./plugins/index.d.cts
@@ -934,7 +964,7 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
        "require": "./plugins/index.cjs"
      },
      "./plugins/*": {
-       "@zod/source": "./src/plugins/*",
+       "@zod/source": "./src/plugins/**/*",
        "types": "./plugins/*",
        "import": "./plugins/*",
        "require": "./plugins/*"
