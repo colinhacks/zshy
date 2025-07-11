@@ -548,10 +548,9 @@ To learn more, read the ["Masquerading as CJS"](https://github.com/arethetypeswr
 
 ### How are default exports transpiled?
 
-`zshy` augments the standard `tsc` transpiler with two custom transforms.
+During CJS builds, any file containing a single `export default ...` and _no named exports_ will transpile to `module.exports = ...` (runtime code) and `export = ...` (declarations). This makes it possible to `require` the default export directly, not as a `.default` property. This is analogous to the `--cjsInterop` flag in `tsup`, and it is always enabled.
 
-1. During ESM builds, `export = ...` syntax is rewritten to `export default ...`.
-2. During CJS builds, any file containing a single `export default ...` and _no named exports_ will transpile to `module.exports = ...` (runtime code) and `export = ...` (declarations). This is analogous to the `--cjsInterop` flag in `tsup`, and it is always enabled.
+On the flip side, during ESM builds, `export = ...` syntax is rewritten to `export default ...`.
 
 <br/>
 
