@@ -1,4 +1,2 @@
-export default (function hello() {
-    console.log("hello");
-});
+export {};
 //# sourceMappingURL=hello.js.map

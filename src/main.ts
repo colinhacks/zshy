@@ -79,6 +79,7 @@ Examples:
   const isDryRun = !!args["--dry-run"];
   const failThreshold = args["--fail-threshold"] || "error"; // Default to 'error'
   const dryRunPrefix = isDryRun ? "[dryrun] " : "";
+  const isCjsInterop = true; // Enable CJS interop for testing
 
   // Validate that the threshold value is one of the allowed values
   if (failThreshold !== "never" && failThreshold !== "warn" && failThreshold !== "error") {
@@ -154,6 +155,7 @@ Examples:
     bin?: Record<string, string> | string;
     sourceDialects?: string[];
     tsconfig?: string; // optional path to tsconfig.json file
+    cjsInterop?: boolean; // Enable CJS interop for single default exports
     // outDir?: string; // optional, can be used to specify output directory
     // other properties can be added as needed
   };
@@ -568,6 +570,7 @@ Examples:
         dryRun: isDryRun,
         pkgJsonDir,
         rootDir,
+        cjsInterop: isCjsInterop,
         compilerOptions: {
           ...tsconfigJson,
           module: ts.ModuleKind.CommonJS,
@@ -590,6 +593,7 @@ Examples:
         dryRun: isDryRun,
         pkgJsonDir,
         rootDir,
+        cjsInterop: isCjsInterop,
         compilerOptions: {
           ...tsconfigJson,
           module: ts.ModuleKind.ESNext,
