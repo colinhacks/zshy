@@ -64,7 +64,7 @@ jobs:
 
       - name: Get version from npm
         id: get_version
-        run: echo "version=$(npm pkg get version | tr -d '\\"')" >> $GITHUB_ENV
+        run: echo "version=$(pnpm tsx versace.ts version get version)" >> $GITHUB_ENV
 
       - name: Create release
         id: create_release

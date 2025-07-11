@@ -113,6 +113,13 @@ function main(): void {
       }
     );
 
+    // Handle version command
+    if (args._?.[0] === "version") {
+      const version = readVersionFile();
+      console.log(version);
+      process.exit(0);
+    }
+
     // Check that exactly one tag is specified
     const tagOptions = ["--latest", "--alpha", "--beta", "--canary"] as const;
     const selectedTags = tagOptions.filter((tag) => args[tag]);
