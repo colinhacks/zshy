@@ -662,16 +662,15 @@ Examples:
       if (typeof sourcePath === "string") {
         if (sourcePath.endsWith("/*") || sourcePath.endsWith("/**/*")) {
           // Handle wildcard exports
-          let finalExportPath = exportPath;
+          const finalExportPath = exportPath;
+
+          if (finalExportPath.includes("**")) {
+            emojiLog("❌", `Export keys cannot contain "**": ${finalExportPath}`, "error");
+            process.exit(1);
+          }
 
           // Convert deep glob patterns to simple wildcard patterns in the final export
           if (sourcePath.endsWith("/**/*")) {
-            // Convert "./some/path/**/*" export patterns to simple "/*" patterns
-            // e.g., "./utils/**/*" becomes "./utils/*"
-            if (exportPath.endsWith("/**/*")) {
-              finalExportPath = exportPath.slice(0, -5) + "/*";
-            }
-
             // Also convert the output paths from /**/* to /*
             if (relJsPath.endsWith("/**/*")) {
               relJsPath = relJsPath.slice(0, -5) + "/*";

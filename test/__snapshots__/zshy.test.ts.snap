@@ -19,7 +19,7 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
        "./hello": "./src/hello.ts",
        "./utils": "./src/utils.ts",
        "./plugins": "./src/plugins/index.ts",
-       "./plugins/**/*": "./src/plugins/**/*",
+       "./plugins/*": "./src/plugins/**/*",
        "./default-function": "./src/default-function.ts",
        "./default-class": "./src/default-class.ts",
        "./default-object": "./src/default-object.ts",
@@ -44,7 +44,7 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
    ║ "my-pkg/hello"                 │ ./src/hello.ts                 ║
    ║ "my-pkg/utils"                 │ ./src/utils.ts                 ║
    ║ "my-pkg/plugins"               │ ./src/plugins/index.ts         ║
-   ║ "my-pkg/plugins/**/*"          │ ./src/plugins/**/* (5 matches) ║
+   ║ "my-pkg/plugins/*"             │ ./src/plugins/**/* (5 matches) ║
    ║ "my-pkg/default-function"      │ ./src/default-function.ts      ║
    ║ "my-pkg/default-class"         │ ./src/default-class.ts         ║
    ║ "my-pkg/default-object"        │ ./src/default-object.ts        ║
@@ -359,7 +359,7 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
        "./hello": "./src/hello.ts",
        "./utils": "./src/utils.ts",
        "./plugins": "./src/plugins/index.ts",
-       "./plugins/**/*": "./src/plugins/**/*",
+       "./plugins/*": "./src/plugins/**/*",
        "./default-function": "./src/default-function.ts",
        "./default-class": "./src/default-class.ts",
        "./default-object": "./src/default-object.ts",
@@ -384,7 +384,7 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
    ║ "my-pkg/hello"                 │ ./src/hello.ts                 ║
    ║ "my-pkg/utils"                 │ ./src/utils.ts                 ║
    ║ "my-pkg/plugins"               │ ./src/plugins/index.ts         ║
-   ║ "my-pkg/plugins/**/*"          │ ./src/plugins/**/* (5 matches) ║
+   ║ "my-pkg/plugins/*"             │ ./src/plugins/**/* (5 matches) ║
    ║ "my-pkg/default-function"      │ ./src/default-function.ts      ║
    ║ "my-pkg/default-class"         │ ./src/default-class.ts         ║
    ║ "my-pkg/default-object"        │ ./src/default-object.ts        ║
@@ -701,7 +701,7 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
        "./hello": "./src/hello.ts",
        "./utils": "./src/utils.ts",
        "./plugins": "./src/plugins/index.ts",
-       "./plugins/**/*": "./src/plugins/**/*",
+       "./plugins/*": "./src/plugins/**/*",
        "./default-function": "./src/default-function.ts",
        "./default-class": "./src/default-class.ts",
        "./default-object": "./src/default-object.ts",
@@ -729,7 +729,7 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
    ║ "my-pkg/hello"                 │ ./src/hello.ts                 ║
    ║ "my-pkg/utils"                 │ ./src/utils.ts                 ║
    ║ "my-pkg/plugins"               │ ./src/plugins/index.ts         ║
-   ║ "my-pkg/plugins/**/*"          │ ./src/plugins/**/* (5 matches) ║
+   ║ "my-pkg/plugins/*"             │ ./src/plugins/**/* (5 matches) ║
    ║ "my-pkg/default-function"      │ ./src/default-function.ts      ║
    ║ "my-pkg/default-class"         │ ./src/default-class.ts         ║
    ║ "my-pkg/default-object"        │ ./src/default-object.ts        ║

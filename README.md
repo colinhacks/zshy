@@ -82,7 +82,7 @@ pnpm add --save-dev zshy
 +     ".": "./src/index.ts",
 +     "./utils": "./src/utils.ts",
 +     "./plugins/*": "./src/plugins/*"
-+     "./components/**/*": "./src/components/**/*" // deep wildcard
++     "./components/**/*": "./src/components/**/*"
 +   }
 + }
 }
