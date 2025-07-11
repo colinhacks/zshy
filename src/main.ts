@@ -289,6 +289,7 @@ Examples:
     target: _parsedConfig.target ?? ts.ScriptTarget.ES2020, // ensure compatible target for CommonJS
     skipLibCheck: true, // skip library checks to reduce errors
     declaration: true,
+    esModuleInterop: true,
     noEmit: false,
     emitDeclarationOnly: false,
     rewriteRelativeImportExtensions: true,

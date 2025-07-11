@@ -386,6 +386,7 @@ Yes! With some strategic overrides:
 - **`moduleResolution`**: Overridden (`"node10"` for CJS, `"bundler"` for ESM)
 - **`declaration`/`noEmit`/`emitDeclarationOnly`**: Overridden to ensure proper output
 - **`verbatimModuleSyntax`**: Set to `false` to allow multiple build formats
+- **`esModuleInterop`**: Set to `true` (it's a best practice)
 
 All other options are respected as defined, though `zshy` will also set the following reasonable defaults if they are not explicitly set:
 
