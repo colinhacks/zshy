@@ -3,7 +3,7 @@
  */
 import "./assets/styles.css";
 import appConfig from "./assets/config.json";
-// import hello from "./hello";
+import hello from "./hello";
 import * as utilsC from "./utils";
 import * as utilsA from "./utils.js";
 import * as utilsB from "./utils.ts";
@@ -15,7 +15,7 @@ export * as utilsA from "./utils";
 console.log("🚀 Hello from zshy test fixture!");
 
 // test default export
-// hello();
+hello();
 
 // test import.meta shims for CJS builds
 console.log(import.meta.url);
