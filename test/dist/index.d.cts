@@ -3,6 +3,8 @@
  */
 import "./assets/styles.css";
 import appConfig from "./assets/config.json";
+export * from "./utils.cjs";
+export * as utilsA from "./utils.cjs";
 export interface Config {
     name: string;
     version: string;

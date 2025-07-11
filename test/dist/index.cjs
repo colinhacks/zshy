@@ -39,21 +39,27 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.appConfig = exports.defaultConfig = exports.createConfig = void 0;
+exports.appConfig = exports.defaultConfig = exports.createConfig = exports.utilsA = void 0;
 /**
  * Main entry point for the test library
  */
 require("./assets/styles.css");
 const config_json_1 = __importDefault(require("./assets/config.json"));
 exports.appConfig = config_json_1.default;
+const hello_1 = __importDefault(require("./hello.cjs"));
 const utilsC = __importStar(require("./utils.cjs"));
 const utilsA = __importStar(require("./utils.cjs"));
 const utilsB = __importStar(require("./utils.cjs"));
-// Test import.meta shims for CJS builds
+__exportStar(require("./utils.cjs"), exports);
+exports.utilsA = __importStar(require("./utils.cjs"));
+// code
+console.log("🚀 Hello from zshy test fixture!");
+// test default export
+(0, hello_1.default)();
+// test import.meta shims for CJS builds
 console.log(require("url").pathToFileURL(__filename));
 console.log(__dirname);
 console.log(__filename);
-console.log("🚀 Hello from zshy test fixture!");
 utilsA.delay(5);
 utilsB.delay(5);
 utilsC.delay(5);

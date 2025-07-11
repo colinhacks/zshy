@@ -3,4 +3,4 @@
  */
 export * as pluginA from "./a.ts";
 export * as pluginB from "./b.cts";
-export * as pluginC from "./c.cts";
+export * as pluginC from "./c.mts";

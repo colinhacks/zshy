@@ -1,0 +1,12 @@
+---
+alwaysApply: true
+---
+
+# Testing TypeScript Configuration
+
+When adding new tests to this project, always use the existing [tsconfig.basic.json](mdc:test/tsconfig.basic.json) fixture. Do not create new tsconfig files for testing purposes.
+
+The test configuration is already set up in [tsconfig.basic.json](mdc:test/tsconfig.basic.json) and should be reused for all new test cases. This maintains consistency across the test suite and avoids unnecessary configuration duplication.
+description:
+globs:
+alwaysApply: false

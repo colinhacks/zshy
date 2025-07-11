@@ -3,5 +3,5 @@
  */
 export * as pluginA from "./a.cjs";
 export * as pluginB from "./b.cts";
-export * as pluginC from "./c.cts";
+export * as pluginC from "./c.mts";
 //# sourceMappingURL=index.d.ts.map

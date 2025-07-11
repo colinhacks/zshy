@@ -49,7 +49,7 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
      "./src/plugins/index.ts",
      "./src/plugins/a.ts",
      "./src/plugins/b.cts",
-     "./src/plugins/c.cts"
+     "./src/plugins/c.mts"
    ]
 →  Resolved compilerOptions: {
      "lib": [
@@ -93,10 +93,18 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
 →  Copied asset: ./src/plugins/plugin-b.css → ./dist/plugins/plugin-b.css
 →  Building ESM...
 →  Found 5 asset import(s), copying to output directory...
-→  Writing files (45 total)...
+→  Writing files (53 total)...
      ./dist/assets/README.md
      ./dist/assets/config.json
      ./dist/assets/styles.css
+     ./dist/hello.cjs
+     ./dist/hello.cjs.map
+     ./dist/hello.d.cts
+     ./dist/hello.d.cts.map
+     ./dist/hello.d.ts
+     ./dist/hello.d.ts.map
+     ./dist/hello.js
+     ./dist/hello.js.map
      ./dist/index.cjs
      ./dist/index.cjs.map
      ./dist/index.d.cts
@@ -117,10 +125,10 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
      ./dist/plugins/b.cjs.map
      ./dist/plugins/b.d.cts
      ./dist/plugins/b.d.cts.map
-     ./dist/plugins/c.cjs
-     ./dist/plugins/c.cjs.map
-     ./dist/plugins/c.d.cts
-     ./dist/plugins/c.d.cts.map
+     ./dist/plugins/c.d.mts
+     ./dist/plugins/c.d.mts.map
+     ./dist/plugins/c.mjs
+     ./dist/plugins/c.mjs.map
      ./dist/plugins/index.cjs
      ./dist/plugins/index.cjs.map
      ./dist/plugins/index.d.cts
@@ -222,7 +230,7 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
      "./src/plugins/index.ts",
      "./src/plugins/a.ts",
      "./src/plugins/b.cts",
-     "./src/plugins/c.cts"
+     "./src/plugins/c.mts"
    ]
 →  Resolved compilerOptions: {
      "lib": [
@@ -267,10 +275,14 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
 →  [dryrun] Copied asset: ./src/plugins/plugin-b.css → ./build/src/plugins/plugin-b.css
 →  Building ESM...
 →  Found 5 asset import(s), copying to output directory...
-→  [dryrun] Writing files (45 total)...
+→  [dryrun] Writing files (53 total)...
      ./build/src/assets/README.md
      ./build/src/assets/config.json
      ./build/src/assets/styles.css
+     ./build/src/hello.cjs
+     ./build/src/hello.cjs.map
+     ./build/src/hello.js
+     ./build/src/hello.js.map
      ./build/src/index.cjs
      ./build/src/index.cjs.map
      ./build/src/index.js
@@ -281,8 +293,8 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
      ./build/src/plugins/a.js.map
      ./build/src/plugins/b.cjs
      ./build/src/plugins/b.cjs.map
-     ./build/src/plugins/c.cjs
-     ./build/src/plugins/c.cjs.map
+     ./build/src/plugins/c.mjs
+     ./build/src/plugins/c.mjs.map
      ./build/src/plugins/index.cjs
      ./build/src/plugins/index.cjs.map
      ./build/src/plugins/index.js
@@ -293,6 +305,10 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
      ./build/src/utils.cjs.map
      ./build/src/utils.js
      ./build/src/utils.js.map
+     ./types/src/hello.d.cts
+     ./types/src/hello.d.cts.map
+     ./types/src/hello.d.ts
+     ./types/src/hello.d.ts.map
      ./types/src/index.d.cts
      ./types/src/index.d.cts.map
      ./types/src/index.d.ts
@@ -303,8 +319,8 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
      ./types/src/plugins/a.d.ts.map
      ./types/src/plugins/b.d.cts
      ./types/src/plugins/b.d.cts.map
-     ./types/src/plugins/c.d.cts
-     ./types/src/plugins/c.d.cts.map
+     ./types/src/plugins/c.d.mts
+     ./types/src/plugins/c.d.mts.map
      ./types/src/plugins/index.d.cts
      ./types/src/plugins/index.d.cts.map
      ./types/src/plugins/index.d.ts
@@ -400,7 +416,7 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
      "./src/plugins/index.ts",
      "./src/plugins/a.ts",
      "./src/plugins/b.cts",
-     "./src/plugins/c.cts"
+     "./src/plugins/c.mts"
    ]
 →  Resolved compilerOptions: {
      "lib": [
@@ -444,10 +460,18 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
 →  [dryrun] Copied asset: ./src/plugins/plugin-b.css → ./plugins/plugin-b.css
 →  Building ESM...
 →  Found 5 asset import(s), copying to output directory...
-→  [dryrun] Writing files (45 total)...
+→  [dryrun] Writing files (53 total)...
      ./assets/README.md
      ./assets/config.json
      ./assets/styles.css
+     ./hello.cjs
+     ./hello.cjs.map
+     ./hello.d.cts
+     ./hello.d.cts.map
+     ./hello.d.ts
+     ./hello.d.ts.map
+     ./hello.js
+     ./hello.js.map
      ./index.cjs
      ./index.cjs.map
      ./index.d.cts
@@ -468,10 +492,10 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
      ./plugins/b.cjs.map
      ./plugins/b.d.cts
      ./plugins/b.d.cts.map
-     ./plugins/c.cjs
-     ./plugins/c.cjs.map
-     ./plugins/c.d.cts
-     ./plugins/c.d.cts.map
+     ./plugins/c.d.mts
+     ./plugins/c.d.mts.map
+     ./plugins/c.mjs
+     ./plugins/c.mjs.map
      ./plugins/index.cjs
      ./plugins/index.cjs.map
      ./plugins/index.d.cts
