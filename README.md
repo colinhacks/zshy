@@ -546,6 +546,15 @@ To learn more, read the ["Masquerading as CJS"](https://github.com/arethetypeswr
 
 <br/>
 
+### How are default exports transpiled?
+
+`zshy` augments the standard `tsc` transpiler with two custom transforms.
+
+1. During ESM builds, `export = ...` syntax is rewritten to `export default ...`.
+2. During CJS builds, any file containing a single `export default ...` and _no named exports_ will transpile to `module.exports = ...` (runtime code) and `export = ...` (declarations). This is analogous to the `--cjsInterop` flag in `tsup`, and it is always enabled.
+
+<br/>
+
 ### Can it support React Native or non-Node.js environments?
 
 Yes! This is one of the key reasons `zshy` was originally developed. Many environments don't support `package.json#/exports` yet:

@@ -320,8 +320,9 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
 
   // Add export = to export default transformer for ESM builds
   if (config.format === "esm") {
-    before.push(createExportEqualsTransformer<ts.SourceFile>());
-    afterDeclarations.push(createExportEqualsTransformer<ts.SourceFile | ts.Bundle>());
+    createExportEqualsTransformer<ts.SourceFile>();
+    // before.push(createExportEqualsTransformer<ts.SourceFile>());
+    // afterDeclarations.push(createExportEqualsTransformer<ts.SourceFile | ts.Bundle>());
   }
 
   // emit the files

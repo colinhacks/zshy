@@ -70,7 +70,10 @@ Examples:
     pmExec = "npx";
   }
 
-  emojiLog("💎", "Starting build... 🐒");
+  console.log(`   ╔═══════════════════════════════════════════════╗`);
+  console.log(`   ║ zshy » the bundler-free TypeScript build tool ║`);
+  console.log(`   ╚═══════════════════════════════════════════════╝`);
+  emojiLog("💎", "Starting build...");
 
   const isVerbose = !!args["--verbose"];
   const isDryRun = !!args["--dry-run"];
@@ -99,14 +102,15 @@ Examples:
   }
 
   // Display message about fail threshold setting
-  if (failThreshold === "never") {
-    emojiLog("ℹ️", "Build will always succeed regardless of errors or warnings");
-  } else if (failThreshold === "warn") {
-    emojiLog("⚠️", "Build will fail on warnings or errors");
-  } else {
-    emojiLog("ℹ️", "Build will fail only on errors (default)");
+  if (isVerbose) {
+    if (failThreshold === "never") {
+      emojiLog("ℹ️", "Build will always succeed regardless of errors or warnings");
+    } else if (failThreshold === "warn") {
+      emojiLog("⚠️", "Build will fail on warnings or errors");
+    } else {
+      emojiLog("ℹ️", "Build will fail only on errors (default)");
+    }
   }
-
   ///////////////////////////////////
   ///    find and read pkg json   ///
   ///////////////////////////////////

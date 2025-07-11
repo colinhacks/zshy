@@ -1,5 +1,5 @@
 {
-  "name": "zshy-test-fixture",
+  "name": "my-pkg",
   "version": "1.0.0",
   "description": "Test fixture for zshy - represents a typical TypeScript library",
   "type": "module",
@@ -7,7 +7,7 @@
   "types": "./dist/index.d.cts",
   "bin": "./dist/index.cjs",
   "scripts": {
-    "build": "tsx ../src/index.ts"
+    "build": "tsx ../src/index.ts --project tsconfig.basic.json"
   },
   "devDependencies": {
     "typescript": "^5.8.3"
@@ -15,6 +15,7 @@
   "zshy": {
     "exports": {
       ".": "./src/index.ts",
+      "./hello": "./src/hello.ts",
       "./utils": "./src/utils.ts",
       "./plugins": "./src/plugins/index.ts",
       "./plugins/*": "./src/plugins/*"
@@ -34,6 +35,12 @@
       "types": "./dist/index.d.cts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./hello": {
+      "@zod/source": "./src/hello.ts",
+      "types": "./dist/hello.d.cts",
+      "import": "./dist/hello.js",
+      "require": "./dist/hello.cjs"
     },
     "./utils": {
       "@zod/source": "./src/utils.ts",
