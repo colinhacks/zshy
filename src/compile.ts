@@ -158,7 +158,7 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
     if (config.verbose) {
       utils.emojiLog("🔄", `Enabling CJS interop transform...`);
     }
-    before.push(createCjsInteropTransformer(config));
+    before.push(createCjsInteropTransformer());
   }
 
   // Add CJS interop transformer for declaration files (export = transformation)

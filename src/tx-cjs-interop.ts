@@ -1,7 +1,7 @@
 import * as ts from "typescript";
 import { analyzeExports } from "./tx-analyze-exports.js";
 
-export const createCjsInteropTransformer = (): ts.TransformerFactory<ts.SourceFile | ts.Bundle> => (context) => {
+export const createCjsInteropTransformer = (): ts.TransformerFactory<ts.SourceFile> => (context) => {
   return (sourceFile) => {
     if (!ts.isSourceFile(sourceFile)) return sourceFile;
 
