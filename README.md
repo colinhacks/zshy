@@ -548,9 +548,46 @@ To learn more, read the ["Masquerading as CJS"](https://github.com/arethetypeswr
 
 ### How are default exports transpiled?
 
-During CJS builds, any file containing a single `export default ...` and _no named exports_ will transpile to `module.exports = ...` (runtime code) and `export = ...` (declarations). This makes it possible to `require` the default export directly, not as a `.default` property. This is analogous to the `--cjsInterop` flag in `tsup`, and it is always enabled.
+**CJS interop transform** — When a file contains a single `export default ...` and _no named exports_...
 
-On the flip side, during ESM builds, `export = ...` syntax is rewritten to `export default ...`.
+```ts
+function hello() {
+  console.log('hello');
+}
+
+export default hello;
+```
+
+...the built `.cjs` code will assign the exported value directly to `module.exports`:
+
+```ts
+function hello() {
+  console.log('hello');
+}
+exports.default = hello;
+module.exports = exports.default;
+```
+
+...and the associated `.d.cts` files will use `export =` syntax:
+
+```ts
+declare function hello(): void;
+export = hello;
+```
+
+The ESM build is not impacted by this transform.
+
+**ESM interop transform** — Similarly, if a source `.ts` file contains the following syntax:
+
+```ts
+export = ...
+```
+
+...the generated _ESM_ build will transpile to the following syntax:
+
+```ts
+export default ...
+```
 
 <br/>
 
