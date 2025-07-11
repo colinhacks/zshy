@@ -265,7 +265,7 @@ $ npx zshy
    ╚════════════════════╧═════════════════════════════╝
 →  Resolved build paths:
    ╔══════════╤════════════════╗
-   ║ Location │ Resolved pathh ║
+   ║ Location │ Resolved path  ║
    ╟──────────┼────────────────╢
    ║ rootDir  │ ./src          ║
    ║ outDir   │ ./dist         ║
