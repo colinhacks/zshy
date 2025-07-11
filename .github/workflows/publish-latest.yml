@@ -23,22 +23,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Install Dependencies
+        uses: ./.github/actions/install-dependencies
         with:
-          node-version: 'latest'
           registry-url: 'https://registry.npmjs.org'
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-          
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: latest
-          
-      - name: Install dependencies
-        run: pnpm install
         
       - name: Run tests
         run: pnpm test
@@ -53,3 +41,5 @@ jobs:
         run: |
           npm whoami
           pnpm tsx versace.ts --latest --provenance --verbose
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -81,5 +81,6 @@
   },
   "files": [
     "dist"
-  ]
+  ],
+  "packageManager": "pnpm@9.15.9"
 }
