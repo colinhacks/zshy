@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import { main } from "./main";
-import { emojiLog } from "./utils";
+import { main } from "./main.js";
+import { emojiLog } from "./utils.js";
 
 // Run the script
 main().catch((error) => {

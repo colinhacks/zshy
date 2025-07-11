@@ -3,16 +3,24 @@
  */
 import "./assets/styles.css";
 import appConfig from "./assets/config.json";
+import hello from "./hello";
 import * as utilsC from "./utils";
 import * as utilsA from "./utils.js";
 import * as utilsB from "./utils.ts";
 
-// Test import.meta shims for CJS builds
+export * from "./utils";
+export * as utilsA from "./utils";
+
+// code
+console.log("🚀 Hello from zshy test fixture!");
+
+// test default export
+hello();
+
+// test import.meta shims for CJS builds
 console.log(import.meta.url);
 console.log(import.meta.dirname);
 console.log(import.meta.filename);
-
-console.log("🚀 Hello from zshy test fixture!");
 
 utilsA.delay(5);
 utilsB.delay(5);

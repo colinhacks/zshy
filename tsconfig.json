@@ -3,8 +3,8 @@
     // Environment setup & latest features
     "lib": ["ESNext"],
     "target": "es2020",
-    "module": "esnext",
-    "moduleResolution": "bundler",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
     "moduleDetection": "auto",
     "jsx": "react-jsx",
 
@@ -20,7 +20,7 @@
     "skipLibCheck": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true,
-    "esModuleInterop": true,
+    // "esModuleInterop": true,
 
     // Some stricter flags (disabled by default)
     "noUnusedLocals": true,
@@ -35,5 +35,5 @@
     "declarationMap": true,
     "resolveJsonModule": true 
   },
-  "include": ["./**/*.ts", "test/src/plugins/b.cts"],
+  "include": ["./**/*.ts", "test/src/plugins/b.cts", "play.cts"],
 }

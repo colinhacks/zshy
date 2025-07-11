@@ -1,8 +1,12 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import * as ts from "typescript";
-
-import * as utils from "./utils";
+import { createCjsInteropTransformer } from "./tx-cjs-interop.js";
+import { createCjsInteropDeclarationTransformer } from "./tx-cjs-interop-declaration.js";
+import { createExportEqualsTransformer } from "./tx-export-equals.js";
+import { createExtensionRewriteTransformer } from "./tx-extension-rewrite.js";
+import { createImportMetaShimTransformer } from "./tx-import-meta-shim.js";
+import * as utils from "./utils.js";
 
 export interface BuildContext {
   writtenFiles: Set<string>;
@@ -14,62 +18,14 @@ export interface BuildContext {
 export interface ProjectOptions {
   configPath: string;
   compilerOptions: ts.CompilerOptions & Required<Pick<ts.CompilerOptions, "module" | "moduleResolution" | "outDir">>;
-  mode: "cts" | "ts" | "mts";
+  ext: "cjs" | "js" | "mjs";
+  format: "cjs" | "esm";
   pkgJsonDir: string; // Add package root for relative path display
   rootDir: string; // Add source root for asset copying
   verbose: boolean;
   dryRun: boolean;
+  cjsInterop?: boolean; // Enable CJS interop for single default exports
 }
-
-// Create import.meta shim transformer for CJS builds
-const createImportMetaShimTransformer = (): ts.TransformerFactory<ts.SourceFile> => (context) => {
-  return (sourceFile) => {
-    const visitor = (node: ts.Node): ts.Node => {
-      // Handle import.meta.url
-      if (
-        ts.isPropertyAccessExpression(node) &&
-        ts.isMetaProperty(node.expression) &&
-        node.expression.keywordToken === ts.SyntaxKind.ImportKeyword &&
-        node.name.text === "url"
-      ) {
-        return ts.factory.createCallExpression(
-          ts.factory.createPropertyAccessExpression(
-            ts.factory.createCallExpression(ts.factory.createIdentifier("require"), undefined, [
-              ts.factory.createStringLiteral("url"),
-            ]),
-            ts.factory.createIdentifier("pathToFileURL")
-          ),
-          undefined,
-          [ts.factory.createIdentifier("__filename")]
-        );
-      }
-
-      // Handle import.meta.dirname
-      if (
-        ts.isPropertyAccessExpression(node) &&
-        ts.isMetaProperty(node.expression) &&
-        node.expression.keywordToken === ts.SyntaxKind.ImportKeyword &&
-        node.name.text === "dirname"
-      ) {
-        return ts.factory.createIdentifier("__dirname");
-      }
-
-      // Handle import.meta.filename
-      if (
-        ts.isPropertyAccessExpression(node) &&
-        ts.isMetaProperty(node.expression) &&
-        node.expression.keywordToken === ts.SyntaxKind.ImportKeyword &&
-        node.name.text === "filename"
-      ) {
-        return ts.factory.createIdentifier("__filename");
-      }
-
-      return ts.visitEachChild(node, visitor, context);
-    };
-
-    return ts.visitNode(sourceFile, visitor) as ts.SourceFile;
-  };
-};
 
 export async function compileProject(config: ProjectOptions, entryPoints: string[], ctx: BuildContext): Promise<void> {
   // Deduplicate entry points before compilation
@@ -81,8 +37,8 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
   const host = ts.createCompilerHost(config.compilerOptions);
   const originalWriteFile = host.writeFile;
 
-  const jsExt = config.mode === "mts" ? ".mjs" : config.mode === "cts" ? ".cjs" : ".js";
-  const dtsExt = config.mode === "mts" ? ".d.mts" : config.mode === "cts" ? ".d.cts" : ".d.ts";
+  const jsExt = "." + config.ext;
+  const dtsExt = config.ext === "mjs" ? ".d.mts" : config.ext === "cjs" ? ".d.cts" : ".d.ts";
 
   // Track if we should write files (will be set after diagnostics check)
   let shouldWriteFiles = true;
@@ -117,8 +73,7 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
 
   // Create the TypeScript program using unique entry points
   // For CJS builds, set noEmitOnError to false to allow emission despite ts1343 errors
-  const programOptions =
-    config.mode === "cts" ? { ...config.compilerOptions, noEmitOnError: false } : config.compilerOptions;
+  const programOptions = config.compilerOptions;
 
   const program = ts.createProgram({
     rootNames: entryPoints,
@@ -127,132 +82,24 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
   });
 
   // Create a transformer factory to rewrite extensions
-  const extensionRewriteTransformer: ts.TransformerFactory<ts.SourceFile | ts.Bundle> = (context) => {
-    return (sourceFile) => {
-      const visitor = (node: ts.Node): ts.Node => {
-        const isImport = ts.isImportDeclaration(node);
-        const isExport = ts.isExportDeclaration(node);
-        const isDynamicImport = ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword;
-        // const isImportOrExport  = ts.isImportDeclaration(node) || ts.isExportDeclaration(node)
-        //  || (ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword);
-
-        let originalText: string; // = isImport ? node.moduleSpecifier.text : isExport ? node.moduleSpecifier?.text :
-        if (isImport || isExport || isDynamicImport) {
-          if (isImport || isExport) {
-            if (!node.moduleSpecifier || !ts.isStringLiteral(node.moduleSpecifier)) {
-              return ts.visitEachChild(node, visitor, context);
-            }
-
-            originalText = node.moduleSpecifier.text;
-          } else if (isDynamicImport) {
-            const arg = node.arguments[0]!;
-            if (!ts.isStringLiteral(arg)) {
-              // continue
-              return ts.visitEachChild(node, visitor, context);
-            }
-            originalText = arg.text;
-          } else {
-            // If it's not an import, export, or dynamic import, just visit children
-            return ts.visitEachChild(node, visitor, context);
-          }
-
-          // const originalText = node.moduleSpecifier.text;
-
-          const isRelativeImport = originalText.startsWith("./") || originalText.startsWith("../");
-          if (!isRelativeImport) {
-            // If it's not a relative import, don't transform it
-            return node;
-          }
-
-          const ext = path.extname(originalText).toLowerCase();
-
-          // rewrite .js to resolved js extension
-          if (ext === ".js" || ext === ".ts") {
-            const newText = originalText.slice(0, -3) + jsExt;
-            if (isImport) {
-              return ts.factory.updateImportDeclaration(
-                node,
-                node.modifiers,
-                node.importClause,
-                ts.factory.createStringLiteral(newText),
-                node.assertClause
-              );
-            } else if (isExport) {
-              return ts.factory.updateExportDeclaration(
-                node,
-                node.modifiers,
-                node.isTypeOnly,
-                node.exportClause,
-                ts.factory.createStringLiteral(newText),
-                node.assertClause
-              );
-            } else if (isDynamicImport) {
-              return ts.factory.updateCallExpression(node, node.expression, node.typeArguments, [
-                ts.factory.createStringLiteral(newText),
-                ...node.arguments.slice(1),
-              ]);
-            }
-          }
-
-          // rewrite extensionless imports to .js
-          if (ext === "") {
-            const newText = originalText + jsExt;
-            if (isImport) {
-              return ts.factory.updateImportDeclaration(
-                node,
-                node.modifiers,
-                node.importClause,
-                ts.factory.createStringLiteral(newText),
-                node.assertClause
-              );
-            } else if (isExport) {
-              return ts.factory.updateExportDeclaration(
-                node,
-                node.modifiers,
-                node.isTypeOnly,
-                node.exportClause,
-                ts.factory.createStringLiteral(newText),
-                node.assertClause
-              );
-            } else if (isDynamicImport) {
-              return ts.factory.updateCallExpression(node, node.expression, node.typeArguments, [
-                ts.factory.createStringLiteral(newText),
-                ...node.arguments.slice(1),
-              ]);
-            }
-          }
-
-          // copy asset files
-          if (utils.isAssetFile(originalText)) {
-            // it's an asset
-            if (ts.isSourceFile(sourceFile)) {
-              const sourceFileDir = path.dirname(sourceFile.fileName);
-              const resolvedAssetPath = path.resolve(sourceFileDir, originalText);
-              // Make it relative to the source root (rootDir)
-              const relAssetPath = path.relative(config.rootDir, resolvedAssetPath);
-              assetImports.add(relAssetPath);
-            }
-            // Don't transform asset dynamic imports, leave them as-is
-            return node;
-          }
-        }
-
-        return ts.visitEachChild(node, visitor, context);
-      };
-
-      return ts.visitNode(sourceFile, visitor) as ts.SourceFile;
-    };
-  };
+  const extensionRewriteTransformer = createExtensionRewriteTransformer({
+    rootDir: config.rootDir,
+    ext: jsExt,
+    onAssetImport: (assetPath: string) => {
+      assetImports.add(assetPath);
+    },
+  });
 
   // Check for semantic errors
   const diagnostics = ts.getPreEmitDiagnostics(program);
 
   if (diagnostics.length > 0) {
     // Filter out ts1343 errors for CJS builds
-    const filteredDiagnostics =
-      config.mode === "cts"
-        ? diagnostics.filter((d) => d.code !== 1343) // Ignore ts1343 (import.meta not available) for CJS
-        : diagnostics;
+    const filteredDiagnostics = diagnostics.filter((d) => {
+      if (config.format === "cjs") {
+        return d.code !== 1343 && d.code !== 1259;
+      }
+    }); // Ignore ts1343 (import.meta not available) for CJS
 
     const errorCount = filteredDiagnostics.filter((d) => d.category === ts.DiagnosticCategory.Error).length;
     const warningCount = filteredDiagnostics.filter((d) => d.category === ts.DiagnosticCategory.Warning).length;
@@ -288,19 +135,42 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
   }
 
   // Prepare transformers
-  const transformers: ts.TransformerFactory<ts.SourceFile>[] = [
+  const before: ts.TransformerFactory<ts.SourceFile>[] = [
     extensionRewriteTransformer as ts.TransformerFactory<ts.SourceFile>,
   ];
+  const after: ts.TransformerFactory<ts.SourceFile>[] = [];
+  const afterDeclarations: ts.TransformerFactory<ts.SourceFile | ts.Bundle>[] = [extensionRewriteTransformer];
 
   // Add import.meta shim transformer for CJS builds
-  if (config.mode === "cts") {
-    transformers.unshift(createImportMetaShimTransformer());
+  if (config.format === "cjs") {
+    before.unshift(createImportMetaShimTransformer());
+  }
+
+  // Add export = to export default transformer for ESM builds
+  if (config.format === "esm") {
+    createExportEqualsTransformer<ts.SourceFile>();
+    // before.push(createExportEqualsTransformer<ts.SourceFile>());
+    // afterDeclarations.push(createExportEqualsTransformer<ts.SourceFile | ts.Bundle>());
+  }
+
+  // Add CJS interop transformer for single default exports
+  if (config.cjsInterop && config.format === "cjs") {
+    if (config.verbose) {
+      utils.emojiLog("🔄", `Enabling CJS interop transform...`);
+    }
+    before.push(createCjsInteropTransformer());
+  }
+
+  // Add CJS interop transformer for declaration files (export = transformation)
+  if (config.cjsInterop && config.format === "cjs") {
+    afterDeclarations.push(createCjsInteropDeclarationTransformer());
   }
 
   // emit the files
   const emitResult = program.emit(undefined, undefined, undefined, undefined, {
-    before: transformers,
-    afterDeclarations: [extensionRewriteTransformer],
+    before,
+    after,
+    afterDeclarations,
   });
 
   if (emitResult.emitSkipped) {
@@ -314,7 +184,7 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
   if (emitResult.diagnostics.length > 0) {
     // Filter out ts1343 errors for CJS builds
     const filteredEmitDiagnostics =
-      config.mode === "cts"
+      config.format === "cjs"
         ? emitResult.diagnostics.filter((d) => d.code !== 1343) // Ignore ts1343 for CJS
         : emitResult.diagnostics;
 

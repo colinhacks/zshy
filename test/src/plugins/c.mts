@@ -3,13 +3,13 @@
  */
 import "./plugin-b.css";
 
-export interface PluginB {
+export interface PluginC {
   name: string;
   version: string;
   configure(options: Record<string, any>): void;
 }
 
-export const pluginB: PluginB = {
+export const pluginC: PluginC = {
   name: "plugin-b",
   version: "1.0.0",
   configure(options) {
@@ -17,4 +17,4 @@ export const pluginB: PluginB = {
   },
 };
 
-export default pluginB;
+export default pluginC;

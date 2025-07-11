@@ -225,7 +225,7 @@ Options:
 
 ### Subpaths and wildcards
 
-Multi-entrypoint packages can specify subpaths or wildcard exports with `package.json#/zshy/exports`:
+Multi-entrypoint packages can specify subpaths or wildcard exports in `package.json#/zshy/exports`:
 
 ```jsonc
 {
@@ -386,6 +386,7 @@ Yes! With some strategic overrides:
 - **`moduleResolution`**: Overridden (`"node10"` for CJS, `"bundler"` for ESM)
 - **`declaration`/`noEmit`/`emitDeclarationOnly`**: Overridden to ensure proper output
 - **`verbatimModuleSyntax`**: Set to `false` to allow multiple build formats
+- **`esModuleInterop`**: Set to `true` (it's a best practice)
 
 All other options are respected as defined, though `zshy` will also set the following reasonable defaults if they are not explicitly set:
 
@@ -542,6 +543,14 @@ To learn more, read the ["Masquerading as ESM"](https://github.com/arethetypeswr
 This is expected behavior when running the "Are The Types Wrong" tool. This warning does not cause any resolution issues (unlike "Masquerading as ESM"). Technically, we're tricking TypeScript into thinking our code is CommonJS; when in fact it may be ESM. The ATTW tool is very rigorous and flags this; in practice, this has no real consequences and maximizes compatibility (Zod has relied on the CJS masquerading trick since it's earliest days.)
 
 To learn more, read the ["Masquerading as CJS"](https://github.com/arethetypeswrong/arethetypeswrong.github.io/blob/main/docs/problems/FalseCJS.md) writeup from ATTW.
+
+<br/>
+
+### How are default exports transpiled?
+
+During CJS builds, any file containing a single `export default ...` and _no named exports_ will transpile to `module.exports = ...` (runtime code) and `export = ...` (declarations). This makes it possible to `require` the default export directly, not as a `.default` property. This is analogous to the `--cjsInterop` flag in `tsup`, and it is always enabled.
+
+On the flip side, during ESM builds, `export = ...` syntax is rewritten to `export default ...`.
 
 <br/>
 

@@ -6,7 +6,7 @@ export function formatForLog(data: unknown) {
 }
 
 export function emojiLog(_emoji: string, content: string, level: "log" | "warn" | "error" = "log") {
-  console[level]("→  " + content);
+  console[level]("»  " + content);
 }
 
 export function isSourceFile(filePath: string): boolean {

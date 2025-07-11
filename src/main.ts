@@ -4,8 +4,8 @@ import parseArgs from "arg";
 import { globby } from "globby";
 import { table } from "table";
 import * as ts from "typescript";
-import { type BuildContext, compileProject } from "./compile";
-import { emojiLog, formatForLog, isSourceFile, readTsconfig, removeExtension } from "./utils";
+import { type BuildContext, compileProject } from "./compile.js";
+import { emojiLog, formatForLog, isSourceFile, readTsconfig, removeExtension } from "./utils.js";
 
 export async function main(): Promise<void> {
   ///////////////////////////////////
@@ -70,12 +70,16 @@ Examples:
     pmExec = "npx";
   }
 
-  emojiLog("💎", "Starting build... 🐒");
+  console.log(`   ╔═══════════════════════════════════════════════╗`);
+  console.log(`   ║ zshy » the bundler-free TypeScript build tool ║`);
+  console.log(`   ╚═══════════════════════════════════════════════╝`);
+  emojiLog("💎", "Starting build...");
 
   const isVerbose = !!args["--verbose"];
   const isDryRun = !!args["--dry-run"];
   const failThreshold = args["--fail-threshold"] || "error"; // Default to 'error'
   const dryRunPrefix = isDryRun ? "[dryrun] " : "";
+  const isCjsInterop = true; // Enable CJS interop for testing
 
   // Validate that the threshold value is one of the allowed values
   if (failThreshold !== "never" && failThreshold !== "warn" && failThreshold !== "error") {
@@ -99,14 +103,15 @@ Examples:
   }
 
   // Display message about fail threshold setting
-  if (failThreshold === "never") {
-    emojiLog("ℹ️", "Build will always succeed regardless of errors or warnings");
-  } else if (failThreshold === "warn") {
-    emojiLog("⚠️", "Build will fail on warnings or errors");
-  } else {
-    emojiLog("ℹ️", "Build will fail only on errors (default)");
+  if (isVerbose) {
+    if (failThreshold === "never") {
+      emojiLog("ℹ️", "Build will always succeed regardless of errors or warnings");
+    } else if (failThreshold === "warn") {
+      emojiLog("⚠️", "Build will fail on warnings or errors");
+    } else {
+      emojiLog("ℹ️", "Build will fail only on errors (default)");
+    }
   }
-
   ///////////////////////////////////
   ///    find and read pkg json   ///
   ///////////////////////////////////
@@ -150,6 +155,7 @@ Examples:
     bin?: Record<string, string> | string;
     sourceDialects?: string[];
     tsconfig?: string; // optional path to tsconfig.json file
+    cjsInterop?: boolean; // Enable CJS interop for single default exports
     // outDir?: string; // optional, can be used to specify output directory
     // other properties can be added as needed
   };
@@ -289,6 +295,7 @@ Examples:
     target: _parsedConfig.target ?? ts.ScriptTarget.ES2020, // ensure compatible target for CommonJS
     skipLibCheck: true, // skip library checks to reduce errors
     declaration: true,
+    esModuleInterop: true,
     noEmit: false,
     emitDeclarationOnly: false,
     rewriteRelativeImportExtensions: true,
@@ -557,11 +564,13 @@ Examples:
     await compileProject(
       {
         configPath: tsconfigPath,
-        mode: isTypeModule ? "cts" : "ts",
+        ext: isTypeModule ? "cjs" : "js",
+        format: "cjs",
         verbose: isVerbose,
         dryRun: isDryRun,
         pkgJsonDir,
         rootDir,
+        cjsInterop: isCjsInterop,
         compilerOptions: {
           ...tsconfigJson,
           module: ts.ModuleKind.CommonJS,
@@ -578,11 +587,13 @@ Examples:
     await compileProject(
       {
         configPath: tsconfigPath,
-        mode: isTypeModule ? "ts" : "mts",
+        ext: isTypeModule ? "js" : "mjs",
+        format: "esm",
         verbose: isVerbose,
         dryRun: isDryRun,
         pkgJsonDir,
         rootDir,
+        cjsInterop: isCjsInterop,
         compilerOptions: {
           ...tsconfigJson,
           module: ts.ModuleKind.ESNext,

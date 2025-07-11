@@ -4,54 +4,84 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
 {
   "exitCode": 0,
   "stderr": "",
-  "stdout": "→  Starting build...
-→  Verbose mode enabled
-→  Detected package manager: <pm>
-→  Build will fail only on errors (default)
-→  Detected project root: <root>/test
-→  Reading package.json from ./package.json
-→  Parsed zshy config: {
+  "stdout": "╔═══════════════════════════════════════════════╗
+   ║ zshy » the bundler-free TypeScript build tool ║
+   ╚═══════════════════════════════════════════════╝
+»  Starting build...
+»  Verbose mode enabled
+»  Detected package manager: <pm>
+»  Build will fail only on errors (default)
+»  Detected project root: <root>/test
+»  Reading package.json from ./package.json
+»  Parsed zshy config: {
      "exports": {
        ".": "./src/index.ts",
+       "./hello": "./src/hello.ts",
        "./utils": "./src/utils.ts",
        "./plugins": "./src/plugins/index.ts",
-       "./plugins/*": "./src/plugins/*"
+       "./plugins/*": "./src/plugins/*",
+       "./default-function": "./src/default-function.ts",
+       "./default-class": "./src/default-class.ts",
+       "./default-object": "./src/default-object.ts",
+       "./default-arrow": "./src/default-arrow.ts",
+       "./default-with-named": "./src/default-with-named.ts",
+       "./default-export-equals": "./src/default-export-equals.ts",
+       "./default-const": "./src/default-const.ts",
+       "./default-literal": "./src/default-literal.ts"
      },
      "bin": "./src/index.ts",
      "sourceDialects": [
        "@zod/source"
      ]
    }
-→  Reading tsconfig from ./tsconfig.basic.json
-→  Determining entrypoints...
-   ╔═══════════════════════════════╤═════════════════════════════╗
-   ║ Subpath                       │ Entrypoint                  ║
-   ╟───────────────────────────────┼─────────────────────────────╢
-   ║ "zshy-test-fixture"           │ ./src/index.ts              ║
-   ║ "zshy-test-fixture/utils"     │ ./src/utils.ts              ║
-   ║ "zshy-test-fixture/plugins"   │ ./src/plugins/index.ts      ║
-   ║ "zshy-test-fixture/plugins/*" │ ./src/plugins/* (4 matches) ║
-   ║ bin:zshy-test-fixture         │ ./src/index.ts              ║
-   ╚═══════════════════════════════╧═════════════════════════════╝
-→  Resolved build paths:
+»  Reading tsconfig from ./tsconfig.basic.json
+»  Determining entrypoints...
+   ╔════════════════════════════════╤════════════════════════════════╗
+   ║ Subpath                        │ Entrypoint                     ║
+   ╟────────────────────────────────┼────────────────────────────────╢
+   ║ "my-pkg"                       │ ./src/index.ts                 ║
+   ║ "my-pkg/hello"                 │ ./src/hello.ts                 ║
+   ║ "my-pkg/utils"                 │ ./src/utils.ts                 ║
+   ║ "my-pkg/plugins"               │ ./src/plugins/index.ts         ║
+   ║ "my-pkg/plugins/*"             │ ./src/plugins/* (4 matches)    ║
+   ║ "my-pkg/default-function"      │ ./src/default-function.ts      ║
+   ║ "my-pkg/default-class"         │ ./src/default-class.ts         ║
+   ║ "my-pkg/default-object"        │ ./src/default-object.ts        ║
+   ║ "my-pkg/default-arrow"         │ ./src/default-arrow.ts         ║
+   ║ "my-pkg/default-with-named"    │ ./src/default-with-named.ts    ║
+   ║ "my-pkg/default-export-equals" │ ./src/default-export-equals.ts ║
+   ║ "my-pkg/default-const"         │ ./src/default-const.ts         ║
+   ║ "my-pkg/default-literal"       │ ./src/default-literal.ts       ║
+   ║ bin:my-pkg                     │ ./src/index.ts                 ║
+   ╚════════════════════════════════╧════════════════════════════════╝
+»  Resolved build paths:
    ╔══════════╤═══════════════╗
    ║ Location │ Resolved path ║
    ╟──────────┼───────────────╢
    ║ rootDir  │ ./src         ║
    ║ outDir   │ ./dist        ║
    ╚══════════╧═══════════════╝
-→  Package is an ES module (package.json#/type is "module")
-→  Cleaning up outDir...
-→  Cleaning up declarationDir...
-→  Resolved entrypoints: [
+»  Package is an ES module (package.json#/type is "module")
+»  Cleaning up outDir...
+»  Cleaning up declarationDir...
+»  Resolved entrypoints: [
      "./src/index.ts",
+     "./src/hello.ts",
      "./src/utils.ts",
      "./src/plugins/index.ts",
      "./src/plugins/a.ts",
      "./src/plugins/b.cts",
-     "./src/plugins/c.cts"
+     "./src/plugins/c.mts",
+     "./src/default-function.ts",
+     "./src/default-class.ts",
+     "./src/default-object.ts",
+     "./src/default-arrow.ts",
+     "./src/default-with-named.ts",
+     "./src/default-export-equals.ts",
+     "./src/default-const.ts",
+     "./src/default-literal.ts"
    ]
-→  Resolved compilerOptions: {
+»  Resolved compilerOptions: {
      "lib": [
        "lib.esnext.d.ts"
      ],
@@ -84,19 +114,92 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
      "rootDir": "<root>/test/src",
      "emitDeclarationOnly": false
    }
-→  Building CJS... (rewriting .ts -> .cjs/.d.cts)
-→  Found 5 asset import(s), copying to output directory...
-→  Copied asset: ./src/assets/README.md → ./dist/assets/README.md
-→  Copied asset: ./src/assets/styles.css → ./dist/assets/styles.css
-→  Copied asset: ./src/assets/config.json → ./dist/assets/config.json
-→  Copied asset: ./src/plugins/plugin-a.css → ./dist/plugins/plugin-a.css
-→  Copied asset: ./src/plugins/plugin-b.css → ./dist/plugins/plugin-b.css
-→  Building ESM...
-→  Found 5 asset import(s), copying to output directory...
-→  Writing files (45 total)...
+»  Building CJS... (rewriting .ts -> .cjs/.d.cts)
+»  Enabling CJS interop transform...
+»  Found 5 asset import(s), copying to output directory...
+»  Copied asset: ./src/assets/README.md → ./dist/assets/README.md
+»  Copied asset: ./src/assets/styles.css → ./dist/assets/styles.css
+»  Copied asset: ./src/assets/config.json → ./dist/assets/config.json
+»  Copied asset: ./src/plugins/plugin-a.css → ./dist/plugins/plugin-a.css
+»  Copied asset: ./src/plugins/plugin-b.css → ./dist/plugins/plugin-b.css
+»  Building ESM...
+»  Found 5 asset import(s), copying to output directory...
+»  Writing files (117 total)...
      ./dist/assets/README.md
      ./dist/assets/config.json
      ./dist/assets/styles.css
+     ./dist/default-arrow.cjs
+     ./dist/default-arrow.cjs.map
+     ./dist/default-arrow.d.cts
+     ./dist/default-arrow.d.cts.map
+     ./dist/default-arrow.d.ts
+     ./dist/default-arrow.d.ts.map
+     ./dist/default-arrow.js
+     ./dist/default-arrow.js.map
+     ./dist/default-class.cjs
+     ./dist/default-class.cjs.map
+     ./dist/default-class.d.cts
+     ./dist/default-class.d.cts.map
+     ./dist/default-class.d.ts
+     ./dist/default-class.d.ts.map
+     ./dist/default-class.js
+     ./dist/default-class.js.map
+     ./dist/default-const.cjs
+     ./dist/default-const.cjs.map
+     ./dist/default-const.d.cts
+     ./dist/default-const.d.cts.map
+     ./dist/default-const.d.ts
+     ./dist/default-const.d.ts.map
+     ./dist/default-const.js
+     ./dist/default-const.js.map
+     ./dist/default-export-equals.cjs
+     ./dist/default-export-equals.cjs.map
+     ./dist/default-export-equals.d.cts
+     ./dist/default-export-equals.d.cts.map
+     ./dist/default-export-equals.d.ts
+     ./dist/default-export-equals.d.ts.map
+     ./dist/default-export-equals.js
+     ./dist/default-export-equals.js.map
+     ./dist/default-function.cjs
+     ./dist/default-function.cjs.map
+     ./dist/default-function.d.cts
+     ./dist/default-function.d.cts.map
+     ./dist/default-function.d.ts
+     ./dist/default-function.d.ts.map
+     ./dist/default-function.js
+     ./dist/default-function.js.map
+     ./dist/default-literal.cjs
+     ./dist/default-literal.cjs.map
+     ./dist/default-literal.d.cts
+     ./dist/default-literal.d.cts.map
+     ./dist/default-literal.d.ts
+     ./dist/default-literal.d.ts.map
+     ./dist/default-literal.js
+     ./dist/default-literal.js.map
+     ./dist/default-object.cjs
+     ./dist/default-object.cjs.map
+     ./dist/default-object.d.cts
+     ./dist/default-object.d.cts.map
+     ./dist/default-object.d.ts
+     ./dist/default-object.d.ts.map
+     ./dist/default-object.js
+     ./dist/default-object.js.map
+     ./dist/default-with-named.cjs
+     ./dist/default-with-named.cjs.map
+     ./dist/default-with-named.d.cts
+     ./dist/default-with-named.d.cts.map
+     ./dist/default-with-named.d.ts
+     ./dist/default-with-named.d.ts.map
+     ./dist/default-with-named.js
+     ./dist/default-with-named.js.map
+     ./dist/hello.cjs
+     ./dist/hello.cjs.map
+     ./dist/hello.d.cts
+     ./dist/hello.d.cts.map
+     ./dist/hello.d.ts
+     ./dist/hello.d.ts.map
+     ./dist/hello.js
+     ./dist/hello.js.map
      ./dist/index.cjs
      ./dist/index.cjs.map
      ./dist/index.d.cts
@@ -117,10 +220,10 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
      ./dist/plugins/b.cjs.map
      ./dist/plugins/b.d.cts
      ./dist/plugins/b.d.cts.map
-     ./dist/plugins/c.cjs
-     ./dist/plugins/c.cjs.map
-     ./dist/plugins/c.d.cts
-     ./dist/plugins/c.d.cts.map
+     ./dist/plugins/c.d.mts
+     ./dist/plugins/c.d.mts.map
+     ./dist/plugins/c.mjs
+     ./dist/plugins/c.mjs.map
      ./dist/plugins/index.cjs
      ./dist/plugins/index.cjs.map
      ./dist/plugins/index.d.cts
@@ -139,13 +242,19 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
      ./dist/utils.d.ts.map
      ./dist/utils.js
      ./dist/utils.js.map
-→  Updating package.json#/exports...
-→  Generated "exports": {
+»  Updating package.json#/exports...
+»  Generated "exports": {
      ".": {
        "@zod/source": "./src/index.ts",
        "types": "./dist/index.d.cts",
        "import": "./dist/index.js",
        "require": "./dist/index.cjs"
+     },
+     "./hello": {
+       "@zod/source": "./src/hello.ts",
+       "types": "./dist/hello.d.cts",
+       "import": "./dist/hello.js",
+       "require": "./dist/hello.cjs"
      },
      "./utils": {
        "@zod/source": "./src/utils.ts",
@@ -164,11 +273,59 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
        "types": "./dist/plugins/*",
        "import": "./dist/plugins/*",
        "require": "./dist/plugins/*"
+     },
+     "./default-function": {
+       "@zod/source": "./src/default-function.ts",
+       "types": "./dist/default-function.d.cts",
+       "import": "./dist/default-function.js",
+       "require": "./dist/default-function.cjs"
+     },
+     "./default-class": {
+       "@zod/source": "./src/default-class.ts",
+       "types": "./dist/default-class.d.cts",
+       "import": "./dist/default-class.js",
+       "require": "./dist/default-class.cjs"
+     },
+     "./default-object": {
+       "@zod/source": "./src/default-object.ts",
+       "types": "./dist/default-object.d.cts",
+       "import": "./dist/default-object.js",
+       "require": "./dist/default-object.cjs"
+     },
+     "./default-arrow": {
+       "@zod/source": "./src/default-arrow.ts",
+       "types": "./dist/default-arrow.d.cts",
+       "import": "./dist/default-arrow.js",
+       "require": "./dist/default-arrow.cjs"
+     },
+     "./default-with-named": {
+       "@zod/source": "./src/default-with-named.ts",
+       "types": "./dist/default-with-named.d.cts",
+       "import": "./dist/default-with-named.js",
+       "require": "./dist/default-with-named.cjs"
+     },
+     "./default-export-equals": {
+       "@zod/source": "./src/default-export-equals.ts",
+       "types": "./dist/default-export-equals.d.cts",
+       "import": "./dist/default-export-equals.js",
+       "require": "./dist/default-export-equals.cjs"
+     },
+     "./default-const": {
+       "@zod/source": "./src/default-const.ts",
+       "types": "./dist/default-const.d.cts",
+       "import": "./dist/default-const.js",
+       "require": "./dist/default-const.cjs"
+     },
+     "./default-literal": {
+       "@zod/source": "./src/default-literal.ts",
+       "types": "./dist/default-literal.d.cts",
+       "import": "./dist/default-literal.js",
+       "require": "./dist/default-literal.cjs"
      }
    }
-→  Updating package.json#/bin...
-→  Generated "bin": "./dist/index.cjs"
-→  Build complete!",
+»  Updating package.json#/bin...
+»  Generated "bin": "./dist/index.cjs"
+»  Build complete!",
 }
 `;
 
@@ -176,37 +333,58 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
 {
   "exitCode": 0,
   "stderr": "",
-  "stdout": "→  Starting build...
-→  Verbose mode enabled
-→  Detected package manager: <pm>
-→  Dry run mode enabled. No files will be written or modified.
-→  Build will fail only on errors (default)
-→  Detected project root: <root>/test
-→  Reading package.json from ./package.json
-→  Parsed zshy config: {
+  "stdout": "╔═══════════════════════════════════════════════╗
+   ║ zshy » the bundler-free TypeScript build tool ║
+   ╚═══════════════════════════════════════════════╝
+»  Starting build...
+»  Verbose mode enabled
+»  Detected package manager: <pm>
+»  Dry run mode enabled. No files will be written or modified.
+»  Build will fail only on errors (default)
+»  Detected project root: <root>/test
+»  Reading package.json from ./package.json
+»  Parsed zshy config: {
      "exports": {
        ".": "./src/index.ts",
+       "./hello": "./src/hello.ts",
        "./utils": "./src/utils.ts",
        "./plugins": "./src/plugins/index.ts",
-       "./plugins/*": "./src/plugins/*"
+       "./plugins/*": "./src/plugins/*",
+       "./default-function": "./src/default-function.ts",
+       "./default-class": "./src/default-class.ts",
+       "./default-object": "./src/default-object.ts",
+       "./default-arrow": "./src/default-arrow.ts",
+       "./default-with-named": "./src/default-with-named.ts",
+       "./default-export-equals": "./src/default-export-equals.ts",
+       "./default-const": "./src/default-const.ts",
+       "./default-literal": "./src/default-literal.ts"
      },
      "bin": "./src/index.ts",
      "sourceDialects": [
        "@zod/source"
      ]
    }
-→  Reading tsconfig from ./tsconfig.custom-paths.json
-→  Determining entrypoints...
-   ╔═══════════════════════════════╤═════════════════════════════╗
-   ║ Subpath                       │ Entrypoint                  ║
-   ╟───────────────────────────────┼─────────────────────────────╢
-   ║ "zshy-test-fixture"           │ ./src/index.ts              ║
-   ║ "zshy-test-fixture/utils"     │ ./src/utils.ts              ║
-   ║ "zshy-test-fixture/plugins"   │ ./src/plugins/index.ts      ║
-   ║ "zshy-test-fixture/plugins/*" │ ./src/plugins/* (4 matches) ║
-   ║ bin:zshy-test-fixture         │ ./src/index.ts              ║
-   ╚═══════════════════════════════╧═════════════════════════════╝
-→  Resolved build paths:
+»  Reading tsconfig from ./tsconfig.custom-paths.json
+»  Determining entrypoints...
+   ╔════════════════════════════════╤════════════════════════════════╗
+   ║ Subpath                        │ Entrypoint                     ║
+   ╟────────────────────────────────┼────────────────────────────────╢
+   ║ "my-pkg"                       │ ./src/index.ts                 ║
+   ║ "my-pkg/hello"                 │ ./src/hello.ts                 ║
+   ║ "my-pkg/utils"                 │ ./src/utils.ts                 ║
+   ║ "my-pkg/plugins"               │ ./src/plugins/index.ts         ║
+   ║ "my-pkg/plugins/*"             │ ./src/plugins/* (4 matches)    ║
+   ║ "my-pkg/default-function"      │ ./src/default-function.ts      ║
+   ║ "my-pkg/default-class"         │ ./src/default-class.ts         ║
+   ║ "my-pkg/default-object"        │ ./src/default-object.ts        ║
+   ║ "my-pkg/default-arrow"         │ ./src/default-arrow.ts         ║
+   ║ "my-pkg/default-with-named"    │ ./src/default-with-named.ts    ║
+   ║ "my-pkg/default-export-equals" │ ./src/default-export-equals.ts ║
+   ║ "my-pkg/default-const"         │ ./src/default-const.ts         ║
+   ║ "my-pkg/default-literal"       │ ./src/default-literal.ts       ║
+   ║ bin:my-pkg                     │ ./src/index.ts                 ║
+   ╚════════════════════════════════╧════════════════════════════════╝
+»  Resolved build paths:
    ╔════════════════╤═══════════════╗
    ║ Location       │ Resolved path ║
    ╟────────────────┼───────────────╢
@@ -214,17 +392,26 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
    ║ outDir         │ ./build       ║
    ║ declarationDir │ ./types       ║
    ╚════════════════╧═══════════════╝
-→  Package is an ES module (package.json#/type is "module")
-→  [dryrun] Cleaning up outDir...
-→  Resolved entrypoints: [
+»  Package is an ES module (package.json#/type is "module")
+»  [dryrun] Cleaning up outDir...
+»  Resolved entrypoints: [
      "./src/index.ts",
+     "./src/hello.ts",
      "./src/utils.ts",
      "./src/plugins/index.ts",
      "./src/plugins/a.ts",
      "./src/plugins/b.cts",
-     "./src/plugins/c.cts"
+     "./src/plugins/c.mts",
+     "./src/default-function.ts",
+     "./src/default-class.ts",
+     "./src/default-object.ts",
+     "./src/default-arrow.ts",
+     "./src/default-with-named.ts",
+     "./src/default-export-equals.ts",
+     "./src/default-const.ts",
+     "./src/default-literal.ts"
    ]
-→  Resolved compilerOptions: {
+»  Resolved compilerOptions: {
      "lib": [
        "lib.esnext.d.ts"
      ],
@@ -258,19 +445,56 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
      "declarationDir": "<root>/test/types",
      "emitDeclarationOnly": false
    }
-→  Building CJS... (rewriting .ts -> .cjs/.d.cts)
-→  Found 5 asset import(s), copying to output directory...
-→  [dryrun] Copied asset: ./src/assets/README.md → ./build/src/assets/README.md
-→  [dryrun] Copied asset: ./src/assets/styles.css → ./build/src/assets/styles.css
-→  [dryrun] Copied asset: ./src/assets/config.json → ./build/src/assets/config.json
-→  [dryrun] Copied asset: ./src/plugins/plugin-a.css → ./build/src/plugins/plugin-a.css
-→  [dryrun] Copied asset: ./src/plugins/plugin-b.css → ./build/src/plugins/plugin-b.css
-→  Building ESM...
-→  Found 5 asset import(s), copying to output directory...
-→  [dryrun] Writing files (45 total)...
+»  Building CJS... (rewriting .ts -> .cjs/.d.cts)
+»  Enabling CJS interop transform...
+»  Found 5 asset import(s), copying to output directory...
+»  [dryrun] Copied asset: ./src/assets/README.md → ./build/src/assets/README.md
+»  [dryrun] Copied asset: ./src/assets/styles.css → ./build/src/assets/styles.css
+»  [dryrun] Copied asset: ./src/assets/config.json → ./build/src/assets/config.json
+»  [dryrun] Copied asset: ./src/plugins/plugin-a.css → ./build/src/plugins/plugin-a.css
+»  [dryrun] Copied asset: ./src/plugins/plugin-b.css → ./build/src/plugins/plugin-b.css
+»  Building ESM...
+»  Found 5 asset import(s), copying to output directory...
+»  [dryrun] Writing files (117 total)...
      ./build/src/assets/README.md
      ./build/src/assets/config.json
      ./build/src/assets/styles.css
+     ./build/src/default-arrow.cjs
+     ./build/src/default-arrow.cjs.map
+     ./build/src/default-arrow.js
+     ./build/src/default-arrow.js.map
+     ./build/src/default-class.cjs
+     ./build/src/default-class.cjs.map
+     ./build/src/default-class.js
+     ./build/src/default-class.js.map
+     ./build/src/default-const.cjs
+     ./build/src/default-const.cjs.map
+     ./build/src/default-const.js
+     ./build/src/default-const.js.map
+     ./build/src/default-export-equals.cjs
+     ./build/src/default-export-equals.cjs.map
+     ./build/src/default-export-equals.js
+     ./build/src/default-export-equals.js.map
+     ./build/src/default-function.cjs
+     ./build/src/default-function.cjs.map
+     ./build/src/default-function.js
+     ./build/src/default-function.js.map
+     ./build/src/default-literal.cjs
+     ./build/src/default-literal.cjs.map
+     ./build/src/default-literal.js
+     ./build/src/default-literal.js.map
+     ./build/src/default-object.cjs
+     ./build/src/default-object.cjs.map
+     ./build/src/default-object.js
+     ./build/src/default-object.js.map
+     ./build/src/default-with-named.cjs
+     ./build/src/default-with-named.cjs.map
+     ./build/src/default-with-named.js
+     ./build/src/default-with-named.js.map
+     ./build/src/hello.cjs
+     ./build/src/hello.cjs.map
+     ./build/src/hello.js
+     ./build/src/hello.js.map
      ./build/src/index.cjs
      ./build/src/index.cjs.map
      ./build/src/index.js
@@ -281,8 +505,8 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
      ./build/src/plugins/a.js.map
      ./build/src/plugins/b.cjs
      ./build/src/plugins/b.cjs.map
-     ./build/src/plugins/c.cjs
-     ./build/src/plugins/c.cjs.map
+     ./build/src/plugins/c.mjs
+     ./build/src/plugins/c.mjs.map
      ./build/src/plugins/index.cjs
      ./build/src/plugins/index.cjs.map
      ./build/src/plugins/index.js
@@ -293,6 +517,42 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
      ./build/src/utils.cjs.map
      ./build/src/utils.js
      ./build/src/utils.js.map
+     ./types/src/default-arrow.d.cts
+     ./types/src/default-arrow.d.cts.map
+     ./types/src/default-arrow.d.ts
+     ./types/src/default-arrow.d.ts.map
+     ./types/src/default-class.d.cts
+     ./types/src/default-class.d.cts.map
+     ./types/src/default-class.d.ts
+     ./types/src/default-class.d.ts.map
+     ./types/src/default-const.d.cts
+     ./types/src/default-const.d.cts.map
+     ./types/src/default-const.d.ts
+     ./types/src/default-const.d.ts.map
+     ./types/src/default-export-equals.d.cts
+     ./types/src/default-export-equals.d.cts.map
+     ./types/src/default-export-equals.d.ts
+     ./types/src/default-export-equals.d.ts.map
+     ./types/src/default-function.d.cts
+     ./types/src/default-function.d.cts.map
+     ./types/src/default-function.d.ts
+     ./types/src/default-function.d.ts.map
+     ./types/src/default-literal.d.cts
+     ./types/src/default-literal.d.cts.map
+     ./types/src/default-literal.d.ts
+     ./types/src/default-literal.d.ts.map
+     ./types/src/default-object.d.cts
+     ./types/src/default-object.d.cts.map
+     ./types/src/default-object.d.ts
+     ./types/src/default-object.d.ts.map
+     ./types/src/default-with-named.d.cts
+     ./types/src/default-with-named.d.cts.map
+     ./types/src/default-with-named.d.ts
+     ./types/src/default-with-named.d.ts.map
+     ./types/src/hello.d.cts
+     ./types/src/hello.d.cts.map
+     ./types/src/hello.d.ts
+     ./types/src/hello.d.ts.map
      ./types/src/index.d.cts
      ./types/src/index.d.cts.map
      ./types/src/index.d.ts
@@ -303,8 +563,8 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
      ./types/src/plugins/a.d.ts.map
      ./types/src/plugins/b.d.cts
      ./types/src/plugins/b.d.cts.map
-     ./types/src/plugins/c.d.cts
-     ./types/src/plugins/c.d.cts.map
+     ./types/src/plugins/c.d.mts
+     ./types/src/plugins/c.d.mts.map
      ./types/src/plugins/index.d.cts
      ./types/src/plugins/index.d.cts.map
      ./types/src/plugins/index.d.ts
@@ -313,13 +573,19 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
      ./types/src/utils.d.cts.map
      ./types/src/utils.d.ts
      ./types/src/utils.d.ts.map
-→  [dryrun] Updating package.json#/exports...
-→  Generated "exports": {
+»  [dryrun] Updating package.json#/exports...
+»  Generated "exports": {
      ".": {
        "@zod/source": "./src/index.ts",
        "types": "./types/src/index.d.cts",
        "import": "./build/src/index.js",
        "require": "./build/src/index.cjs"
+     },
+     "./hello": {
+       "@zod/source": "./src/hello.ts",
+       "types": "./types/src/hello.d.cts",
+       "import": "./build/src/hello.js",
+       "require": "./build/src/hello.cjs"
      },
      "./utils": {
        "@zod/source": "./src/utils.ts",
@@ -338,12 +604,60 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
        "types": "./types/src/plugins/*",
        "import": "./build/src/plugins/*",
        "require": "./build/src/plugins/*"
+     },
+     "./default-function": {
+       "@zod/source": "./src/default-function.ts",
+       "types": "./types/src/default-function.d.cts",
+       "import": "./build/src/default-function.js",
+       "require": "./build/src/default-function.cjs"
+     },
+     "./default-class": {
+       "@zod/source": "./src/default-class.ts",
+       "types": "./types/src/default-class.d.cts",
+       "import": "./build/src/default-class.js",
+       "require": "./build/src/default-class.cjs"
+     },
+     "./default-object": {
+       "@zod/source": "./src/default-object.ts",
+       "types": "./types/src/default-object.d.cts",
+       "import": "./build/src/default-object.js",
+       "require": "./build/src/default-object.cjs"
+     },
+     "./default-arrow": {
+       "@zod/source": "./src/default-arrow.ts",
+       "types": "./types/src/default-arrow.d.cts",
+       "import": "./build/src/default-arrow.js",
+       "require": "./build/src/default-arrow.cjs"
+     },
+     "./default-with-named": {
+       "@zod/source": "./src/default-with-named.ts",
+       "types": "./types/src/default-with-named.d.cts",
+       "import": "./build/src/default-with-named.js",
+       "require": "./build/src/default-with-named.cjs"
+     },
+     "./default-export-equals": {
+       "@zod/source": "./src/default-export-equals.ts",
+       "types": "./types/src/default-export-equals.d.cts",
+       "import": "./build/src/default-export-equals.js",
+       "require": "./build/src/default-export-equals.cjs"
+     },
+     "./default-const": {
+       "@zod/source": "./src/default-const.ts",
+       "types": "./types/src/default-const.d.cts",
+       "import": "./build/src/default-const.js",
+       "require": "./build/src/default-const.cjs"
+     },
+     "./default-literal": {
+       "@zod/source": "./src/default-literal.ts",
+       "types": "./types/src/default-literal.d.cts",
+       "import": "./build/src/default-literal.js",
+       "require": "./build/src/default-literal.cjs"
      }
    }
-→  [dryrun] Updating package.json#/bin...
-→  Generated "bin": "./build/src/index.cjs"
-→  [dryrun] Skipping package.json modification
-→  Build complete!",
+»  [dryrun] Updating package.json#/bin...
+»  Generated "bin": "./build/src/index.cjs"
+»  [dryrun] Skipping package.json modification
+»  Build complete!",
 }
 `;
 
@@ -351,58 +665,88 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
 {
   "exitCode": 0,
   "stderr": "",
-  "stdout": "→  Starting build...
-→  Verbose mode enabled
-→  Detected package manager: <pm>
-→  Dry run mode enabled. No files will be written or modified.
-→  Build will fail only on errors (default)
-→  Detected project root: <root>/test
-→  Reading package.json from ./package.json
-→  Parsed zshy config: {
+  "stdout": "╔═══════════════════════════════════════════════╗
+   ║ zshy » the bundler-free TypeScript build tool ║
+   ╚═══════════════════════════════════════════════╝
+»  Starting build...
+»  Verbose mode enabled
+»  Detected package manager: <pm>
+»  Dry run mode enabled. No files will be written or modified.
+»  Build will fail only on errors (default)
+»  Detected project root: <root>/test
+»  Reading package.json from ./package.json
+»  Parsed zshy config: {
      "exports": {
        ".": "./src/index.ts",
+       "./hello": "./src/hello.ts",
        "./utils": "./src/utils.ts",
        "./plugins": "./src/plugins/index.ts",
-       "./plugins/*": "./src/plugins/*"
+       "./plugins/*": "./src/plugins/*",
+       "./default-function": "./src/default-function.ts",
+       "./default-class": "./src/default-class.ts",
+       "./default-object": "./src/default-object.ts",
+       "./default-arrow": "./src/default-arrow.ts",
+       "./default-with-named": "./src/default-with-named.ts",
+       "./default-export-equals": "./src/default-export-equals.ts",
+       "./default-const": "./src/default-const.ts",
+       "./default-literal": "./src/default-literal.ts"
      },
      "bin": "./src/index.ts",
      "sourceDialects": [
        "@zod/source"
      ]
    }
-→  Reading tsconfig from ./tsconfig.flat.json
-→  You're building your code to the project root. This means your compiled files will be generated alongside your source files.
+»  Reading tsconfig from ./tsconfig.flat.json
+»  You're building your code to the project root. This means your compiled files will be generated alongside your source files.
    Ensure that your "files" in package.json excludes TypeScript source files, or your users may experience .d.ts resolution issues in some environments:
      "files": ["**/*.js", "**/*.mjs", "**/*.cjs", "**/*.d.ts", "**/*.d.mts", "**/*.d.cts"]
-→  Determining entrypoints...
-   ╔═══════════════════════════════╤═════════════════════════════╗
-   ║ Subpath                       │ Entrypoint                  ║
-   ╟───────────────────────────────┼─────────────────────────────╢
-   ║ "zshy-test-fixture"           │ ./src/index.ts              ║
-   ║ "zshy-test-fixture/utils"     │ ./src/utils.ts              ║
-   ║ "zshy-test-fixture/plugins"   │ ./src/plugins/index.ts      ║
-   ║ "zshy-test-fixture/plugins/*" │ ./src/plugins/* (4 matches) ║
-   ║ bin:zshy-test-fixture         │ ./src/index.ts              ║
-   ╚═══════════════════════════════╧═════════════════════════════╝
-→  Resolved build paths:
+»  Determining entrypoints...
+   ╔════════════════════════════════╤════════════════════════════════╗
+   ║ Subpath                        │ Entrypoint                     ║
+   ╟────────────────────────────────┼────────────────────────────────╢
+   ║ "my-pkg"                       │ ./src/index.ts                 ║
+   ║ "my-pkg/hello"                 │ ./src/hello.ts                 ║
+   ║ "my-pkg/utils"                 │ ./src/utils.ts                 ║
+   ║ "my-pkg/plugins"               │ ./src/plugins/index.ts         ║
+   ║ "my-pkg/plugins/*"             │ ./src/plugins/* (4 matches)    ║
+   ║ "my-pkg/default-function"      │ ./src/default-function.ts      ║
+   ║ "my-pkg/default-class"         │ ./src/default-class.ts         ║
+   ║ "my-pkg/default-object"        │ ./src/default-object.ts        ║
+   ║ "my-pkg/default-arrow"         │ ./src/default-arrow.ts         ║
+   ║ "my-pkg/default-with-named"    │ ./src/default-with-named.ts    ║
+   ║ "my-pkg/default-export-equals" │ ./src/default-export-equals.ts ║
+   ║ "my-pkg/default-const"         │ ./src/default-const.ts         ║
+   ║ "my-pkg/default-literal"       │ ./src/default-literal.ts       ║
+   ║ bin:my-pkg                     │ ./src/index.ts                 ║
+   ╚════════════════════════════════╧════════════════════════════════╝
+»  Resolved build paths:
    ╔══════════╤═══════════════╗
    ║ Location │ Resolved path ║
    ╟──────────┼───────────────╢
    ║ rootDir  │ ./src         ║
    ║ outDir   │ .             ║
    ╚══════════╧═══════════════╝
-→  Package is an ES module (package.json#/type is "module")
-→  [dryrun] Skipping cleanup of outDir as it contains source files
-→  [dryrun] Skipping cleanup of declarationDir as it contains source files
-→  Resolved entrypoints: [
+»  Package is an ES module (package.json#/type is "module")
+»  [dryrun] Skipping cleanup of outDir as it contains source files
+»  [dryrun] Skipping cleanup of declarationDir as it contains source files
+»  Resolved entrypoints: [
      "./src/index.ts",
+     "./src/hello.ts",
      "./src/utils.ts",
      "./src/plugins/index.ts",
      "./src/plugins/a.ts",
      "./src/plugins/b.cts",
-     "./src/plugins/c.cts"
+     "./src/plugins/c.mts",
+     "./src/default-function.ts",
+     "./src/default-class.ts",
+     "./src/default-object.ts",
+     "./src/default-arrow.ts",
+     "./src/default-with-named.ts",
+     "./src/default-export-equals.ts",
+     "./src/default-const.ts",
+     "./src/default-literal.ts"
    ]
-→  Resolved compilerOptions: {
+»  Resolved compilerOptions: {
      "lib": [
        "lib.esnext.d.ts"
      ],
@@ -435,19 +779,92 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
      "outDir": "<root>/test",
      "emitDeclarationOnly": false
    }
-→  Building CJS... (rewriting .ts -> .cjs/.d.cts)
-→  Found 5 asset import(s), copying to output directory...
-→  [dryrun] Copied asset: ./src/assets/README.md → ./assets/README.md
-→  [dryrun] Copied asset: ./src/assets/styles.css → ./assets/styles.css
-→  [dryrun] Copied asset: ./src/assets/config.json → ./assets/config.json
-→  [dryrun] Copied asset: ./src/plugins/plugin-a.css → ./plugins/plugin-a.css
-→  [dryrun] Copied asset: ./src/plugins/plugin-b.css → ./plugins/plugin-b.css
-→  Building ESM...
-→  Found 5 asset import(s), copying to output directory...
-→  [dryrun] Writing files (45 total)...
+»  Building CJS... (rewriting .ts -> .cjs/.d.cts)
+»  Enabling CJS interop transform...
+»  Found 5 asset import(s), copying to output directory...
+»  [dryrun] Copied asset: ./src/assets/README.md → ./assets/README.md
+»  [dryrun] Copied asset: ./src/assets/styles.css → ./assets/styles.css
+»  [dryrun] Copied asset: ./src/assets/config.json → ./assets/config.json
+»  [dryrun] Copied asset: ./src/plugins/plugin-a.css → ./plugins/plugin-a.css
+»  [dryrun] Copied asset: ./src/plugins/plugin-b.css → ./plugins/plugin-b.css
+»  Building ESM...
+»  Found 5 asset import(s), copying to output directory...
+»  [dryrun] Writing files (117 total)...
      ./assets/README.md
      ./assets/config.json
      ./assets/styles.css
+     ./default-arrow.cjs
+     ./default-arrow.cjs.map
+     ./default-arrow.d.cts
+     ./default-arrow.d.cts.map
+     ./default-arrow.d.ts
+     ./default-arrow.d.ts.map
+     ./default-arrow.js
+     ./default-arrow.js.map
+     ./default-class.cjs
+     ./default-class.cjs.map
+     ./default-class.d.cts
+     ./default-class.d.cts.map
+     ./default-class.d.ts
+     ./default-class.d.ts.map
+     ./default-class.js
+     ./default-class.js.map
+     ./default-const.cjs
+     ./default-const.cjs.map
+     ./default-const.d.cts
+     ./default-const.d.cts.map
+     ./default-const.d.ts
+     ./default-const.d.ts.map
+     ./default-const.js
+     ./default-const.js.map
+     ./default-export-equals.cjs
+     ./default-export-equals.cjs.map
+     ./default-export-equals.d.cts
+     ./default-export-equals.d.cts.map
+     ./default-export-equals.d.ts
+     ./default-export-equals.d.ts.map
+     ./default-export-equals.js
+     ./default-export-equals.js.map
+     ./default-function.cjs
+     ./default-function.cjs.map
+     ./default-function.d.cts
+     ./default-function.d.cts.map
+     ./default-function.d.ts
+     ./default-function.d.ts.map
+     ./default-function.js
+     ./default-function.js.map
+     ./default-literal.cjs
+     ./default-literal.cjs.map
+     ./default-literal.d.cts
+     ./default-literal.d.cts.map
+     ./default-literal.d.ts
+     ./default-literal.d.ts.map
+     ./default-literal.js
+     ./default-literal.js.map
+     ./default-object.cjs
+     ./default-object.cjs.map
+     ./default-object.d.cts
+     ./default-object.d.cts.map
+     ./default-object.d.ts
+     ./default-object.d.ts.map
+     ./default-object.js
+     ./default-object.js.map
+     ./default-with-named.cjs
+     ./default-with-named.cjs.map
+     ./default-with-named.d.cts
+     ./default-with-named.d.cts.map
+     ./default-with-named.d.ts
+     ./default-with-named.d.ts.map
+     ./default-with-named.js
+     ./default-with-named.js.map
+     ./hello.cjs
+     ./hello.cjs.map
+     ./hello.d.cts
+     ./hello.d.cts.map
+     ./hello.d.ts
+     ./hello.d.ts.map
+     ./hello.js
+     ./hello.js.map
      ./index.cjs
      ./index.cjs.map
      ./index.d.cts
@@ -468,10 +885,10 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
      ./plugins/b.cjs.map
      ./plugins/b.d.cts
      ./plugins/b.d.cts.map
-     ./plugins/c.cjs
-     ./plugins/c.cjs.map
-     ./plugins/c.d.cts
-     ./plugins/c.d.cts.map
+     ./plugins/c.d.mts
+     ./plugins/c.d.mts.map
+     ./plugins/c.mjs
+     ./plugins/c.mjs.map
      ./plugins/index.cjs
      ./plugins/index.cjs.map
      ./plugins/index.d.cts
@@ -490,13 +907,19 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
      ./utils.d.ts.map
      ./utils.js
      ./utils.js.map
-→  [dryrun] Updating package.json#/exports...
-→  Generated "exports": {
+»  [dryrun] Updating package.json#/exports...
+»  Generated "exports": {
      ".": {
        "@zod/source": "./src/index.ts",
        "types": "./index.d.cts",
        "import": "./index.js",
        "require": "./index.cjs"
+     },
+     "./hello": {
+       "@zod/source": "./src/hello.ts",
+       "types": "./hello.d.cts",
+       "import": "./hello.js",
+       "require": "./hello.cjs"
      },
      "./utils": {
        "@zod/source": "./src/utils.ts",
@@ -515,11 +938,59 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
        "types": "./plugins/*",
        "import": "./plugins/*",
        "require": "./plugins/*"
+     },
+     "./default-function": {
+       "@zod/source": "./src/default-function.ts",
+       "types": "./default-function.d.cts",
+       "import": "./default-function.js",
+       "require": "./default-function.cjs"
+     },
+     "./default-class": {
+       "@zod/source": "./src/default-class.ts",
+       "types": "./default-class.d.cts",
+       "import": "./default-class.js",
+       "require": "./default-class.cjs"
+     },
+     "./default-object": {
+       "@zod/source": "./src/default-object.ts",
+       "types": "./default-object.d.cts",
+       "import": "./default-object.js",
+       "require": "./default-object.cjs"
+     },
+     "./default-arrow": {
+       "@zod/source": "./src/default-arrow.ts",
+       "types": "./default-arrow.d.cts",
+       "import": "./default-arrow.js",
+       "require": "./default-arrow.cjs"
+     },
+     "./default-with-named": {
+       "@zod/source": "./src/default-with-named.ts",
+       "types": "./default-with-named.d.cts",
+       "import": "./default-with-named.js",
+       "require": "./default-with-named.cjs"
+     },
+     "./default-export-equals": {
+       "@zod/source": "./src/default-export-equals.ts",
+       "types": "./default-export-equals.d.cts",
+       "import": "./default-export-equals.js",
+       "require": "./default-export-equals.cjs"
+     },
+     "./default-const": {
+       "@zod/source": "./src/default-const.ts",
+       "types": "./default-const.d.cts",
+       "import": "./default-const.js",
+       "require": "./default-const.cjs"
+     },
+     "./default-literal": {
+       "@zod/source": "./src/default-literal.ts",
+       "types": "./default-literal.d.cts",
+       "import": "./default-literal.js",
+       "require": "./default-literal.cjs"
      }
    }
-→  [dryrun] Updating package.json#/bin...
-→  Generated "bin": "./index.cjs"
-→  [dryrun] Skipping package.json modification
-→  Build complete!",
+»  [dryrun] Updating package.json#/bin...
+»  Generated "bin": "./index.cjs"
+»  [dryrun] Skipping package.json modification
+»  Build complete!",
 }
 `;

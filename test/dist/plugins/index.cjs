@@ -39,5 +39,5 @@ exports.pluginC = exports.pluginB = exports.pluginA = void 0;
  */
 exports.pluginA = __importStar(require("./a.cjs"));
 exports.pluginB = __importStar(require("./b.cjs"));
-exports.pluginC = __importStar(require("./c.cjs"));
+exports.pluginC = __importStar(require("./c.mjs"));
 //# sourceMappingURL=index.js.map
