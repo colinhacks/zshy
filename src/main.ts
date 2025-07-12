@@ -519,7 +519,7 @@ Examples:
     if (!isDryRun) {
       fs.rmSync(outDir, { recursive: true, force: true });
 
-      // // print success mesage in verbose mode
+      // // print success message in verbose mode
       if (isVerbose) {
         if (fs.existsSync(outDir)) {
           emojiLog("❌", `Failed to clean up outDir: ${relOutDir}. Directory still exists.`, "error");
@@ -535,7 +535,7 @@ Examples:
     emojiLog("🗑️", `${dryRunPrefix}Cleaning up declarationDir...`);
     if (!isDryRun) {
       fs.rmSync(declarationDir, { recursive: true, force: true });
-      // // print success mesage in verbose mode
+      // // print success message in verbose mode
       if (isVerbose) {
         if (fs.existsSync(declarationDir)) {
           emojiLog("❌", `Failed to clean up declarationDir: ${relDeclarationDir}. Directory still exists.`, "error");
