@@ -77,3 +77,5 @@ export function isAssetFile(filePath: string): boolean {
   if (ext === "") return false;
   return !jsExtensions.has(ext);
 }
+
+export const toPosix = (p: string): string => p.replaceAll(path.sep, path.posix.sep);
