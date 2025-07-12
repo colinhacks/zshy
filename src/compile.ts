@@ -248,7 +248,9 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
         const destDir = path.dirname(destFile);
 
         // Track the file that would be copied
-        ctx.writtenFiles.add(destFile);
+        // Use posix paths here because typescript also outputs them posix
+        // style.
+        ctx.writtenFiles.add(utils.toPosix(destFile));
         ctx.copiedAssets.add(destFile);
 
         if (!config.dryRun) {
@@ -260,8 +262,8 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
         }
 
         if (config.verbose) {
-          const relativeSource = config.pkgJsonDir ? path.relative(config.pkgJsonDir, sourceFile) : sourceFile;
-          const relativeDest = config.pkgJsonDir ? path.relative(config.pkgJsonDir, destFile) : destFile;
+          const relativeSource = config.pkgJsonDir ? utils.toPosix(path.relative(config.pkgJsonDir, sourceFile)) : sourceFile;
+          const relativeDest = config.pkgJsonDir ? utils.toPosix(path.relative(config.pkgJsonDir, destFile)) : destFile;
           utils.emojiLog(
             "📄",
             `${config.dryRun ? "[dryrun] " : ""}Copied asset: ./${relativeSource} → ./${relativeDest}`

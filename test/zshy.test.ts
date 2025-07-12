@@ -69,6 +69,7 @@ describe("zshy with different tsconfig configurations", () => {
         args.push("--dry-run");
       }
       const result = spawnSync("tsx", args, {
+        shell: true,
         encoding: "utf8",
         timeout: 30000, // Increase timeout for CI
         cwd: process.cwd() + "/test", // Use relative path that works in CI
@@ -142,12 +143,13 @@ describe("zshy with different tsconfig configurations", () => {
 });
 
 function normalizeOutput(output: string): string {
+  const slashPattern = /[\\\/]+/g;
   return (
     output
-      // Normalize file paths to be relative and use forward slashes
-      .replace(/\/Users\/[^/]+\/[^/\s]+\/projects\/zshy/g, "<root>")
-      // Normalize any absolute paths
-      .replace(/\/[^\s]+\/zshy/g, "<root>")
+      // Loosely normalize path sep to `/`. Note that we also normalize double
+      // escaped backslashes since we `JSON.stringify` some paths in the output.
+      .replaceAll(slashPattern, "/")
+      .replaceAll(process.cwd().replaceAll(slashPattern, '/'), "<root>")
       // Normalize timestamps and timing info
       .replace(/\d+ms/g, "<time>")
       // Normalize any specific file counts that might vary
