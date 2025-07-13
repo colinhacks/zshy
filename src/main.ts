@@ -5,7 +5,7 @@ import { globby } from "globby";
 import { table } from "table";
 import * as ts from "typescript";
 import { type BuildContext, compileProject } from "./compile.js";
-import { emojiLog, formatForLog, isSourceFile, readTsconfig, removeExtension, toPosix } from "./utils.js";
+import { emojiLog, formatForLog, isSourceFile, readTsconfig, removeExtension, toPosix, relativePosix } from "./utils.js";
 
 export async function main(): Promise<void> {
   ///////////////////////////////////
@@ -138,7 +138,7 @@ Examples:
   // console.log("📦 Extracting entry points from package.json exports...");
   const pkgJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf-8"));
   const pkgJsonDir = path.dirname(packageJsonPath);
-  const pkgJsonRelPath = toPosix(path.relative(pkgJsonDir, packageJsonPath));
+  const pkgJsonRelPath = relativePosix(pkgJsonDir, packageJsonPath);
 
   // print project root
   emojiLog("⚙️", `Detected project root: ${pkgJsonDir}`);
@@ -266,7 +266,7 @@ Examples:
     emojiLog("❌", `tsconfig.json not found at ${toPosix(path.resolve(tsconfigPath))}`, "error");
     process.exit(1);
   }
-  emojiLog("📁", `Reading tsconfig from ./${toPosix(path.relative(pkgJsonDir, tsconfigPath))}`);
+  emojiLog("📁", `Reading tsconfig from ./${relativePosix(pkgJsonDir, tsconfigPath)}`);
 
   // if (_parsedConfig.rootDir) {
   // 	console.error(
@@ -286,9 +286,9 @@ Examples:
   delete _parsedConfig.customConditions; //  can't be set for CommonJS builds
 
   const outDir = path.resolve(pkgJsonDir, _parsedConfig?.outDir || "./dist");
-  const relOutDir = toPosix(path.relative(pkgJsonDir, outDir));
+  const relOutDir = relativePosix(pkgJsonDir, outDir);
   const declarationDir = path.resolve(pkgJsonDir, _parsedConfig?.declarationDir || relOutDir);
-  const relDeclarationDir = toPosix(path.relative(pkgJsonDir, declarationDir));
+  const relDeclarationDir = relativePosix(pkgJsonDir, declarationDir);
 
   const tsconfigJson: ts.CompilerOptions = {
     ..._parsedConfig,
@@ -466,7 +466,7 @@ Examples:
         : process.cwd();
   }
 
-  const relRootDir = toPosix(path.relative(pkgJsonDir, rootDir));
+  const relRootDir = relativePosix(pkgJsonDir, rootDir);
 
   //////////////////////////////////
   ///   display resolved paths   ///
@@ -628,7 +628,7 @@ Examples:
 
       // Sort files by relative path for consistent display
       const sortedFiles = [...buildContext.writtenFiles]
-        .map((file) => toPosix(path.relative(pkgJsonDir, file)))
+        .map((file) => relativePosix(pkgJsonDir, file))
         .sort()
         .map((relPath) => (relPath.startsWith(".") ? relPath : `./${relPath}`));
 
@@ -657,8 +657,8 @@ Examples:
       const relSourcePath = path.relative(rootDir, absSourcePath);
       const absJsPath = path.resolve(outDir, relSourcePath);
       const absDtsPath = path.resolve(declarationDir, relSourcePath);
-      let relJsPath = "./" + toPosix(path.relative(pkgJsonDir, absJsPath));
-      let relDtsPath = "./" + toPosix(path.relative(pkgJsonDir, absDtsPath));
+      let relJsPath = "./" + relativePosix(pkgJsonDir, absJsPath);
+      let relDtsPath = "./" + relativePosix(pkgJsonDir, absDtsPath);
 
       if (typeof sourcePath === "string") {
         if (sourcePath.endsWith("/*") || sourcePath.endsWith("/**/*")) {
@@ -742,7 +742,7 @@ Examples:
           const absSourcePath = path.resolve(pkgJsonDir, sourcePath);
           const relSourcePath = path.relative(rootDir, absSourcePath);
           const absJsPath = path.resolve(outDir, relSourcePath);
-          const relJsPath = "./" + toPosix(path.relative(pkgJsonDir, absJsPath));
+          const relJsPath = "./" + relativePosix(pkgJsonDir, absJsPath);
 
           // Use CommonJS entrypoint for bin
           const binPath = removeExtension(relJsPath) + (isTypeModule ? `.cjs` : `.js`);

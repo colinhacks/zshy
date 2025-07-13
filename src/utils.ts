@@ -79,3 +79,8 @@ export function isAssetFile(filePath: string): boolean {
 }
 
 export const toPosix = (p: string): string => p.replaceAll(path.sep, path.posix.sep);
+
+export const relativePosix = (from: string, to: string): string => {
+  const relativePath = path.relative(from, to);
+  return toPosix(relativePath);
+};
