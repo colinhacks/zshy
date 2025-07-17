@@ -239,17 +239,20 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
 
         // Create the destination path in outDir, maintaining the same relative structure
         const destFile = path.resolve(config.compilerOptions.outDir, assetPath);
+        const posixDestFile = utils.toPosix(destFile);
 
         // Skip if this asset has already been copied
-        if (ctx.copiedAssets.has(destFile)) {
+        if (ctx.copiedAssets.has(posixDestFile)) {
           continue;
         }
 
         const destDir = path.dirname(destFile);
 
         // Track the file that would be copied
-        ctx.writtenFiles.add(destFile);
-        ctx.copiedAssets.add(destFile);
+        // Use posix paths here because typescript also outputs them posix
+        // style.
+        ctx.writtenFiles.add(posixDestFile);
+        ctx.copiedAssets.add(posixDestFile);
 
         if (!config.dryRun) {
           // Ensure destination directory exists
@@ -260,8 +263,8 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
         }
 
         if (config.verbose) {
-          const relativeSource = config.pkgJsonDir ? path.relative(config.pkgJsonDir, sourceFile) : sourceFile;
-          const relativeDest = config.pkgJsonDir ? path.relative(config.pkgJsonDir, destFile) : destFile;
+          const relativeSource = config.pkgJsonDir ? utils.relativePosix(config.pkgJsonDir, sourceFile) : sourceFile;
+          const relativeDest = config.pkgJsonDir ? utils.relativePosix(config.pkgJsonDir, destFile) : destFile;
           utils.emojiLog(
             "📄",
             `${config.dryRun ? "[dryrun] " : ""}Copied asset: ./${relativeSource} → ./${relativeDest}`
