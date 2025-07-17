@@ -14,10 +14,11 @@ jobs:
   publish:
     name: Main
     runs-on: ubuntu-latest
-    
     permissions:
-      contents: read
+      packages: write
       id-token: write # for npm provenance
+      contents: write
+      pull-requests: read  
     
     steps:
       - name: Checkout code
