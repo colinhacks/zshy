@@ -1,3 +1,4 @@
+import * as fs from "node:fs";
 import * as path from "node:path";
 import * as ts from "typescript";
 import * as utils from "./utils.js";
@@ -73,7 +74,24 @@ export const createExtensionRewriteTransformer =
 
           // rewrite extensionless imports to .js
           if (ext === "") {
-            const newText = originalText + config.ext;
+            // Check filesystem to determine if we should resolve to file.ts or directory/index.ts
+            let newText = originalText + config.ext;
+
+            if (ts.isSourceFile(sourceFile)) {
+              const sourceFileDir = path.dirname(sourceFile.fileName);
+              const resolvedPath = path.resolve(sourceFileDir, originalText);
+
+              // Check if the extensionless import refers to a file (e.g., d.ts)
+              const potentialFile = resolvedPath + ".ts";
+              const potentialIndexFile = path.join(resolvedPath, "index.ts");
+
+              if (fs.existsSync(potentialIndexFile) && !fs.existsSync(potentialFile)) {
+                // Directory with index.ts exists, use index path
+                newText = originalText + "/index" + config.ext;
+              }
+              // Otherwise, use the default behavior (originalText + config.ext)
+            }
+
             if (isImport) {
               return ts.factory.updateImportDeclaration(
                 node,

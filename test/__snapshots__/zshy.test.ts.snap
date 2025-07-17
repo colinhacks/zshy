@@ -73,7 +73,7 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
      "./src/plugins/a.ts",
      "./src/plugins/b.cts",
      "./src/plugins/c.mts",
-     "./src/plugins/deep/d.ts",
+     "./src/plugins/d/index.ts",
      "./src/default-function.ts",
      "./src/default-class.ts",
      "./src/default-object.ts",
@@ -226,14 +226,14 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
      ./dist/plugins/c.d.mts.map
      ./dist/plugins/c.mjs
      ./dist/plugins/c.mjs.map
-     ./dist/plugins/deep/d.cjs
-     ./dist/plugins/deep/d.cjs.map
-     ./dist/plugins/deep/d.d.cts
-     ./dist/plugins/deep/d.d.cts.map
-     ./dist/plugins/deep/d.d.ts
-     ./dist/plugins/deep/d.d.ts.map
-     ./dist/plugins/deep/d.js
-     ./dist/plugins/deep/d.js.map
+     ./dist/plugins/d/index.cjs
+     ./dist/plugins/d/index.cjs.map
+     ./dist/plugins/d/index.d.cts
+     ./dist/plugins/d/index.d.cts.map
+     ./dist/plugins/d/index.d.ts
+     ./dist/plugins/d/index.d.ts.map
+     ./dist/plugins/d/index.js
+     ./dist/plugins/d/index.js.map
      ./dist/plugins/index.cjs
      ./dist/plugins/index.cjs.map
      ./dist/plugins/index.d.cts
@@ -413,7 +413,7 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
      "./src/plugins/a.ts",
      "./src/plugins/b.cts",
      "./src/plugins/c.mts",
-     "./src/plugins/deep/d.ts",
+     "./src/plugins/d/index.ts",
      "./src/default-function.ts",
      "./src/default-class.ts",
      "./src/default-object.ts",
@@ -519,10 +519,10 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
      ./build/src/plugins/b.cjs.map
      ./build/src/plugins/c.mjs
      ./build/src/plugins/c.mjs.map
-     ./build/src/plugins/deep/d.cjs
-     ./build/src/plugins/deep/d.cjs.map
-     ./build/src/plugins/deep/d.js
-     ./build/src/plugins/deep/d.js.map
+     ./build/src/plugins/d/index.cjs
+     ./build/src/plugins/d/index.cjs.map
+     ./build/src/plugins/d/index.js
+     ./build/src/plugins/d/index.js.map
      ./build/src/plugins/index.cjs
      ./build/src/plugins/index.cjs.map
      ./build/src/plugins/index.js
@@ -581,10 +581,10 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
      ./types/src/plugins/b.d.cts.map
      ./types/src/plugins/c.d.mts
      ./types/src/plugins/c.d.mts.map
-     ./types/src/plugins/deep/d.d.cts
-     ./types/src/plugins/deep/d.d.cts.map
-     ./types/src/plugins/deep/d.d.ts
-     ./types/src/plugins/deep/d.d.ts.map
+     ./types/src/plugins/d/index.d.cts
+     ./types/src/plugins/d/index.d.cts.map
+     ./types/src/plugins/d/index.d.ts
+     ./types/src/plugins/d/index.d.ts.map
      ./types/src/plugins/index.d.cts
      ./types/src/plugins/index.d.cts.map
      ./types/src/plugins/index.d.ts
@@ -758,7 +758,7 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
      "./src/plugins/a.ts",
      "./src/plugins/b.cts",
      "./src/plugins/c.mts",
-     "./src/plugins/deep/d.ts",
+     "./src/plugins/d/index.ts",
      "./src/default-function.ts",
      "./src/default-class.ts",
      "./src/default-object.ts",
@@ -911,14 +911,14 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
      ./plugins/c.d.mts.map
      ./plugins/c.mjs
      ./plugins/c.mjs.map
-     ./plugins/deep/d.cjs
-     ./plugins/deep/d.cjs.map
-     ./plugins/deep/d.d.cts
-     ./plugins/deep/d.d.cts.map
-     ./plugins/deep/d.d.ts
-     ./plugins/deep/d.d.ts.map
-     ./plugins/deep/d.js
-     ./plugins/deep/d.js.map
+     ./plugins/d/index.cjs
+     ./plugins/d/index.cjs.map
+     ./plugins/d/index.d.cts
+     ./plugins/d/index.d.cts.map
+     ./plugins/d/index.d.ts
+     ./plugins/d/index.d.ts.map
+     ./plugins/d/index.js
+     ./plugins/d/index.js.map
      ./plugins/index.cjs
      ./plugins/index.cjs.map
      ./plugins/index.d.cts
