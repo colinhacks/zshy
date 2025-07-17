@@ -5,7 +5,15 @@ import { globby } from "globby";
 import { table } from "table";
 import * as ts from "typescript";
 import { type BuildContext, compileProject } from "./compile.js";
-import { emojiLog, formatForLog, isSourceFile, readTsconfig, removeExtension, toPosix, relativePosix } from "./utils.js";
+import {
+  emojiLog,
+  formatForLog,
+  isSourceFile,
+  readTsconfig,
+  relativePosix,
+  removeExtension,
+  toPosix,
+} from "./utils.js";
 
 export async function main(): Promise<void> {
   ///////////////////////////////////
@@ -135,8 +143,20 @@ Examples:
   }
 
   // read package.json and extract the "zshy" exports config
+  const pkgJsonRaw = fs.readFileSync(packageJsonPath, "utf-8");
   // console.log("📦 Extracting entry points from package.json exports...");
-  const pkgJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf-8"));
+  const pkgJson = JSON.parse(pkgJsonRaw);
+
+  // Detect indentation from package.json to preserve it.
+  let indent: string | number = 2; // Default to 2 spaces
+  const indentMatch = pkgJsonRaw.match(/^([ \t]+)/m);
+  console.log(indentMatch);
+  if (indentMatch?.[1]) {
+    indent = indentMatch[1];
+  } else if (!pkgJsonRaw.includes("\n")) {
+    indent = 0; // minified
+  }
+
   const pkgJsonDir = path.dirname(packageJsonPath);
   const pkgJsonRelPath = relativePosix(pkgJsonDir, packageJsonPath);
 
@@ -773,7 +793,8 @@ Examples:
     if (isDryRun) {
       emojiLog("📦", "[dryrun] Skipping package.json modification");
     } else {
-      fs.writeFileSync(packageJsonPath, JSON.stringify(pkgJson, null, 2) + "\n");
+      console.log(packageJsonPath);
+      fs.writeFileSync(packageJsonPath, JSON.stringify(pkgJson, null, indent) + "\n");
     }
 
     if (isAttw) {

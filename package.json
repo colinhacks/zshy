@@ -31,8 +31,8 @@
     "type": "github",
     "url": "https://github.com/sponsors/colinhacks"
   },
-  "module": "./dist/index.js",
-  "bin": "./dist/index.cjs",
+  "module": "./src/index.js",
+  "bin": "./src/index.cjs",
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.2",
     "@biomejs/biome": "^2.0.5",
@@ -69,14 +69,14 @@
       "@zod/source"
     ]
   },
-  "main": "./dist/index.cjs",
-  "types": "./dist/index.d.cts",
+  "main": "./src/index.cjs",
+  "types": "./src/index.d.cts",
   "exports": {
     ".": {
       "@zod/source": "./src/index.ts",
-      "types": "./dist/index.d.cts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "types": "./src/index.d.cts",
+      "import": "./src/index.js",
+      "require": "./src/index.cjs"
     }
   },
   "files": [
