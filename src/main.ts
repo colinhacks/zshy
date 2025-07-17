@@ -150,7 +150,6 @@ Examples:
   // Detect indentation from package.json to preserve it.
   let indent: string | number = 2; // Default to 2 spaces
   const indentMatch = pkgJsonRaw.match(/^([ \t]+)/m);
-  console.log(indentMatch);
   if (indentMatch?.[1]) {
     indent = indentMatch[1];
   } else if (!pkgJsonRaw.includes("\n")) {
@@ -793,7 +792,6 @@ Examples:
     if (isDryRun) {
       emojiLog("📦", "[dryrun] Skipping package.json modification");
     } else {
-      console.log(packageJsonPath);
       fs.writeFileSync(packageJsonPath, JSON.stringify(pkgJson, null, indent) + "\n");
     }
 
