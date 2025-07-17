@@ -6,4 +6,4 @@ export const pluginD = {
     },
 };
 export default pluginD;
-//# sourceMappingURL=d.js.map
+//# sourceMappingURL=index.js.map

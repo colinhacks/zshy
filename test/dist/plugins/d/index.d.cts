@@ -1,5 +1,5 @@
 /**
- * Plugin A - Example plugin for testing
+ * Plugin D - Example plugin for testing
  */
 export interface PluginD {
     name: string;
@@ -8,4 +8,4 @@ export interface PluginD {
 }
 export declare const pluginD: PluginD;
 export default pluginD;
-//# sourceMappingURL=d.d.ts.map
+//# sourceMappingURL=index.d.ts.map

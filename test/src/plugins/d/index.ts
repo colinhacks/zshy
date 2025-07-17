@@ -1,5 +1,5 @@
 /**
- * Plugin A - Example plugin for testing
+ * Plugin D - Example plugin for testing
  */
 export interface PluginD {
   name: string;

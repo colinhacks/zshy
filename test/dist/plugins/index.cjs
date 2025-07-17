@@ -33,11 +33,12 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.pluginC = exports.pluginB = exports.pluginA = void 0;
+exports.pluginD = exports.pluginC = exports.pluginB = exports.pluginA = void 0;
 /**
  * Plugin B - Another example plugin for testing
  */
 exports.pluginA = __importStar(require("./a.cjs"));
 exports.pluginB = __importStar(require("./b.cjs"));
 exports.pluginC = __importStar(require("./c.mjs"));
+exports.pluginD = __importStar(require("./d/index.cjs")); // extensionless import to test d/index.ts resolution
 //# sourceMappingURL=index.js.map
