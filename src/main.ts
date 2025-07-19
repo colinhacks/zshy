@@ -412,7 +412,7 @@ Examples:
       }
     } else {
       // Multiple bin entries
-      for (const [binName, sourcePath] of Object.entries(config.bin as Record<string, string>)) {
+      for (const [binName, sourcePath] of Object.entries(config.bin)) {
         if (typeof sourcePath === "string" && isSourceFile(sourcePath)) {
           entryPoints.push(sourcePath);
           rows.push([`bin:${binName}`, sourcePath]);
