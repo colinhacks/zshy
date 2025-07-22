@@ -192,15 +192,7 @@ Examples:
   } else if (typeof pkgJson[CONFIG_KEY] === "object") {
     config = { ...pkgJson[CONFIG_KEY] };
 
-    if (typeof config.exports === "string") {
-      config.exports = { ".": config.exports };
-    } else if (typeof config.exports === "undefined") {
-      emojiLog("❌", `Missing "exports" key in package.json#/${CONFIG_KEY}`, "error");
-      process.exit(1);
-    } else if (typeof config.exports !== "object") {
-      emojiLog("❌", `Invalid "exports" key in package.json#/${CONFIG_KEY}`, "error");
-      process.exit(1);
-    }
+    let binConfigured = false;
 
     // Validate bin field if present
     if (config.bin !== undefined) {
@@ -212,6 +204,20 @@ Examples:
         emojiLog("❌", `Invalid "bin" key in package.json#/${CONFIG_KEY}, expected string or object`, "error");
         process.exit(1);
       }
+
+      binConfigured = true;
+    }
+
+    if (typeof config.exports === "string") {
+      config.exports = { ".": config.exports };
+    } else if (binConfigured) {
+      // Bin is configured
+    } else if (typeof config.exports === "undefined") {
+      emojiLog("❌", `Missing "exports" key in package.json#/${CONFIG_KEY}`, "error");
+      process.exit(1);
+    } else if (typeof config.exports !== "object") {
+      emojiLog("❌", `Invalid "exports" key in package.json#/${CONFIG_KEY}`, "error");
+      process.exit(1);
     }
     // {
     // 	exports: { ".": pkgJson[CONFIG_KEY].exports },
@@ -356,48 +362,50 @@ Examples:
   const entryPoints: string[] = [];
 
   const rows: string[][] = [["Subpath", "Entrypoint"]];
-  for (const [exportPath, sourcePath] of Object.entries(config.exports)) {
-    if (exportPath.includes("package.json")) continue;
-    let cleanExportPath!: string;
-    if (exportPath === ".") {
-      cleanExportPath = pkgJson.name;
-    } else if (exportPath.startsWith("./")) {
-      cleanExportPath = pkgJson.name + "/" + exportPath.slice(2);
-    } else {
-      emojiLog("⚠️", `Invalid subpath export "${exportPath}" — should start with "./"`, "warn");
-      process.exit(1);
-    }
-    if (typeof sourcePath === "string") {
-      if (sourcePath.includes("*")) {
-        if (!sourcePath.endsWith("/*") && !sourcePath.endsWith("/**/*")) {
-          emojiLog("❌", `Wildcard paths should end with /* or /**/* (for deep globs): ${sourcePath}`, "error");
-          process.exit(1);
+  if (config.exports) {
+    for (const [exportPath, sourcePath] of Object.entries(config.exports)) {
+      if (exportPath.includes("package.json")) continue;
+      let cleanExportPath!: string;
+      if (exportPath === ".") {
+        cleanExportPath = pkgJson.name;
+      } else if (exportPath.startsWith("./")) {
+        cleanExportPath = pkgJson.name + "/" + exportPath.slice(2);
+      } else {
+        emojiLog("⚠️", `Invalid subpath export "${exportPath}" — should start with "./"`, "warn");
+        process.exit(1);
+      }
+      if (typeof sourcePath === "string") {
+        if (sourcePath.includes("*")) {
+          if (!sourcePath.endsWith("/*") && !sourcePath.endsWith("/**/*")) {
+            emojiLog("❌", `Wildcard paths should end with /* or /**/* (for deep globs): ${sourcePath}`, "error");
+            process.exit(1);
+          }
+
+          let pattern: string;
+
+          if (sourcePath.endsWith("/**/*")) {
+            // Handle deep glob patterns like "./src/**/*"
+            pattern = sourcePath.slice(0, -5) + "/**/*.{ts,tsx,mts,cts}";
+          } else {
+            // Handle shallow glob patterns like "./src/plugins/*"
+            pattern = sourcePath.slice(0, -2) + "/*.{ts,tsx,mts,cts}";
+          }
+
+          if (isVerbose) {
+            emojiLog("🔍", `Matching glob: ${pattern}`);
+          }
+          const wildcardFiles = await globby([pattern], {
+            ignore: ["**/*.d.ts", "**/*.d.mts", "**/*.d.cts"],
+            cwd: pkgJsonDir,
+          });
+          entryPoints.push(...wildcardFiles);
+
+          rows.push([`"${cleanExportPath}"`, `${sourcePath} (${wildcardFiles.length} matches)`]);
+        } else if (isSourceFile(sourcePath)) {
+          entryPoints.push(sourcePath);
+
+          rows.push([`"${cleanExportPath}"`, sourcePath]);
         }
-
-        let pattern: string;
-
-        if (sourcePath.endsWith("/**/*")) {
-          // Handle deep glob patterns like "./src/**/*"
-          pattern = sourcePath.slice(0, -5) + "/**/*.{ts,tsx,mts,cts}";
-        } else {
-          // Handle shallow glob patterns like "./src/plugins/*"
-          pattern = sourcePath.slice(0, -2) + "/*.{ts,tsx,mts,cts}";
-        }
-
-        if (isVerbose) {
-          emojiLog("🔍", `Matching glob: ${pattern}`);
-        }
-        const wildcardFiles = await globby([pattern], {
-          ignore: ["**/*.d.ts", "**/*.d.mts", "**/*.d.cts"],
-          cwd: pkgJsonDir,
-        });
-        entryPoints.push(...wildcardFiles);
-
-        rows.push([`"${cleanExportPath}"`, `${sourcePath} (${wildcardFiles.length} matches)`]);
-      } else if (isSourceFile(sourcePath)) {
-        entryPoints.push(sourcePath);
-
-        rows.push([`"${cleanExportPath}"`, sourcePath]);
       }
     }
   }
@@ -667,75 +675,77 @@ Examples:
     const newExports: Record<string, any> = {};
     const sourceDialects = config.sourceDialects || [];
 
-    for (const [exportPath, sourcePath] of Object.entries(config.exports)) {
-      if (exportPath.includes("package.json")) {
-        newExports[exportPath] = sourcePath;
-        continue;
-      }
-      const absSourcePath = path.resolve(pkgJsonDir, sourcePath);
-      const relSourcePath = path.relative(rootDir, absSourcePath);
-      const absJsPath = path.resolve(outDir, relSourcePath);
-      const absDtsPath = path.resolve(declarationDir, relSourcePath);
-      let relJsPath = "./" + relativePosix(pkgJsonDir, absJsPath);
-      let relDtsPath = "./" + relativePosix(pkgJsonDir, absDtsPath);
+    if (config.exports) {
+      for (const [exportPath, sourcePath] of Object.entries(config.exports)) {
+        if (exportPath.includes("package.json")) {
+          newExports[exportPath] = sourcePath;
+          continue;
+        }
+        const absSourcePath = path.resolve(pkgJsonDir, sourcePath);
+        const relSourcePath = path.relative(rootDir, absSourcePath);
+        const absJsPath = path.resolve(outDir, relSourcePath);
+        const absDtsPath = path.resolve(declarationDir, relSourcePath);
+        let relJsPath = "./" + relativePosix(pkgJsonDir, absJsPath);
+        let relDtsPath = "./" + relativePosix(pkgJsonDir, absDtsPath);
 
-      if (typeof sourcePath === "string") {
-        if (sourcePath.endsWith("/*") || sourcePath.endsWith("/**/*")) {
-          // Handle wildcard exports
-          const finalExportPath = exportPath;
+        if (typeof sourcePath === "string") {
+          if (sourcePath.endsWith("/*") || sourcePath.endsWith("/**/*")) {
+            // Handle wildcard exports
+            const finalExportPath = exportPath;
 
-          if (finalExportPath.includes("**")) {
-            emojiLog("❌", `Export keys cannot contain "**": ${finalExportPath}`, "error");
-            process.exit(1);
-          }
-
-          // Convert deep glob patterns to simple wildcard patterns in the final export
-          if (sourcePath.endsWith("/**/*")) {
-            // Also convert the output paths from /**/* to /*
-            if (relJsPath.endsWith("/**/*")) {
-              relJsPath = relJsPath.slice(0, -5) + "/*";
+            if (finalExportPath.includes("**")) {
+              emojiLog("❌", `Export keys cannot contain "**": ${finalExportPath}`, "error");
+              process.exit(1);
             }
-            if (relDtsPath.endsWith("/**/*")) {
-              relDtsPath = relDtsPath.slice(0, -5) + "/*";
-            }
-          }
 
-          newExports[finalExportPath] = {
-            types: relDtsPath,
-            import: relJsPath,
-            require: relJsPath,
-          };
-          for (const sd of sourceDialects) {
+            // Convert deep glob patterns to simple wildcard patterns in the final export
+            if (sourcePath.endsWith("/**/*")) {
+              // Also convert the output paths from /**/* to /*
+              if (relJsPath.endsWith("/**/*")) {
+                relJsPath = relJsPath.slice(0, -5) + "/*";
+              }
+              if (relDtsPath.endsWith("/**/*")) {
+                relDtsPath = relDtsPath.slice(0, -5) + "/*";
+              }
+            }
+
             newExports[finalExportPath] = {
-              [sd]: sourcePath,
-              ...newExports[finalExportPath],
+              types: relDtsPath,
+              import: relJsPath,
+              require: relJsPath,
             };
-          }
-        } else if (isSourceFile(sourcePath)) {
-          const esmPath = removeExtension(relJsPath) + (isTypeModule ? `.js` : `.mjs`);
-          const cjsPath = removeExtension(relJsPath) + (isTypeModule ? `.cjs` : `.js`);
-          const dtsPath = removeExtension(relDtsPath) + (isTypeModule ? `.d.cts` : `.d.ts`);
+            for (const sd of sourceDialects) {
+              newExports[finalExportPath] = {
+                [sd]: sourcePath,
+                ...newExports[finalExportPath],
+              };
+            }
+          } else if (isSourceFile(sourcePath)) {
+            const esmPath = removeExtension(relJsPath) + (isTypeModule ? `.js` : `.mjs`);
+            const cjsPath = removeExtension(relJsPath) + (isTypeModule ? `.cjs` : `.js`);
+            const dtsPath = removeExtension(relDtsPath) + (isTypeModule ? `.d.cts` : `.d.ts`);
 
-          newExports[exportPath] = {
-            types: dtsPath,
-            import: esmPath,
-            require: cjsPath,
-          };
-
-          if (exportPath === ".") {
-            pkgJson.main = cjsPath;
-            pkgJson.module = esmPath;
-            pkgJson.types = dtsPath;
-          }
-          for (const sd of sourceDialects) {
             newExports[exportPath] = {
-              [sd]: sourcePath,
-              ...newExports[exportPath],
+              types: dtsPath,
+              import: esmPath,
+              require: cjsPath,
             };
+
+            if (exportPath === ".") {
+              pkgJson.main = cjsPath;
+              pkgJson.module = esmPath;
+              pkgJson.types = dtsPath;
+            }
+            for (const sd of sourceDialects) {
+              newExports[exportPath] = {
+                [sd]: sourcePath,
+                ...newExports[exportPath],
+              };
+            }
+          } else {
+            emojiLog("❌", `Invalid entrypoint: ${sourcePath}`, "error");
+            process.exit();
           }
-        } else {
-          emojiLog("❌", `Invalid entrypoint: ${sourcePath}`, "error");
-          process.exit();
         }
       }
     }
@@ -787,7 +797,11 @@ Examples:
     ///////////////////////////////
 
     // Update package.json with new exports
-    pkgJson.exports = newExports;
+    if (Object.keys(newExports).length === 0) {
+      delete pkgJson.exports;
+    } else {
+      pkgJson.exports = newExports;
+    }
 
     if (isDryRun) {
       emojiLog("📦", "[dryrun] Skipping package.json modification");
