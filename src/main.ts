@@ -208,8 +208,7 @@ Examples:
 
     if (!config.exports) {
       // no problem, optional
-    }
-    if (typeof config.exports === "string") {
+    } else if (typeof config.exports === "string") {
       config.exports = { ".": config.exports };
     } else if (typeof config.exports === "undefined") {
       emojiLog("❌", `Missing "exports" key in package.json#/${CONFIG_KEY}`, "error");
@@ -364,50 +363,49 @@ Examples:
   const entryPoints: string[] = [];
 
   const rows: string[][] = [["Subpath", "Entrypoint"]];
-  if (config.exports) {
-    for (const [exportPath, sourcePath] of Object.entries(config.exports)) {
-      if (exportPath.includes("package.json")) continue;
-      let cleanExportPath!: string;
-      if (exportPath === ".") {
-        cleanExportPath = pkgJson.name;
-      } else if (exportPath.startsWith("./")) {
-        cleanExportPath = pkgJson.name + "/" + exportPath.slice(2);
-      } else {
-        emojiLog("⚠️", `Invalid subpath export "${exportPath}" — should start with "./"`, "warn");
-        process.exit(1);
-      }
-      if (typeof sourcePath === "string") {
-        if (sourcePath.includes("*")) {
-          if (!sourcePath.endsWith("/*") && !sourcePath.endsWith("/**/*")) {
-            emojiLog("❌", `Wildcard paths should end with /* or /**/* (for deep globs): ${sourcePath}`, "error");
-            process.exit(1);
-          }
 
-          let pattern: string;
-
-          if (sourcePath.endsWith("/**/*")) {
-            // Handle deep glob patterns like "./src/**/*"
-            pattern = sourcePath.slice(0, -5) + "/**/*.{ts,tsx,mts,cts}";
-          } else {
-            // Handle shallow glob patterns like "./src/plugins/*"
-            pattern = sourcePath.slice(0, -2) + "/*.{ts,tsx,mts,cts}";
-          }
-
-          if (isVerbose) {
-            emojiLog("🔍", `Matching glob: ${pattern}`);
-          }
-          const wildcardFiles = await globby([pattern], {
-            ignore: ["**/*.d.ts", "**/*.d.mts", "**/*.d.cts"],
-            cwd: pkgJsonDir,
-          });
-          entryPoints.push(...wildcardFiles);
-
-          rows.push([`"${cleanExportPath}"`, `${sourcePath} (${wildcardFiles.length} matches)`]);
-        } else if (isSourceFile(sourcePath)) {
-          entryPoints.push(sourcePath);
-
-          rows.push([`"${cleanExportPath}"`, sourcePath]);
+  for (const [exportPath, sourcePath] of Object.entries(config.exports ?? {})) {
+    if (exportPath.includes("package.json")) continue;
+    let cleanExportPath!: string;
+    if (exportPath === ".") {
+      cleanExportPath = pkgJson.name;
+    } else if (exportPath.startsWith("./")) {
+      cleanExportPath = pkgJson.name + "/" + exportPath.slice(2);
+    } else {
+      emojiLog("⚠️", `Invalid subpath export "${exportPath}" — should start with "./"`, "warn");
+      process.exit(1);
+    }
+    if (typeof sourcePath === "string") {
+      if (sourcePath.includes("*")) {
+        if (!sourcePath.endsWith("/*") && !sourcePath.endsWith("/**/*")) {
+          emojiLog("❌", `Wildcard paths should end with /* or /**/* (for deep globs): ${sourcePath}`, "error");
+          process.exit(1);
         }
+
+        let pattern: string;
+
+        if (sourcePath.endsWith("/**/*")) {
+          // Handle deep glob patterns like "./src/**/*"
+          pattern = sourcePath.slice(0, -5) + "/**/*.{ts,tsx,mts,cts}";
+        } else {
+          // Handle shallow glob patterns like "./src/plugins/*"
+          pattern = sourcePath.slice(0, -2) + "/*.{ts,tsx,mts,cts}";
+        }
+
+        if (isVerbose) {
+          emojiLog("🔍", `Matching glob: ${pattern}`);
+        }
+        const wildcardFiles = await globby([pattern], {
+          ignore: ["**/*.d.ts", "**/*.d.mts", "**/*.d.cts"],
+          cwd: pkgJsonDir,
+        });
+        entryPoints.push(...wildcardFiles);
+
+        rows.push([`"${cleanExportPath}"`, `${sourcePath} (${wildcardFiles.length} matches)`]);
+      } else if (isSourceFile(sourcePath)) {
+        entryPoints.push(sourcePath);
+
+        rows.push([`"${cleanExportPath}"`, sourcePath]);
       }
     }
   }
@@ -675,13 +673,14 @@ Examples:
     ///////////////////////////////
 
     // generate package.json exports
-    emojiLog("📦", `${dryRunPrefix}Updating package.json#/exports...`);
 
     // Generate exports based on zshy config
-    const newExports: Record<string, any> = {};
     const sourceDialects = config.sourceDialects || [];
 
     if (config.exports) {
+      const newExports: Record<string, any> = {};
+      emojiLog("📦", `${dryRunPrefix}Updating package.json#/exports...`);
+
       for (const [exportPath, sourcePath] of Object.entries(config.exports)) {
         if (exportPath.includes("package.json")) {
           newExports[exportPath] = sourcePath;
@@ -754,10 +753,16 @@ Examples:
           }
         }
       }
-    }
 
-    if (isVerbose) {
-      emojiLog("🔧", `Generated "exports": ${formatForLog(newExports)}`);
+      // Update package.json with new exports
+      if (Object.keys(newExports).length === 0) {
+        delete pkgJson.exports;
+      } else {
+        pkgJson.exports = newExports;
+      }
+      if (isVerbose) {
+        emojiLog("🔧", `Generated "exports": ${formatForLog(newExports)}`);
+      }
     }
 
     ///////////////////////////////
@@ -801,13 +806,6 @@ Examples:
     ///////////////////////////////
     ///     write pkg json      ///
     ///////////////////////////////
-
-    // Update package.json with new exports
-    if (Object.keys(newExports).length === 0) {
-      delete pkgJson.exports;
-    } else {
-      pkgJson.exports = newExports;
-    }
 
     if (isDryRun) {
       emojiLog("📦", "[dryrun] Skipping package.json modification");
