@@ -171,7 +171,7 @@ Examples:
   const CONFIG_KEY = "zshy";
 
   let config!: {
-    exports: Record<string, string>;
+    exports?: Record<string, string>;
     bin?: Record<string, string> | string;
     sourceDialects?: string[];
     tsconfig?: string; // optional path to tsconfig.json file
@@ -192,7 +192,23 @@ Examples:
   } else if (typeof pkgJson[CONFIG_KEY] === "object") {
     config = { ...pkgJson[CONFIG_KEY] };
 
-    if (typeof config.exports === "string") {
+    let binConfigured = false;
+
+    // Validate bin field if present
+    if (config.bin !== undefined) {
+      if (typeof config.bin === "string") {
+        // Keep string format - we'll handle this in entry point extraction
+      } else {
+        emojiLog("❌", `Invalid "bin" key in package.json#/${CONFIG_KEY}, expected string`, "error");
+        process.exit(1);
+      }
+
+      binConfigured = true;
+    }
+
+    if (!config.exports) {
+      // no problem, optional
+    } else if (typeof config.exports === "string") {
       config.exports = { ".": config.exports };
     } else if (typeof config.exports === "undefined") {
       emojiLog("❌", `Missing "exports" key in package.json#/${CONFIG_KEY}`, "error");
@@ -202,20 +218,11 @@ Examples:
       process.exit(1);
     }
 
-    // Validate bin field if present
-    if (config.bin !== undefined) {
-      if (typeof config.bin === "string") {
-        // Keep string format - we'll handle this in entry point extraction
-      } else if (typeof config.bin === "object" && config.bin !== null) {
-        // Object format is valid
-      } else {
-        emojiLog("❌", `Invalid "bin" key in package.json#/${CONFIG_KEY}, expected string or object`, "error");
-        process.exit(1);
-      }
+    // Ensure at least one of bin or exports is configured
+    if (!binConfigured && !config.exports) {
+      emojiLog("❌", `At least one of "bin" or "exports" must be specified in package.json#/${CONFIG_KEY}`, "error");
+      process.exit(1);
     }
-    // {
-    // 	exports: { ".": pkgJson[CONFIG_KEY].exports },
-    // };
   } else if (typeof pkgJson[CONFIG_KEY] === "undefined") {
     emojiLog("❌", `Missing "${CONFIG_KEY}" key in package.json`, "error");
     process.exit(1);
@@ -356,7 +363,8 @@ Examples:
   const entryPoints: string[] = [];
 
   const rows: string[][] = [["Subpath", "Entrypoint"]];
-  for (const [exportPath, sourcePath] of Object.entries(config.exports)) {
+
+  for (const [exportPath, sourcePath] of Object.entries(config.exports ?? {})) {
     if (exportPath.includes("package.json")) continue;
     let cleanExportPath!: string;
     if (exportPath === ".") {
@@ -448,7 +456,11 @@ Examples:
   //   process.exit(1);
   // }
   if (entryPoints.length === 0) {
-    emojiLog("❌", "No entry points found matching the specified patterns in package.json#/zshy exports", "error");
+    emojiLog(
+      "❌",
+      "No entry points found matching the specified patterns in package.json#/zshy exports or bin",
+      "error"
+    );
     process.exit(1);
   }
 
@@ -661,87 +673,96 @@ Examples:
     ///////////////////////////////
 
     // generate package.json exports
-    emojiLog("📦", `${dryRunPrefix}Updating package.json#/exports...`);
 
     // Generate exports based on zshy config
-    const newExports: Record<string, any> = {};
     const sourceDialects = config.sourceDialects || [];
 
-    for (const [exportPath, sourcePath] of Object.entries(config.exports)) {
-      if (exportPath.includes("package.json")) {
-        newExports[exportPath] = sourcePath;
-        continue;
-      }
-      const absSourcePath = path.resolve(pkgJsonDir, sourcePath);
-      const relSourcePath = path.relative(rootDir, absSourcePath);
-      const absJsPath = path.resolve(outDir, relSourcePath);
-      const absDtsPath = path.resolve(declarationDir, relSourcePath);
-      let relJsPath = "./" + relativePosix(pkgJsonDir, absJsPath);
-      let relDtsPath = "./" + relativePosix(pkgJsonDir, absDtsPath);
+    if (config.exports) {
+      const newExports: Record<string, any> = {};
+      emojiLog("📦", `${dryRunPrefix}Updating package.json#/exports...`);
 
-      if (typeof sourcePath === "string") {
-        if (sourcePath.endsWith("/*") || sourcePath.endsWith("/**/*")) {
-          // Handle wildcard exports
-          const finalExportPath = exportPath;
+      for (const [exportPath, sourcePath] of Object.entries(config.exports)) {
+        if (exportPath.includes("package.json")) {
+          newExports[exportPath] = sourcePath;
+          continue;
+        }
+        const absSourcePath = path.resolve(pkgJsonDir, sourcePath);
+        const relSourcePath = path.relative(rootDir, absSourcePath);
+        const absJsPath = path.resolve(outDir, relSourcePath);
+        const absDtsPath = path.resolve(declarationDir, relSourcePath);
+        let relJsPath = "./" + relativePosix(pkgJsonDir, absJsPath);
+        let relDtsPath = "./" + relativePosix(pkgJsonDir, absDtsPath);
 
-          if (finalExportPath.includes("**")) {
-            emojiLog("❌", `Export keys cannot contain "**": ${finalExportPath}`, "error");
-            process.exit(1);
-          }
+        if (typeof sourcePath === "string") {
+          if (sourcePath.endsWith("/*") || sourcePath.endsWith("/**/*")) {
+            // Handle wildcard exports
+            const finalExportPath = exportPath;
 
-          // Convert deep glob patterns to simple wildcard patterns in the final export
-          if (sourcePath.endsWith("/**/*")) {
-            // Also convert the output paths from /**/* to /*
-            if (relJsPath.endsWith("/**/*")) {
-              relJsPath = relJsPath.slice(0, -5) + "/*";
+            if (finalExportPath.includes("**")) {
+              emojiLog("❌", `Export keys cannot contain "**": ${finalExportPath}`, "error");
+              process.exit(1);
             }
-            if (relDtsPath.endsWith("/**/*")) {
-              relDtsPath = relDtsPath.slice(0, -5) + "/*";
-            }
-          }
 
-          newExports[finalExportPath] = {
-            types: relDtsPath,
-            import: relJsPath,
-            require: relJsPath,
-          };
-          for (const sd of sourceDialects) {
+            // Convert deep glob patterns to simple wildcard patterns in the final export
+            if (sourcePath.endsWith("/**/*")) {
+              // Also convert the output paths from /**/* to /*
+              if (relJsPath.endsWith("/**/*")) {
+                relJsPath = relJsPath.slice(0, -5) + "/*";
+              }
+              if (relDtsPath.endsWith("/**/*")) {
+                relDtsPath = relDtsPath.slice(0, -5) + "/*";
+              }
+            }
+
             newExports[finalExportPath] = {
-              [sd]: sourcePath,
-              ...newExports[finalExportPath],
+              types: relDtsPath,
+              import: relJsPath,
+              require: relJsPath,
             };
-          }
-        } else if (isSourceFile(sourcePath)) {
-          const esmPath = removeExtension(relJsPath) + (isTypeModule ? `.js` : `.mjs`);
-          const cjsPath = removeExtension(relJsPath) + (isTypeModule ? `.cjs` : `.js`);
-          const dtsPath = removeExtension(relDtsPath) + (isTypeModule ? `.d.cts` : `.d.ts`);
+            for (const sd of sourceDialects) {
+              newExports[finalExportPath] = {
+                [sd]: sourcePath,
+                ...newExports[finalExportPath],
+              };
+            }
+          } else if (isSourceFile(sourcePath)) {
+            const esmPath = removeExtension(relJsPath) + (isTypeModule ? `.js` : `.mjs`);
+            const cjsPath = removeExtension(relJsPath) + (isTypeModule ? `.cjs` : `.js`);
+            const dtsPath = removeExtension(relDtsPath) + (isTypeModule ? `.d.cts` : `.d.ts`);
 
-          newExports[exportPath] = {
-            types: dtsPath,
-            import: esmPath,
-            require: cjsPath,
-          };
-
-          if (exportPath === ".") {
-            pkgJson.main = cjsPath;
-            pkgJson.module = esmPath;
-            pkgJson.types = dtsPath;
-          }
-          for (const sd of sourceDialects) {
             newExports[exportPath] = {
-              [sd]: sourcePath,
-              ...newExports[exportPath],
+              types: dtsPath,
+              import: esmPath,
+              require: cjsPath,
             };
+
+            if (exportPath === ".") {
+              pkgJson.main = cjsPath;
+              pkgJson.module = esmPath;
+              pkgJson.types = dtsPath;
+            }
+            for (const sd of sourceDialects) {
+              newExports[exportPath] = {
+                [sd]: sourcePath,
+                ...newExports[exportPath],
+              };
+            }
+          } else {
+            emojiLog("❌", `Invalid entrypoint: ${sourcePath}`, "error");
+            process.exit();
           }
-        } else {
-          emojiLog("❌", `Invalid entrypoint: ${sourcePath}`, "error");
-          process.exit();
         }
       }
-    }
 
-    if (isVerbose) {
-      emojiLog("🔧", `Generated "exports": ${formatForLog(newExports)}`);
+      // Update package.json with new exports
+      if (Object.keys(newExports).length === 0) {
+        delete pkgJson.exports;
+      } else {
+        pkgJson.exports = newExports;
+      }
+      if (isVerbose) {
+        emojiLog("🔧", `Generated "exports": ${formatForLog(newExports)}`);
+      }
     }
 
     ///////////////////////////////
@@ -785,9 +806,6 @@ Examples:
     ///////////////////////////////
     ///     write pkg json      ///
     ///////////////////////////////
-
-    // Update package.json with new exports
-    pkgJson.exports = newExports;
 
     if (isDryRun) {
       emojiLog("📦", "[dryrun] Skipping package.json modification");
