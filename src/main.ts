@@ -171,7 +171,7 @@ Examples:
   const CONFIG_KEY = "zshy";
 
   let config!: {
-    exports: Record<string, string>;
+    exports?: Record<string, string>;
     bin?: Record<string, string> | string;
     sourceDialects?: string[];
     tsconfig?: string; // optional path to tsconfig.json file
@@ -198,20 +198,19 @@ Examples:
     if (config.bin !== undefined) {
       if (typeof config.bin === "string") {
         // Keep string format - we'll handle this in entry point extraction
-      } else if (typeof config.bin === "object" && config.bin !== null) {
-        // Object format is valid
       } else {
-        emojiLog("❌", `Invalid "bin" key in package.json#/${CONFIG_KEY}, expected string or object`, "error");
+        emojiLog("❌", `Invalid "bin" key in package.json#/${CONFIG_KEY}, expected string`, "error");
         process.exit(1);
       }
 
       binConfigured = true;
     }
 
+    if (!config.exports) {
+      // no problem, optional
+    }
     if (typeof config.exports === "string") {
       config.exports = { ".": config.exports };
-    } else if (binConfigured) {
-      // Bin is configured
     } else if (typeof config.exports === "undefined") {
       emojiLog("❌", `Missing "exports" key in package.json#/${CONFIG_KEY}`, "error");
       process.exit(1);
@@ -219,9 +218,12 @@ Examples:
       emojiLog("❌", `Invalid "exports" key in package.json#/${CONFIG_KEY}`, "error");
       process.exit(1);
     }
-    // {
-    // 	exports: { ".": pkgJson[CONFIG_KEY].exports },
-    // };
+
+    // Ensure at least one of bin or exports is configured
+    if (!binConfigured && !config.exports) {
+      emojiLog("❌", `At least one of "bin" or "exports" must be specified in package.json#/${CONFIG_KEY}`, "error");
+      process.exit(1);
+    }
   } else if (typeof pkgJson[CONFIG_KEY] === "undefined") {
     emojiLog("❌", `Missing "${CONFIG_KEY}" key in package.json`, "error");
     process.exit(1);
@@ -456,7 +458,11 @@ Examples:
   //   process.exit(1);
   // }
   if (entryPoints.length === 0) {
-    emojiLog("❌", "No entry points found matching the specified patterns in package.json#/zshy exports", "error");
+    emojiLog(
+      "❌",
+      "No entry points found matching the specified patterns in package.json#/zshy exports or bin",
+      "error"
+    );
     process.exit(1);
   }
 

@@ -143,13 +143,13 @@ describe("zshy with different tsconfig configurations", () => {
 });
 
 function normalizeOutput(output: string): string {
-  const slashPattern = /[\\\/]+/g;
+  const slashPattern = /[\\/]+/g;
   return (
     output
       // Loosely normalize path sep to `/`. Note that we also normalize double
       // escaped backslashes since we `JSON.stringify` some paths in the output.
       .replaceAll(slashPattern, "/")
-      .replaceAll(process.cwd().replaceAll(slashPattern, '/'), "<root>")
+      .replaceAll(process.cwd().replaceAll(slashPattern, "/"), "<root>")
       // Normalize timestamps and timing info
       .replace(/\d+ms/g, "<time>")
       // Normalize any specific file counts that might vary
