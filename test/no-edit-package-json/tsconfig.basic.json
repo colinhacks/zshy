@@ -1,0 +1,10 @@
+{
+  "description": "Test: Basic configuration with default settings. This tests the most common use case with minimal configuration. outDir: dist, rootDir: src, standard ES2020 target",
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}

@@ -7,7 +7,7 @@
   "types": "./dist/index.d.cts",
   "bin": "./dist/index.cjs",
   "scripts": {
-    "build": "tsx ../src/index.ts --project tsconfig.basic.json"
+    "build": "tsx ../../src/index.ts --project tsconfig.basic.json"
   },
   "devDependencies": {
     "typescript": "^5.8.3"
@@ -28,10 +28,7 @@
       "./default-const": "./src/default-const.ts",
       "./default-literal": "./src/default-literal.ts"
     },
-    "bin": "./src/index.ts",
-    "sourceDialects": [
-      "@zod/source"
-    ]
+    "bin": "./src/index.ts"
   },
   "files": [
     "dist"
@@ -39,79 +36,66 @@
   "module": "./dist/index.js",
   "exports": {
     ".": {
-      "@zod/source": "./src/index.ts",
       "types": "./dist/index.d.cts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
     "./hello": {
-      "@zod/source": "./src/hello.ts",
       "types": "./dist/hello.d.cts",
       "import": "./dist/hello.js",
       "require": "./dist/hello.cjs"
     },
     "./utils": {
-      "@zod/source": "./src/utils.ts",
       "types": "./dist/utils.d.cts",
       "import": "./dist/utils.js",
       "require": "./dist/utils.cjs"
     },
     "./plugins": {
-      "@zod/source": "./src/plugins/index.ts",
       "types": "./dist/plugins/index.d.cts",
       "import": "./dist/plugins/index.js",
       "require": "./dist/plugins/index.cjs"
     },
     "./plugins/*": {
-      "@zod/source": "./src/plugins/**/*",
       "types": "./dist/plugins/*",
       "import": "./dist/plugins/*",
       "require": "./dist/plugins/*"
     },
     "./default-function": {
-      "@zod/source": "./src/default-function.ts",
       "types": "./dist/default-function.d.cts",
       "import": "./dist/default-function.js",
       "require": "./dist/default-function.cjs"
     },
     "./default-class": {
-      "@zod/source": "./src/default-class.ts",
       "types": "./dist/default-class.d.cts",
       "import": "./dist/default-class.js",
       "require": "./dist/default-class.cjs"
     },
     "./default-object": {
-      "@zod/source": "./src/default-object.ts",
       "types": "./dist/default-object.d.cts",
       "import": "./dist/default-object.js",
       "require": "./dist/default-object.cjs"
     },
     "./default-arrow": {
-      "@zod/source": "./src/default-arrow.ts",
       "types": "./dist/default-arrow.d.cts",
       "import": "./dist/default-arrow.js",
       "require": "./dist/default-arrow.cjs"
     },
     "./default-with-named": {
-      "@zod/source": "./src/default-with-named.ts",
       "types": "./dist/default-with-named.d.cts",
       "import": "./dist/default-with-named.js",
       "require": "./dist/default-with-named.cjs"
     },
     "./default-export-equals": {
-      "@zod/source": "./src/default-export-equals.ts",
       "types": "./dist/default-export-equals.d.cts",
       "import": "./dist/default-export-equals.js",
       "require": "./dist/default-export-equals.cjs"
     },
     "./default-const": {
-      "@zod/source": "./src/default-const.ts",
       "types": "./dist/default-const.d.cts",
       "import": "./dist/default-const.js",
       "require": "./dist/default-const.cjs"
     },
     "./default-literal": {
-      "@zod/source": "./src/default-literal.ts",
       "types": "./dist/default-literal.d.cts",
       "import": "./dist/default-literal.js",
       "require": "./dist/default-literal.cjs"

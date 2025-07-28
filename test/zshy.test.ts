@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { existsSync, rmSync } from "node:fs";
+import { existsSync, readFileSync, rmSync } from "node:fs";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 describe("zshy with different tsconfig configurations", () => {
@@ -57,22 +57,23 @@ describe("zshy with different tsconfig configurations", () => {
   });
 
   // Helper function to run zshy with a specific tsconfig
-  const runZshyWithTsconfig = (tsconfigFile: string, opts: { dryRun: boolean } = { dryRun: false }) => {
+  const runZshyWithTsconfig = (tsconfigFile: string, opts: { dryRun: boolean; cwd: string }) => {
     let stdout = "";
     let stderr = "";
     let exitCode = 0;
 
     try {
       // Run zshy using tsx with --project flag in verbose mode and dry-run from test directory
-      const args = ["../src/index.ts", "--project", `./${tsconfigFile}`, "--verbose"];
+      const args = ["../../src/index.ts", "--project", `./${tsconfigFile}`, "--verbose"];
       if (opts.dryRun) {
         args.push("--dry-run");
       }
+
       const result = spawnSync("tsx", args, {
         shell: true,
         encoding: "utf8",
         timeout: 30000, // Increase timeout for CI
-        cwd: process.cwd() + "/test", // Use relative path that works in CI
+        cwd: opts.cwd, // Use relative path that works in CI
         env: {
           ...process.env,
           // Force UTF-8 encoding
@@ -118,26 +119,51 @@ describe("zshy with different tsconfig configurations", () => {
   it("should work with basic.test.tsconfig.json", () => {
     // only run this one with dryRun: false
     // results are tracked in git
-    const snapshot = runZshyWithTsconfig("tsconfig.basic.json", { dryRun: false });
-
-    // Check that assets are being detected and copied
-    expect(snapshot.stdout).toContain("Found 5 asset import(s), copying to output directory...");
-    expect(snapshot.stdout).toContain("Copied asset: ./src/assets/styles.css");
-    expect(snapshot.stdout).toContain("Copied asset: ./src/assets/config.json");
-    expect(snapshot.stdout).toContain("Copied asset: ./src/assets/README.md");
-    expect(snapshot.stdout).toContain("Copied asset: ./src/plugins/plugin-a.css");
-    expect(snapshot.stdout).toContain("Copied asset: ./src/plugins/plugin-b.css");
+    const snapshot = runZshyWithTsconfig("tsconfig.basic.json", { dryRun: false, cwd: process.cwd() + "/test/basic" });
 
     expect(snapshot).toMatchSnapshot();
   });
 
+  const basicCwd = process.cwd() + "/test/basic";
+  console.log(basicCwd);
+
   it("should work with tsconfig.custom-paths.json", () => {
-    const snapshot = runZshyWithTsconfig("tsconfig.custom-paths.json", { dryRun: true });
+    const snapshot = runZshyWithTsconfig("tsconfig.custom-paths.json", { dryRun: true, cwd: basicCwd });
     expect(snapshot).toMatchSnapshot();
   });
 
   it("should work with tsconfig.flat.json", () => {
-    const snapshot = runZshyWithTsconfig("tsconfig.flat.json", { dryRun: true });
+    const snapshot = runZshyWithTsconfig("tsconfig.flat.json", { dryRun: true, cwd: basicCwd });
+    expect(snapshot).toMatchSnapshot();
+  });
+
+  it("should not edit package.json when noEdit is true", () => {
+    const cwd = process.cwd() + "/test/no-edit-package-json";
+    const packageJsonPath = cwd + "/package.json";
+    const originalPackageJson = readFileSync(packageJsonPath, "utf-8");
+
+    const snapshot = runZshyWithTsconfig("tsconfig.basic.json", { dryRun: false, cwd });
+
+    const newPackageJson = readFileSync(packageJsonPath, "utf-8");
+    expect(newPackageJson).toEqual(originalPackageJson);
+    expect(snapshot).toMatchSnapshot();
+  });
+
+  it("should work with custom conditions", () => {
+    // Run from the custom-conditions directory
+    const snapshot = runZshyWithTsconfig("tsconfig.basic.json", {
+      dryRun: true,
+      cwd: process.cwd() + "/test/custom-conditions",
+    });
+    expect(snapshot).toMatchSnapshot();
+  });
+
+  it("should skip CJS build when commonjs is false", () => {
+    // Run from the esm-only directory
+    const snapshot = runZshyWithTsconfig("tsconfig.basic.json", {
+      dryRun: true,
+      cwd: process.cwd() + "/test/esm-only",
+    });
     expect(snapshot).toMatchSnapshot();
   });
 });

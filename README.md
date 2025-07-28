@@ -78,6 +78,8 @@ pnpm add --save-dev zshy
 
   // with multiple entrypoints (subpaths, wildcards, deep wildcards)
 + "zshy": {
++   "main": "./src/index.ts",
++   "module": "./src/index.ts",
 +   "exports": {
 +     ".": "./src/index.ts",
 +     "./utils": "./src/utils.ts",
@@ -346,6 +348,73 @@ Be sure to include a [shebang](<https://en.wikipedia.org/wiki/Shebang_(Unix)>) a
 #!/usr/bin/env node
 
 // CLI code here
+```
+
+<br/>
+
+### ESM-only
+
+For packages that only need ESM builds, you can disable CommonJS output entirely:
+
+```jsonc
+{
+  "zshy": {
+    "exports": { ... },
+    "cjs": false
+  }
+}
+```
+
+This will generate only ESM files (`.js` and `.d.ts`) and the `package.json#/exports` will only include `"import"` and `"types"` conditions.
+
+```jsonc
+{
+  // package.json
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  }
+}
+```
+
+<br/>
+
+### Custom conditions
+
+To specify custom conditions in your export maps, specify a `"conditions"` map. Each condition name must correspond to one of `"src" | "esm" | "cjs"`.
+
+```diff
+{
+  "zshy": {
+    "exports": {
+      ".": "./src/index.ts"
+    },
++   "conditions": {
++    "my-src-condition": "src"
++    "my-esm-condition": "esm",
++    "my-cjs-condition": "cjs"
++ }
+}
+```
+
+With this addition, `zshy` will add the `"my-source"` condition to the generated `"exports"` map:
+
+```diff
+// package.json
+{
+  "exports": {
+    ".": {
++     "my-src-condition": "./src/index.ts",
++     "my-esm-condition": "./dist/index.js",
++     "my-cjs-condition": "./dist/index.cjs"
+      "types": "./dist/index.d.cts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  }
+}
 ```
 
 <br/>
@@ -634,40 +703,22 @@ This causes issues for packages that want to use subpath imports to structure th
 
 With this setup, your build outputs (`index.js`, etc) will be written to the package root. Older environments will resolve imports like `"your-library/utils"` to `"your-library/utils/index.js"`, effectively simulating subpath imports in environments that don't support them.
 
-<br/>
+<br />
 
-### How to include custom conditions in `package.json#/exports`?
+### Can I prevent `zshy` from modifying my `package.json`?
 
-To tell `zshy` to specify a custom condition pointing to your _source files_, use `"sourceDialects"`:
+Yes. If you prefer to manage your `package.json` fields manually, you can prevent `zshy` from making any changes by setting the `noEdit` option to `true` in your `package.json#/zshy` config.
 
-```diff
+```jsonc
 {
   "zshy": {
-    "exports": {
-      ".": "./src/index.ts"
-    },
-+   "sourceDialects": ["my-source"] // 👈 add this
+    "exports": "./src/index.ts",
+    "noEdit": true
   }
 }
 ```
 
-With this addition, `zshy` will add the `"my-source"` condition to the generated `"exports"` map:
-
-```diff
-// package.json
-{
-  "exports": {
-    ".": {
-+     "my-source": "./src/index.ts",
-      "types": "./dist/index.d.cts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
-    }
-  }
-}
-```
-
-Specifying additional dialects for `"import"` and `"require"` is not yet supported (create an issue if you need this).
+When `noEdit` is enabled, `zshy` will build your files but will not write to `package.json`. You will be responsible for populating the `"exports"`, `"bin"`, `"main"`, `"module"`, and `"types"` fields yourself.
 
 <br />
 
