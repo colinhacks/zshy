@@ -29,5 +29,13 @@ jobs:
       - name: Run tests
         run: pnpm test
       
+      - name: Check for untracked changes
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Error: Tests produced untracked git changes:"
+            git status --porcelain
+            exit 1
+          fi
+      
       - name: Build
         run: pnpm build
