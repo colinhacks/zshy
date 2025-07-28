@@ -84,8 +84,7 @@ exports[`zshy with different tsconfig configurations > should not edit package.j
      ./dist/index.d.ts.map
      ./dist/index.js
      ./dist/index.js.map
-»  Skipping modification of package.json
-»  [noedit] Skipping package.json modification
+»  [noedit] Skipping modification of package.json
 »  Build complete!",
 }
 `;

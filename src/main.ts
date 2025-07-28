@@ -603,7 +603,7 @@ Examples:
   //////////////////////////////////////////////
   ///   clean up outDir and declarationDir   ///
   //////////////////////////////////////////////
-  const prefix = isDryRun ? "[dryrun] " : rawConfig.noEdit ? "[noedit] " : "";
+  const prefix = isDryRun ? "[dryrun] " : "";
   if (relRootDir.startsWith(relOutDir)) {
     emojiLog("🗑️", `${prefix}Skipping cleanup of outDir as it contains source files`);
   } else {
@@ -742,122 +742,120 @@ Examples:
   ///////////////////////////////
 
   // generate package.json exports
-  if (!config.noEdit) {
-    emojiLog("📦", `${prefix}Updating package.json...`);
+  if (config.noEdit) {
+    emojiLog("📦", "[noedit] Skipping modification of package.json");
   } else {
-    // emojiLog("📦", "Skipping modification of package.json");
-  }
+    // Generate exports based on zshy config
+    const newExports: Record<string, any> = {};
 
-  // Generate exports based on zshy config
-  const newExports: Record<string, any> = {};
+    if (config.exports) {
+      // const newExports: Record<string, any> = {};
+      emojiLog("📦", `${prefix}Updating package.json...`);
 
-  if (config.exports) {
-    // const newExports: Record<string, any> = {};
-    emojiLog("📦", `${prefix}Updating package.json#/exports...`);
+      for (const [exportPath, sourcePath] of Object.entries(config.exports)) {
+        if (exportPath.includes("package.json")) {
+          newExports[exportPath] = sourcePath;
+          continue;
+        }
+        const absSourcePath = path.resolve(pkgJsonDir, sourcePath);
+        const relSourcePath = path.relative(rootDir, absSourcePath);
+        const absJsPath = path.resolve(outDir, relSourcePath);
+        const absDtsPath = path.resolve(declarationDir, relSourcePath);
+        let relJsPath = "./" + relativePosix(pkgJsonDir, absJsPath);
+        let relDtsPath = "./" + relativePosix(pkgJsonDir, absDtsPath);
 
-    for (const [exportPath, sourcePath] of Object.entries(config.exports)) {
-      if (exportPath.includes("package.json")) {
-        newExports[exportPath] = sourcePath;
-        continue;
-      }
-      const absSourcePath = path.resolve(pkgJsonDir, sourcePath);
-      const relSourcePath = path.relative(rootDir, absSourcePath);
-      const absJsPath = path.resolve(outDir, relSourcePath);
-      const absDtsPath = path.resolve(declarationDir, relSourcePath);
-      let relJsPath = "./" + relativePosix(pkgJsonDir, absJsPath);
-      let relDtsPath = "./" + relativePosix(pkgJsonDir, absDtsPath);
+        if (typeof sourcePath === "string") {
+          if (sourcePath.endsWith("/*") || sourcePath.endsWith("/**/*")) {
+            // Handle wildcard exports
+            const finalExportPath = exportPath;
 
-      if (typeof sourcePath === "string") {
-        if (sourcePath.endsWith("/*") || sourcePath.endsWith("/**/*")) {
-          // Handle wildcard exports
-          const finalExportPath = exportPath;
-
-          if (finalExportPath.includes("**")) {
-            emojiLog("❌", `Export keys cannot contain "**": ${finalExportPath}`, "error");
-            process.exit(1);
-          }
-
-          // Convert deep glob patterns to simple wildcard patterns in the final export
-          if (sourcePath.endsWith("/**/*")) {
-            // Also convert the output paths from /**/* to /*
-            if (relJsPath.endsWith("/**/*")) {
-              relJsPath = relJsPath.slice(0, -5) + "/*";
+            if (finalExportPath.includes("**")) {
+              emojiLog("❌", `Export keys cannot contain "**": ${finalExportPath}`, "error");
+              process.exit(1);
             }
-            if (relDtsPath.endsWith("/**/*")) {
-              relDtsPath = relDtsPath.slice(0, -5) + "/*";
-            }
-          }
 
-          // Build exports object with proper condition ordering
-          const exportObj: Record<string, string> = {};
-
-          // Add custom conditions first in their original order
-          if (config.conditions) {
-            for (const [condition, value] of Object.entries(config.conditions)) {
-              if (value === "src") {
-                exportObj[condition] = sourcePath;
-              } else if (value === "esm") {
-                exportObj[condition] = relJsPath;
-              } else if (value === "cjs") {
-                exportObj[condition] = relJsPath;
+            // Convert deep glob patterns to simple wildcard patterns in the final export
+            if (sourcePath.endsWith("/**/*")) {
+              // Also convert the output paths from /**/* to /*
+              if (relJsPath.endsWith("/**/*")) {
+                relJsPath = relJsPath.slice(0, -5) + "/*";
+              }
+              if (relDtsPath.endsWith("/**/*")) {
+                relDtsPath = relDtsPath.slice(0, -5) + "/*";
               }
             }
-          }
 
-          // Add standard conditions
-          exportObj.types = relDtsPath;
-          exportObj.import = relJsPath;
-          if (!skipCjs) {
-            exportObj.require = relJsPath;
-          }
+            // Build exports object with proper condition ordering
+            const exportObj: Record<string, string> = {};
 
-          newExports[finalExportPath] = exportObj;
-        } else if (isSourceFile(sourcePath)) {
-          const esmPath = removeExtension(relJsPath) + (isTypeModule ? `.js` : `.mjs`);
-          const cjsPath = removeExtension(relJsPath) + (isTypeModule ? `.cjs` : `.js`);
-          // Use ESM type declarations when CJS is skipped, otherwise use CJS declarations
-          const dtsExt = skipCjs ? (isTypeModule ? ".d.ts" : ".d.mts") : isTypeModule ? ".d.cts" : ".d.ts";
-          const dtsPath = removeExtension(relDtsPath) + dtsExt;
-
-          // Build exports object with proper condition ordering
-          const exportObj: Record<string, string> = {};
-
-          // Add custom conditions first in their original order
-          if (config.conditions) {
-            for (const [condition, value] of Object.entries(config.conditions)) {
-              if (value === "src") {
-                exportObj[condition] = sourcePath;
-              } else if (value === "esm") {
-                exportObj[condition] = esmPath;
-              } else if (value === "cjs") {
-                exportObj[condition] = cjsPath;
+            // Add custom conditions first in their original order
+            if (config.conditions) {
+              for (const [condition, value] of Object.entries(config.conditions)) {
+                if (value === "src") {
+                  exportObj[condition] = sourcePath;
+                } else if (value === "esm") {
+                  exportObj[condition] = relJsPath;
+                } else if (value === "cjs") {
+                  exportObj[condition] = relJsPath;
+                }
               }
             }
-          }
 
-          // Add standard conditions
-          exportObj.types = dtsPath;
-          exportObj.import = esmPath;
-          if (!skipCjs) {
-            exportObj.require = cjsPath;
-          }
-
-          newExports[exportPath] = exportObj;
-
-          if (exportPath === ".") {
+            // Add standard conditions
+            exportObj.types = relDtsPath;
+            exportObj.import = relJsPath;
             if (!skipCjs) {
-              pkgJson.main = cjsPath;
-              pkgJson.module = esmPath;
-              pkgJson.types = dtsPath;
-            } else {
-              // Only set module and types, not main
-              pkgJson.module = esmPath;
-              pkgJson.types = dtsPath;
+              exportObj.require = relJsPath;
             }
-            if (isVerbose && !config.noEdit) {
-              emojiLog("🔧", `Setting "main": ${formatForLog(cjsPath)}`);
-              emojiLog("🔧", `Setting "module": ${formatForLog(esmPath)}`);
-              emojiLog("🔧", `Setting "types": ${formatForLog(dtsPath)}`);
+
+            newExports[finalExportPath] = exportObj;
+          } else if (isSourceFile(sourcePath)) {
+            const esmPath = removeExtension(relJsPath) + (isTypeModule ? `.js` : `.mjs`);
+            const cjsPath = removeExtension(relJsPath) + (isTypeModule ? `.cjs` : `.js`);
+            // Use ESM type declarations when CJS is skipped, otherwise use CJS declarations
+            const dtsExt = skipCjs ? (isTypeModule ? ".d.ts" : ".d.mts") : isTypeModule ? ".d.cts" : ".d.ts";
+            const dtsPath = removeExtension(relDtsPath) + dtsExt;
+
+            // Build exports object with proper condition ordering
+            const exportObj: Record<string, string> = {};
+
+            // Add custom conditions first in their original order
+            if (config.conditions) {
+              for (const [condition, value] of Object.entries(config.conditions)) {
+                if (value === "src") {
+                  exportObj[condition] = sourcePath;
+                } else if (value === "esm") {
+                  exportObj[condition] = esmPath;
+                } else if (value === "cjs") {
+                  exportObj[condition] = cjsPath;
+                }
+              }
+            }
+
+            // Add standard conditions
+            exportObj.types = dtsPath;
+            exportObj.import = esmPath;
+            if (!skipCjs) {
+              exportObj.require = cjsPath;
+            }
+
+            newExports[exportPath] = exportObj;
+
+            if (exportPath === ".") {
+              if (!skipCjs) {
+                pkgJson.main = cjsPath;
+                pkgJson.module = esmPath;
+                pkgJson.types = dtsPath;
+              } else {
+                // Only set module and types, not main
+                pkgJson.module = esmPath;
+                pkgJson.types = dtsPath;
+              }
+              if (isVerbose && !config.noEdit) {
+                emojiLog("🔧", `Setting "main": ${formatForLog(cjsPath)}`);
+                emojiLog("🔧", `Setting "module": ${formatForLog(esmPath)}`);
+                emojiLog("🔧", `Setting "types": ${formatForLog(dtsPath)}`);
+              }
             }
           }
         }
@@ -866,128 +864,128 @@ Examples:
       if (isVerbose && !config.noEdit) {
         emojiLog("🔧", `Setting "exports": ${formatForLog(newExports)}`);
       }
-    }
 
-    ///////////////////////////////
-    ///      generate bin        ///
-    ///////////////////////////////
+      ///////////////////////////////
+      ///      generate bin        ///
+      ///////////////////////////////
 
-    // Generate bin field based on zshy bin config
-    if (config.bin) {
-      emojiLog("📦", `${prefix}Updating package.json#/bin...`);
-      const newBin: Record<string, string> = {};
+      // Generate bin field based on zshy bin config
+      if (config.bin) {
+        emojiLog("📦", `${prefix}Updating package.json#/bin...`);
+        const newBin: Record<string, string> = {};
 
-      // Convert config.bin to object format for processing
-      const binEntries = typeof config.bin === "string" ? [[pkgJson.name, config.bin]] : Object.entries(config.bin);
+        // Convert config.bin to object format for processing
+        const binEntries = typeof config.bin === "string" ? [[pkgJson.name, config.bin]] : Object.entries(config.bin);
 
-      for (const [binName, sourcePath] of binEntries) {
-        if (typeof sourcePath === "string" && isSourceFile(sourcePath)) {
-          const absSourcePath = path.resolve(pkgJsonDir, sourcePath);
-          const relSourcePath = path.relative(rootDir, absSourcePath);
-          const absJsPath = path.resolve(outDir, relSourcePath);
-          const relJsPath = "./" + relativePosix(pkgJsonDir, absJsPath);
+        for (const [binName, sourcePath] of binEntries) {
+          if (typeof sourcePath === "string" && isSourceFile(sourcePath)) {
+            const absSourcePath = path.resolve(pkgJsonDir, sourcePath);
+            const relSourcePath = path.relative(rootDir, absSourcePath);
+            const absJsPath = path.resolve(outDir, relSourcePath);
+            const relJsPath = "./" + relativePosix(pkgJsonDir, absJsPath);
 
-          // Use ESM files for bin when CJS is skipped, otherwise use CJS
-          const binExt = skipCjs ? (isTypeModule ? ".js" : ".mjs") : isTypeModule ? ".cjs" : ".js";
-          const binPath = removeExtension(relJsPath) + binExt;
-          newBin[binName] = binPath;
+            // Use ESM files for bin when CJS is skipped, otherwise use CJS
+            const binExt = skipCjs ? (isTypeModule ? ".js" : ".mjs") : isTypeModule ? ".cjs" : ".js";
+            const binPath = removeExtension(relJsPath) + binExt;
+            newBin[binName] = binPath;
+          }
         }
-      }
 
-      // If original config.bin was a string, output as string
-      if (typeof config.bin === "string") {
-        pkgJson.bin = Object.values(newBin)[0];
-      } else {
-        // Output as object
-        pkgJson.bin = newBin;
-      }
-
-      if (isVerbose && !config.noEdit) {
-        emojiLog("🔧", `Setting "bin": ${formatForLog(pkgJson.bin)}`);
-      }
-    }
-
-    ///////////////////////////////
-    ///     write pkg json      ///
-    ///////////////////////////////
-
-    if (isDryRun) {
-      emojiLog("📦", "[dryrun] Skipping package.json modification");
-    } else if (config.noEdit) {
-      emojiLog("📦", "[noedit] Skipping package.json modification");
-    } else {
-      fs.writeFileSync(packageJsonPath, JSON.stringify(pkgJson, null, indent) + "\n");
-    }
-
-    if (isAttw) {
-      // run `@arethetypeswrong/cli --pack .` to check types
-
-      emojiLog("🔍", "Checking types with @arethetypeswrong/cli...");
-      const { execFile } = await import("node:child_process");
-      const { promisify } = await import("node:util");
-
-      const execFileAsync = promisify(execFile);
-      const [cmd, ...args] = `${pmExec} @arethetypeswrong/cli --pack ${pkgJsonDir} --format table-flipped`.split(" ");
-      console.dir([cmd, ...args], { depth: null });
-
-      let stdout = "";
-      let stderr = "";
-      let exitCode = 0;
-
-      try {
-        const result = await execFileAsync(cmd!, args, {
-          cwd: pkgJsonDir,
-          encoding: "utf-8",
-        });
-        stdout = result.stdout;
-        stderr = result.stderr;
-      } catch (error: any) {
-        stdout = error.stdout || "";
-        stderr = error.stderr || "";
-        exitCode = error.code || 1;
-      }
-
-      const output = stdout || stderr;
-      if (output) {
-        const indentedOutput = output
-          .split("\n")
-          .map((line: string) => `   ${line}`)
-          .join("\n");
-
-        if (exitCode === 0) {
-          console.log(indentedOutput);
+        // If original config.bin was a string, output as string
+        if (typeof config.bin === "string") {
+          pkgJson.bin = Object.values(newBin)[0];
         } else {
-          console.error(indentedOutput);
-          emojiLog("⚠️", "ATTW found issues, but the build was not affected.", "warn");
+          // Output as object
+          pkgJson.bin = newBin;
+        }
+
+        if (isVerbose && !config.noEdit) {
+          emojiLog("🔧", `Setting "bin": ${formatForLog(pkgJson.bin)}`);
         }
       }
-    }
 
-    // Report total compilation results
-    if (buildContext.errorCount > 0 || buildContext.warningCount > 0) {
-      emojiLog(
-        "📊",
-        `Compilation finished with ${buildContext.errorCount} error(s) and ${buildContext.warningCount} warning(s)`
-      );
+      ///////////////////////////////
+      ///     write pkg json      ///
+      ///////////////////////////////
 
-      // Apply threshold rules for exit code
-      if (failThreshold !== "never" && buildContext.errorCount > 0) {
-        // Both 'warn' and 'error' thresholds cause failure on errors
-        emojiLog("❌", `Build completed with errors`, "error");
-        process.exit(1);
-      } else if (failThreshold === "warn" && buildContext.warningCount > 0) {
-        // Only 'warn' threshold causes failure on warnings
-        emojiLog("⚠️", `Build completed with warnings (exiting with error due to --fail-threshold=warn)`, "warn");
-        process.exit(1);
-      } else if (buildContext.errorCount > 0) {
-        // If we got here with errors, we're in 'never' mode
-        emojiLog("⚠️", `Build completed with errors (continuing due to --fail-threshold=never)`, "warn");
+      if (isDryRun) {
+        emojiLog("📦", "[dryrun] Skipping package.json modification");
+      } else if (config.noEdit) {
+        emojiLog("📦", "[noedit] Skipping package.json modification");
       } else {
-        // Just warnings and not failing on them
-        emojiLog("🎉", `Build complete with warnings`);
+        fs.writeFileSync(packageJsonPath, JSON.stringify(pkgJson, null, indent) + "\n");
       }
-    } else {
-      emojiLog("🎉", "Build complete! ✅");
     }
+  }
+
+  if (isAttw) {
+    // run `@arethetypeswrong/cli --pack .` to check types
+
+    emojiLog("🔍", "Checking types with @arethetypeswrong/cli...");
+    const { execFile } = await import("node:child_process");
+    const { promisify } = await import("node:util");
+
+    const execFileAsync = promisify(execFile);
+    const [cmd, ...args] = `${pmExec} @arethetypeswrong/cli --pack ${pkgJsonDir} --format table-flipped`.split(" ");
+    console.dir([cmd, ...args], { depth: null });
+
+    let stdout = "";
+    let stderr = "";
+    let exitCode = 0;
+
+    try {
+      const result = await execFileAsync(cmd!, args, {
+        cwd: pkgJsonDir,
+        encoding: "utf-8",
+      });
+      stdout = result.stdout;
+      stderr = result.stderr;
+    } catch (error: any) {
+      stdout = error.stdout || "";
+      stderr = error.stderr || "";
+      exitCode = error.code || 1;
+    }
+
+    const output = stdout || stderr;
+    if (output) {
+      const indentedOutput = output
+        .split("\n")
+        .map((line: string) => `   ${line}`)
+        .join("\n");
+
+      if (exitCode === 0) {
+        console.log(indentedOutput);
+      } else {
+        console.error(indentedOutput);
+        emojiLog("⚠️", "ATTW found issues, but the build was not affected.", "warn");
+      }
+    }
+  }
+
+  // Report total compilation results
+  if (buildContext.errorCount > 0 || buildContext.warningCount > 0) {
+    emojiLog(
+      "📊",
+      `Compilation finished with ${buildContext.errorCount} error(s) and ${buildContext.warningCount} warning(s)`
+    );
+
+    // Apply threshold rules for exit code
+    if (failThreshold !== "never" && buildContext.errorCount > 0) {
+      // Both 'warn' and 'error' thresholds cause failure on errors
+      emojiLog("❌", `Build completed with errors`, "error");
+      process.exit(1);
+    } else if (failThreshold === "warn" && buildContext.warningCount > 0) {
+      // Only 'warn' threshold causes failure on warnings
+      emojiLog("⚠️", `Build completed with warnings (exiting with error due to --fail-threshold=warn)`, "warn");
+      process.exit(1);
+    } else if (buildContext.errorCount > 0) {
+      // If we got here with errors, we're in 'never' mode
+      emojiLog("⚠️", `Build completed with errors (continuing due to --fail-threshold=never)`, "warn");
+    } else {
+      // Just warnings and not failing on them
+      emojiLog("🎉", `Build complete with warnings`);
+    }
+  } else {
+    emojiLog("🎉", "Build complete! ✅");
   }
 }
