@@ -1,5 +1,190 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`zshy with different tsconfig configurations > should not edit package.json when noEdit is true 1`] = `
+{
+  "exitCode": 0,
+  "stderr": "",
+  "stdout": "╔═══════════════════════════════════════════════╗
+   ║ zshy » the bundler-free TypeScript build tool ║
+   ╚═══════════════════════════════════════════════╝
+»  Starting build...
+»  Verbose mode enabled
+»  Detected package manager: <pm>
+»  Build will fail only on errors (default)
+»  Detected project root: <root>/test/no-edit-package-json
+»  Reading package.json from ./package.json
+»  Parsed zshy config: {
+     "exports": {
+       ".": "./src/index.ts"
+     },
+     "noEdit": true
+   }
+»  Reading tsconfig from ./tsconfig.basic.json
+»  Determining entrypoints...
+   ╔══════════╤════════════════╗
+   ║ Subpath  │ Entrypoint     ║
+   ╟──────────┼────────────────╢
+   ║ "my-pkg" │ ./src/index.ts ║
+   ╚══════════╧════════════════╝
+»  Resolved build paths:
+   ╔══════════╤═══════════════╗
+   ║ Location │ Resolved path ║
+   ╟──────────┼───────────────╢
+   ║ rootDir  │ ./src         ║
+   ║ outDir   │ ./dist        ║
+   ╚══════════╧═══════════════╝
+»  Package is an ES module (package.json#/type is "module")
+»  Cleaning up outDir...
+»  Cleaning up declarationDir...
+»  Resolved entrypoints: [
+     "./src/index.ts"
+   ]
+»  Resolved compilerOptions: {
+     "lib": [
+       "lib.esnext.d.ts"
+     ],
+     "target": "ES2020",
+     "module": "ESNext",
+     "moduleResolution": "Bundler",
+     "moduleDetection": 2,
+     "allowJs": true,
+     "declaration": true,
+     "jsx": 4,
+     "allowImportingTsExtensions": true,
+     "rewriteRelativeImportExtensions": true,
+     "verbatimModuleSyntax": false,
+     "noEmit": false,
+     "strict": true,
+     "skipLibCheck": true,
+     "noFallthroughCasesInSwitch": true,
+     "noUncheckedIndexedAccess": true,
+     "esModuleInterop": true,
+     "forceConsistentCasingInFileNames": true,
+     "noUnusedLocals": true,
+     "noUnusedParameters": false,
+     "noPropertyAccessFromIndexSignature": false,
+     "sourceMap": true,
+     "declarationMap": true,
+     "resolveJsonModule": true,
+     "noImplicitOverride": true,
+     "noImplicitThis": true,
+     "outDir": "<root>/test/no-edit-package-json/dist",
+     "rootDir": "<root>/test/no-edit-package-json/src",
+     "emitDeclarationOnly": false
+   }
+»  Building CJS... (rewriting .ts -> .cjs/.d.cts)
+»  Enabling CJS interop transform...
+»  Building ESM...
+»  Writing files (8 total)...
+     ./dist/index.cjs
+     ./dist/index.cjs.map
+     ./dist/index.d.cts
+     ./dist/index.d.cts.map
+     ./dist/index.d.ts
+     ./dist/index.d.ts.map
+     ./dist/index.js
+     ./dist/index.js.map
+»  Skipping modification of package.json
+»  [noedit] Skipping package.json modification
+»  Build complete!",
+}
+`;
+
+exports[`zshy with different tsconfig configurations > should skip CJS build when commonjs is false 1`] = `
+{
+  "exitCode": 0,
+  "stderr": "",
+  "stdout": "╔═══════════════════════════════════════════════╗
+   ║ zshy » the bundler-free TypeScript build tool ║
+   ╚═══════════════════════════════════════════════╝
+»  Starting build...
+»  Verbose mode enabled
+»  Detected package manager: <pm>
+»  Dry run mode enabled. No files will be written or modified.
+»  Build will fail only on errors (default)
+»  Detected project root: <root>/test/esm-only
+»  Reading package.json from ./package.json
+»  Parsed zshy config: {
+     "exports": {
+       ".": "./src/index.ts"
+     },
+     "cjs": false
+   }
+»  Reading tsconfig from ./tsconfig.basic.json
+»  Determining entrypoints...
+   ╔══════════╤════════════════╗
+   ║ Subpath  │ Entrypoint     ║
+   ╟──────────┼────────────────╢
+   ║ "my-pkg" │ ./src/index.ts ║
+   ╚══════════╧════════════════╝
+»  Resolved build paths:
+   ╔══════════╤═══════════════╗
+   ║ Location │ Resolved path ║
+   ╟──────────┼───────────────╢
+   ║ rootDir  │ ./src         ║
+   ║ outDir   │ ./dist        ║
+   ╚══════════╧═══════════════╝
+»  Package is an ES module (package.json#/type is "module")
+»  [dryrun] Cleaning up outDir...
+»  [dryrun] Cleaning up declarationDir...
+»  Resolved entrypoints: [
+     "./src/index.ts"
+   ]
+»  Resolved compilerOptions: {
+     "lib": [
+       "lib.esnext.d.ts"
+     ],
+     "target": "ES2020",
+     "module": "ESNext",
+     "moduleResolution": "Bundler",
+     "moduleDetection": 2,
+     "allowJs": true,
+     "declaration": true,
+     "jsx": 4,
+     "allowImportingTsExtensions": true,
+     "rewriteRelativeImportExtensions": true,
+     "verbatimModuleSyntax": false,
+     "noEmit": false,
+     "strict": true,
+     "skipLibCheck": true,
+     "noFallthroughCasesInSwitch": true,
+     "noUncheckedIndexedAccess": true,
+     "esModuleInterop": true,
+     "forceConsistentCasingInFileNames": true,
+     "noUnusedLocals": true,
+     "noUnusedParameters": false,
+     "noPropertyAccessFromIndexSignature": false,
+     "sourceMap": true,
+     "declarationMap": true,
+     "resolveJsonModule": true,
+     "noImplicitOverride": true,
+     "noImplicitThis": true,
+     "outDir": "<root>/test/esm-only/dist",
+     "rootDir": "<root>/test/esm-only/src",
+     "emitDeclarationOnly": false
+   }
+»  Skipping CJS build (cjs: false)
+»  Building ESM...
+»  [dryrun] Writing files (4 total)...
+     ./dist/index.d.ts
+     ./dist/index.d.ts.map
+     ./dist/index.js
+     ./dist/index.js.map
+»  [dryrun] Updating package.json...
+»  Setting "main": "./dist/index.cjs"
+»  Setting "module": "./dist/index.js"
+»  Setting "types": "./dist/index.d.ts"
+»  Setting "exports": {
+     ".": {
+       "types": "./dist/index.d.ts",
+       "import": "./dist/index.js"
+     }
+   }
+»  [dryrun] Skipping package.json modification
+»  Build complete!",
+}
+`;
+
 exports[`zshy with different tsconfig configurations > should work with basic.test.tsconfig.json 1`] = `
 {
   "exitCode": 0,
@@ -11,7 +196,7 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
 »  Verbose mode enabled
 »  Detected package manager: <pm>
 »  Build will fail only on errors (default)
-»  Detected project root: <root>/test
+»  Detected project root: <root>/test/basic
 »  Reading package.json from ./package.json
 »  Parsed zshy config: {
      "exports": {
@@ -29,10 +214,7 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
        "./default-const": "./src/default-const.ts",
        "./default-literal": "./src/default-literal.ts"
      },
-     "bin": "./src/index.ts",
-     "sourceDialects": [
-       "@zod/source"
-     ]
+     "bin": "./src/index.ts"
    }
 »  Reading tsconfig from ./tsconfig.basic.json
 »  Determining entrypoints...
@@ -112,8 +294,8 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
      "resolveJsonModule": true,
      "noImplicitOverride": true,
      "noImplicitThis": true,
-     "outDir": "<root>/test/dist",
-     "rootDir": "<root>/test/src",
+     "outDir": "<root>/test/basic/dist",
+     "rootDir": "<root>/test/basic/src",
      "emitDeclarationOnly": false
    }
 »  Building CJS... (rewriting .ts -> .cjs/.d.cts)
@@ -252,89 +434,181 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
      ./dist/utils.d.ts.map
      ./dist/utils.js
      ./dist/utils.js.map
-»  Updating package.json#/exports...
-»  Generated "exports": {
+»  Updating package.json...
+»  Setting "main": "./dist/index.cjs"
+»  Setting "module": "./dist/index.js"
+»  Setting "types": "./dist/index.d.cts"
+»  Setting "exports": {
      ".": {
-       "@zod/source": "./src/index.ts",
        "types": "./dist/index.d.cts",
        "import": "./dist/index.js",
        "require": "./dist/index.cjs"
      },
      "./hello": {
-       "@zod/source": "./src/hello.ts",
        "types": "./dist/hello.d.cts",
        "import": "./dist/hello.js",
        "require": "./dist/hello.cjs"
      },
      "./utils": {
-       "@zod/source": "./src/utils.ts",
        "types": "./dist/utils.d.cts",
        "import": "./dist/utils.js",
        "require": "./dist/utils.cjs"
      },
      "./plugins": {
-       "@zod/source": "./src/plugins/index.ts",
        "types": "./dist/plugins/index.d.cts",
        "import": "./dist/plugins/index.js",
        "require": "./dist/plugins/index.cjs"
      },
      "./plugins/*": {
-       "@zod/source": "./src/plugins/**/*",
        "types": "./dist/plugins/*",
        "import": "./dist/plugins/*",
        "require": "./dist/plugins/*"
      },
      "./default-function": {
-       "@zod/source": "./src/default-function.ts",
        "types": "./dist/default-function.d.cts",
        "import": "./dist/default-function.js",
        "require": "./dist/default-function.cjs"
      },
      "./default-class": {
-       "@zod/source": "./src/default-class.ts",
        "types": "./dist/default-class.d.cts",
        "import": "./dist/default-class.js",
        "require": "./dist/default-class.cjs"
      },
      "./default-object": {
-       "@zod/source": "./src/default-object.ts",
        "types": "./dist/default-object.d.cts",
        "import": "./dist/default-object.js",
        "require": "./dist/default-object.cjs"
      },
      "./default-arrow": {
-       "@zod/source": "./src/default-arrow.ts",
        "types": "./dist/default-arrow.d.cts",
        "import": "./dist/default-arrow.js",
        "require": "./dist/default-arrow.cjs"
      },
      "./default-with-named": {
-       "@zod/source": "./src/default-with-named.ts",
        "types": "./dist/default-with-named.d.cts",
        "import": "./dist/default-with-named.js",
        "require": "./dist/default-with-named.cjs"
      },
      "./default-export-equals": {
-       "@zod/source": "./src/default-export-equals.ts",
        "types": "./dist/default-export-equals.d.cts",
        "import": "./dist/default-export-equals.js",
        "require": "./dist/default-export-equals.cjs"
      },
      "./default-const": {
-       "@zod/source": "./src/default-const.ts",
        "types": "./dist/default-const.d.cts",
        "import": "./dist/default-const.js",
        "require": "./dist/default-const.cjs"
      },
      "./default-literal": {
-       "@zod/source": "./src/default-literal.ts",
        "types": "./dist/default-literal.d.cts",
        "import": "./dist/default-literal.js",
        "require": "./dist/default-literal.cjs"
      }
    }
 »  Updating package.json#/bin...
-»  Generated "bin": "./dist/index.cjs"
+»  Setting "bin": "./dist/index.cjs"
+»  Build complete!",
+}
+`;
+
+exports[`zshy with different tsconfig configurations > should work with custom conditions 1`] = `
+{
+  "exitCode": 0,
+  "stderr": "",
+  "stdout": "╔═══════════════════════════════════════════════╗
+   ║ zshy » the bundler-free TypeScript build tool ║
+   ╚═══════════════════════════════════════════════╝
+»  Starting build...
+»  Verbose mode enabled
+»  Detected package manager: <pm>
+»  Dry run mode enabled. No files will be written or modified.
+»  Build will fail only on errors (default)
+»  Detected project root: <root>/test/custom-conditions
+»  Reading package.json from ./package.json
+»  Parsed zshy config: {
+     "exports": {
+       ".": "./src/index.ts",
+       "./utils": "./src/utils.ts"
+     },
+     "conditions": {
+       "custom-esm": "esm",
+       "custom-cjs": "cjs",
+       "custom-src": "src"
+     }
+   }
+»  Reading tsconfig from ./tsconfig.basic.json
+»  Determining entrypoints...
+   ╔════════════════════════════════╤════════════════╗
+   ║ Subpath                        │ Entrypoint     ║
+   ╟────────────────────────────────┼────────────────╢
+   ║ "custom-conditions-test"       │ ./src/index.ts ║
+   ║ "custom-conditions-test/utils" │ ./src/utils.ts ║
+   ╚════════════════════════════════╧════════════════╝
+»  Resolved build paths:
+   ╔══════════╤═══════════════╗
+   ║ Location │ Resolved path ║
+   ╟──────────┼───────────────╢
+   ║ rootDir  │ ./src         ║
+   ║ outDir   │ ./dist        ║
+   ╚══════════╧═══════════════╝
+»  Package is an ES module (package.json#/type is "module")
+»  [dryrun] Cleaning up outDir...
+»  [dryrun] Cleaning up declarationDir...
+»  Resolved entrypoints: [
+     "./src/index.ts",
+     "./src/utils.ts"
+   ]
+»  Resolved compilerOptions: {
+     "target": "ES2020",
+     "module": "ESNext",
+     "moduleResolution": "Bundler",
+     "declaration": true,
+     "outDir": "<root>/test/custom-conditions/dist",
+     "rootDir": "<root>/test/custom-conditions/src",
+     "strict": true,
+     "esModuleInterop": true,
+     "skipLibCheck": true,
+     "forceConsistentCasingInFileNames": true,
+     "noEmit": false,
+     "emitDeclarationOnly": false,
+     "rewriteRelativeImportExtensions": true,
+     "verbatimModuleSyntax": false
+   }
+»  Building CJS... (rewriting .ts -> .cjs/.d.cts)
+»  Enabling CJS interop transform...
+»  Building ESM...
+»  [dryrun] Writing files (8 total)...
+     ./dist/index.cjs
+     ./dist/index.d.cts
+     ./dist/index.d.ts
+     ./dist/index.js
+     ./dist/utils.cjs
+     ./dist/utils.d.cts
+     ./dist/utils.d.ts
+     ./dist/utils.js
+»  [dryrun] Updating package.json...
+»  Setting "main": "./dist/index.cjs"
+»  Setting "module": "./dist/index.js"
+»  Setting "types": "./dist/index.d.cts"
+»  Setting "exports": {
+     ".": {
+       "custom-esm": "./dist/index.js",
+       "custom-cjs": "./dist/index.cjs",
+       "custom-src": "./src/index.ts",
+       "types": "./dist/index.d.cts",
+       "import": "./dist/index.js",
+       "require": "./dist/index.cjs"
+     },
+     "./utils": {
+       "custom-esm": "./dist/utils.js",
+       "custom-cjs": "./dist/utils.cjs",
+       "custom-src": "./src/utils.ts",
+       "types": "./dist/utils.d.cts",
+       "import": "./dist/utils.js",
+       "require": "./dist/utils.cjs"
+     }
+   }
+»  [dryrun] Skipping package.json modification
 »  Build complete!",
 }
 `;
@@ -351,7 +625,7 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
 »  Detected package manager: <pm>
 »  Dry run mode enabled. No files will be written or modified.
 »  Build will fail only on errors (default)
-»  Detected project root: <root>/test
+»  Detected project root: <root>/test/basic
 »  Reading package.json from ./package.json
 »  Parsed zshy config: {
      "exports": {
@@ -369,10 +643,7 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
        "./default-const": "./src/default-const.ts",
        "./default-literal": "./src/default-literal.ts"
      },
-     "bin": "./src/index.ts",
-     "sourceDialects": [
-       "@zod/source"
-     ]
+     "bin": "./src/index.ts"
    }
 »  Reading tsconfig from ./tsconfig.custom-paths.json
 »  Determining entrypoints...
@@ -452,9 +723,9 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
      "resolveJsonModule": true,
      "noImplicitOverride": true,
      "noImplicitThis": true,
-     "outDir": "<root>/test/build",
-     "rootDir": "<root>/test",
-     "declarationDir": "<root>/test/types",
+     "outDir": "<root>/test/basic/build",
+     "rootDir": "<root>/test/basic",
+     "declarationDir": "<root>/test/basic/types",
      "emitDeclarationOnly": false
    }
 »  Building CJS... (rewriting .ts -> .cjs/.d.cts)
@@ -593,89 +864,79 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
      ./types/src/utils.d.cts.map
      ./types/src/utils.d.ts
      ./types/src/utils.d.ts.map
-»  [dryrun] Updating package.json#/exports...
-»  Generated "exports": {
+»  [dryrun] Updating package.json...
+»  Setting "main": "./build/src/index.cjs"
+»  Setting "module": "./build/src/index.js"
+»  Setting "types": "./types/src/index.d.cts"
+»  Setting "exports": {
      ".": {
-       "@zod/source": "./src/index.ts",
        "types": "./types/src/index.d.cts",
        "import": "./build/src/index.js",
        "require": "./build/src/index.cjs"
      },
      "./hello": {
-       "@zod/source": "./src/hello.ts",
        "types": "./types/src/hello.d.cts",
        "import": "./build/src/hello.js",
        "require": "./build/src/hello.cjs"
      },
      "./utils": {
-       "@zod/source": "./src/utils.ts",
        "types": "./types/src/utils.d.cts",
        "import": "./build/src/utils.js",
        "require": "./build/src/utils.cjs"
      },
      "./plugins": {
-       "@zod/source": "./src/plugins/index.ts",
        "types": "./types/src/plugins/index.d.cts",
        "import": "./build/src/plugins/index.js",
        "require": "./build/src/plugins/index.cjs"
      },
      "./plugins/*": {
-       "@zod/source": "./src/plugins/**/*",
        "types": "./types/src/plugins/*",
        "import": "./build/src/plugins/*",
        "require": "./build/src/plugins/*"
      },
      "./default-function": {
-       "@zod/source": "./src/default-function.ts",
        "types": "./types/src/default-function.d.cts",
        "import": "./build/src/default-function.js",
        "require": "./build/src/default-function.cjs"
      },
      "./default-class": {
-       "@zod/source": "./src/default-class.ts",
        "types": "./types/src/default-class.d.cts",
        "import": "./build/src/default-class.js",
        "require": "./build/src/default-class.cjs"
      },
      "./default-object": {
-       "@zod/source": "./src/default-object.ts",
        "types": "./types/src/default-object.d.cts",
        "import": "./build/src/default-object.js",
        "require": "./build/src/default-object.cjs"
      },
      "./default-arrow": {
-       "@zod/source": "./src/default-arrow.ts",
        "types": "./types/src/default-arrow.d.cts",
        "import": "./build/src/default-arrow.js",
        "require": "./build/src/default-arrow.cjs"
      },
      "./default-with-named": {
-       "@zod/source": "./src/default-with-named.ts",
        "types": "./types/src/default-with-named.d.cts",
        "import": "./build/src/default-with-named.js",
        "require": "./build/src/default-with-named.cjs"
      },
      "./default-export-equals": {
-       "@zod/source": "./src/default-export-equals.ts",
        "types": "./types/src/default-export-equals.d.cts",
        "import": "./build/src/default-export-equals.js",
        "require": "./build/src/default-export-equals.cjs"
      },
      "./default-const": {
-       "@zod/source": "./src/default-const.ts",
        "types": "./types/src/default-const.d.cts",
        "import": "./build/src/default-const.js",
        "require": "./build/src/default-const.cjs"
      },
      "./default-literal": {
-       "@zod/source": "./src/default-literal.ts",
        "types": "./types/src/default-literal.d.cts",
        "import": "./build/src/default-literal.js",
        "require": "./build/src/default-literal.cjs"
      }
    }
 »  [dryrun] Updating package.json#/bin...
-»  Generated "bin": "./build/src/index.cjs"
+»  Setting "bin": "./build/src/index.cjs"
 »  [dryrun] Skipping package.json modification
 »  Build complete!",
 }
@@ -693,7 +954,7 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
 »  Detected package manager: <pm>
 »  Dry run mode enabled. No files will be written or modified.
 »  Build will fail only on errors (default)
-»  Detected project root: <root>/test
+»  Detected project root: <root>/test/basic
 »  Reading package.json from ./package.json
 »  Parsed zshy config: {
      "exports": {
@@ -711,10 +972,7 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
        "./default-const": "./src/default-const.ts",
        "./default-literal": "./src/default-literal.ts"
      },
-     "bin": "./src/index.ts",
-     "sourceDialects": [
-       "@zod/source"
-     ]
+     "bin": "./src/index.ts"
    }
 »  Reading tsconfig from ./tsconfig.flat.json
 »  You're building your code to the project root. This means your compiled files will be generated alongside your source files.
@@ -797,8 +1055,8 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
      "resolveJsonModule": true,
      "noImplicitOverride": true,
      "noImplicitThis": true,
-     "rootDir": "<root>/test/src",
-     "outDir": "<root>/test",
+     "rootDir": "<root>/test/basic/src",
+     "outDir": "<root>/test/basic",
      "emitDeclarationOnly": false
    }
 »  Building CJS... (rewriting .ts -> .cjs/.d.cts)
@@ -937,89 +1195,79 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
      ./utils.d.ts.map
      ./utils.js
      ./utils.js.map
-»  [dryrun] Updating package.json#/exports...
-»  Generated "exports": {
+»  [dryrun] Updating package.json...
+»  Setting "main": "./index.cjs"
+»  Setting "module": "./index.js"
+»  Setting "types": "./index.d.cts"
+»  Setting "exports": {
      ".": {
-       "@zod/source": "./src/index.ts",
        "types": "./index.d.cts",
        "import": "./index.js",
        "require": "./index.cjs"
      },
      "./hello": {
-       "@zod/source": "./src/hello.ts",
        "types": "./hello.d.cts",
        "import": "./hello.js",
        "require": "./hello.cjs"
      },
      "./utils": {
-       "@zod/source": "./src/utils.ts",
        "types": "./utils.d.cts",
        "import": "./utils.js",
        "require": "./utils.cjs"
      },
      "./plugins": {
-       "@zod/source": "./src/plugins/index.ts",
        "types": "./plugins/index.d.cts",
        "import": "./plugins/index.js",
        "require": "./plugins/index.cjs"
      },
      "./plugins/*": {
-       "@zod/source": "./src/plugins/**/*",
        "types": "./plugins/*",
        "import": "./plugins/*",
        "require": "./plugins/*"
      },
      "./default-function": {
-       "@zod/source": "./src/default-function.ts",
        "types": "./default-function.d.cts",
        "import": "./default-function.js",
        "require": "./default-function.cjs"
      },
      "./default-class": {
-       "@zod/source": "./src/default-class.ts",
        "types": "./default-class.d.cts",
        "import": "./default-class.js",
        "require": "./default-class.cjs"
      },
      "./default-object": {
-       "@zod/source": "./src/default-object.ts",
        "types": "./default-object.d.cts",
        "import": "./default-object.js",
        "require": "./default-object.cjs"
      },
      "./default-arrow": {
-       "@zod/source": "./src/default-arrow.ts",
        "types": "./default-arrow.d.cts",
        "import": "./default-arrow.js",
        "require": "./default-arrow.cjs"
      },
      "./default-with-named": {
-       "@zod/source": "./src/default-with-named.ts",
        "types": "./default-with-named.d.cts",
        "import": "./default-with-named.js",
        "require": "./default-with-named.cjs"
      },
      "./default-export-equals": {
-       "@zod/source": "./src/default-export-equals.ts",
        "types": "./default-export-equals.d.cts",
        "import": "./default-export-equals.js",
        "require": "./default-export-equals.cjs"
      },
      "./default-const": {
-       "@zod/source": "./src/default-const.ts",
        "types": "./default-const.d.cts",
        "import": "./default-const.js",
        "require": "./default-const.cjs"
      },
      "./default-literal": {
-       "@zod/source": "./src/default-literal.ts",
        "types": "./default-literal.d.cts",
        "import": "./default-literal.js",
        "require": "./default-literal.cjs"
      }
    }
 »  [dryrun] Updating package.json#/bin...
-»  Generated "bin": "./index.cjs"
+»  Setting "bin": "./index.cjs"
 »  [dryrun] Skipping package.json modification
 »  Build complete!",
 }

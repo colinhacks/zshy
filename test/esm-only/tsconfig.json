@@ -1,0 +1,44 @@
+{
+  "compilerOptions": {
+    // Environment setup & latest features
+    "lib": ["ESNext"],
+    "target": "es2020",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+
+    
+    "moduleDetection": "auto",
+    "allowJs": true,
+    "declaration": true,
+    "jsx": "react-jsx",
+    
+
+    // Bundler mode
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true,
+    "verbatimModuleSyntax": false,
+    "noEmit": false,
+    
+    
+    // Best practices
+    "strict": true,
+    "skipLibCheck": false,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+
+    // Some stricter flags (disabled by default)
+    "noUnusedLocals": true,
+    "noUnusedParameters": false,
+    "noPropertyAccessFromIndexSignature": false,
+
+    // Build options
+    "sourceMap": true,
+    "declarationMap": true,
+    "resolveJsonModule": true,
+    "noImplicitOverride": true,
+    "noImplicitThis": true
+  },
+  "include": ["./**/*.ts", "src/plugins/b.cts"]
+}

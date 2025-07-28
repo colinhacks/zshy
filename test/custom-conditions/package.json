@@ -1,0 +1,47 @@
+{
+  "name": "custom-conditions-test",
+  "version": "1.0.0",
+  "description": "Test fixture for zshy custom conditions",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "types": "./dist/index.d.cts",
+  "scripts": {
+    "build": "tsx ../../src/index.ts --project tsconfig.basic.json"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  },
+  "zshy": {
+    "exports": {
+      ".": "./src/index.ts",
+      "./utils": "./src/utils.ts"
+    },
+    "conditions": {
+      "custom-esm": "esm",
+      "custom-cjs": "cjs",
+      "custom-src": "src"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "module": "./dist/index.js",
+  "exports": {
+    ".": {
+      "custom-src": "./src/index.ts",
+      "custom-cjs": "./dist/index.cjs",
+      "custom-esm": "./dist/index.js",
+      "types": "./dist/index.d.cts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./utils": {
+      "custom-src": "./src/utils.ts",
+      "custom-cjs": "./dist/utils.cjs",
+      "custom-esm": "./dist/utils.js",
+      "types": "./dist/utils.d.cts",
+      "import": "./dist/utils.js",
+      "require": "./dist/utils.cjs"
+    }
+  }
+}
