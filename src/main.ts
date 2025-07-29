@@ -746,12 +746,10 @@ Examples:
     emojiLog("📦", "[noedit] Skipping modification of package.json");
   } else {
     // Generate exports based on zshy config
+    emojiLog("📦", `${prefix}Updating package.json...`);
     const newExports: Record<string, any> = {};
 
     if (config.exports) {
-      // const newExports: Record<string, any> = {};
-      emojiLog("📦", `${prefix}Updating package.json...`);
-
       for (const [exportPath, sourcePath] of Object.entries(config.exports)) {
         if (exportPath.includes("package.json")) {
           newExports[exportPath] = sourcePath;
@@ -851,7 +849,7 @@ Examples:
                 pkgJson.module = esmPath;
                 pkgJson.types = dtsPath;
               }
-              if (isVerbose && !config.noEdit) {
+              if (isVerbose) {
                 emojiLog("🔧", `Setting "main": ${formatForLog(cjsPath)}`);
                 emojiLog("🔧", `Setting "module": ${formatForLog(esmPath)}`);
                 emojiLog("🔧", `Setting "types": ${formatForLog(dtsPath)}`);
@@ -861,60 +859,57 @@ Examples:
         }
       }
 
-      if (isVerbose && !config.noEdit) {
+      pkgJson.exports = newExports;
+      if (isVerbose) {
         emojiLog("🔧", `Setting "exports": ${formatForLog(newExports)}`);
       }
+    }
 
-      ///////////////////////////////
-      ///      generate bin        ///
-      ///////////////////////////////
+    ///////////////////////////////
+    ///      generate bin        ///
+    ///////////////////////////////
 
-      // Generate bin field based on zshy bin config
-      if (config.bin) {
-        emojiLog("📦", `${prefix}Updating package.json#/bin...`);
-        const newBin: Record<string, string> = {};
+    // Generate bin field based on zshy bin config
+    if (config.bin) {
+      const newBin: Record<string, string> = {};
 
-        // Convert config.bin to object format for processing
-        const binEntries = typeof config.bin === "string" ? [[pkgJson.name, config.bin]] : Object.entries(config.bin);
+      // Convert config.bin to object format for processing
+      const binEntries = typeof config.bin === "string" ? [[pkgJson.name, config.bin]] : Object.entries(config.bin);
 
-        for (const [binName, sourcePath] of binEntries) {
-          if (typeof sourcePath === "string" && isSourceFile(sourcePath)) {
-            const absSourcePath = path.resolve(pkgJsonDir, sourcePath);
-            const relSourcePath = path.relative(rootDir, absSourcePath);
-            const absJsPath = path.resolve(outDir, relSourcePath);
-            const relJsPath = "./" + relativePosix(pkgJsonDir, absJsPath);
+      for (const [binName, sourcePath] of binEntries) {
+        if (typeof sourcePath === "string" && isSourceFile(sourcePath)) {
+          const absSourcePath = path.resolve(pkgJsonDir, sourcePath);
+          const relSourcePath = path.relative(rootDir, absSourcePath);
+          const absJsPath = path.resolve(outDir, relSourcePath);
+          const relJsPath = "./" + relativePosix(pkgJsonDir, absJsPath);
 
-            // Use ESM files for bin when CJS is skipped, otherwise use CJS
-            const binExt = skipCjs ? (isTypeModule ? ".js" : ".mjs") : isTypeModule ? ".cjs" : ".js";
-            const binPath = removeExtension(relJsPath) + binExt;
-            newBin[binName] = binPath;
-          }
-        }
-
-        // If original config.bin was a string, output as string
-        if (typeof config.bin === "string") {
-          pkgJson.bin = Object.values(newBin)[0];
-        } else {
-          // Output as object
-          pkgJson.bin = newBin;
-        }
-
-        if (isVerbose && !config.noEdit) {
-          emojiLog("🔧", `Setting "bin": ${formatForLog(pkgJson.bin)}`);
+          // Use ESM files for bin when CJS is skipped, otherwise use CJS
+          const binExt = skipCjs ? (isTypeModule ? ".js" : ".mjs") : isTypeModule ? ".cjs" : ".js";
+          const binPath = removeExtension(relJsPath) + binExt;
+          newBin[binName] = binPath;
         }
       }
 
+      // If original config.bin was a string, output as string
+      if (typeof config.bin === "string") {
+        pkgJson.bin = Object.values(newBin)[0];
+      } else {
+        // Output as object
+        pkgJson.bin = newBin;
+      }
+
+      if (isVerbose) {
+        emojiLog("🔧", `Setting "bin": ${formatForLog(pkgJson.bin)}`);
+      }
+    }
+
+    if (isDryRun) {
       ///////////////////////////////
       ///     write pkg json      ///
       ///////////////////////////////
-
-      if (isDryRun) {
-        emojiLog("📦", "[dryrun] Skipping package.json modification");
-      } else if (config.noEdit) {
-        emojiLog("📦", "[noedit] Skipping package.json modification");
-      } else {
-        fs.writeFileSync(packageJsonPath, JSON.stringify(pkgJson, null, indent) + "\n");
-      }
+      emojiLog("📦", "[dryrun] Skipping package.json modification");
+    } else {
+      fs.writeFileSync(packageJsonPath, JSON.stringify(pkgJson, null, indent) + "\n");
     }
   }
 
