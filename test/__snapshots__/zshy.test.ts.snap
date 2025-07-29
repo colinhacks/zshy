@@ -209,6 +209,7 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
        "./default-object": "./src/default-object.ts",
        "./default-arrow": "./src/default-arrow.ts",
        "./default-with-named": "./src/default-with-named.ts",
+       "./default-with-export-star": "./src/default-with-export-star.ts",
        "./default-export-equals": "./src/default-export-equals.ts",
        "./default-const": "./src/default-const.ts",
        "./default-literal": "./src/default-literal.ts"
@@ -218,24 +219,25 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
 »  Reading tsconfig from ./tsconfig.basic.json
 »  Determining entrypoints...
 »  Matching glob: ./src/plugins/**/*.{ts,tsx,mts,cts}
-   ╔════════════════════════════════╤════════════════════════════════╗
-   ║ Subpath                        │ Entrypoint                     ║
-   ╟────────────────────────────────┼────────────────────────────────╢
-   ║ "my-pkg"                       │ ./src/index.ts                 ║
-   ║ "my-pkg/hello"                 │ ./src/hello.ts                 ║
-   ║ "my-pkg/utils"                 │ ./src/utils.ts                 ║
-   ║ "my-pkg/plugins"               │ ./src/plugins/index.ts         ║
-   ║ "my-pkg/plugins/*"             │ ./src/plugins/**/* (5 matches) ║
-   ║ "my-pkg/default-function"      │ ./src/default-function.ts      ║
-   ║ "my-pkg/default-class"         │ ./src/default-class.ts         ║
-   ║ "my-pkg/default-object"        │ ./src/default-object.ts        ║
-   ║ "my-pkg/default-arrow"         │ ./src/default-arrow.ts         ║
-   ║ "my-pkg/default-with-named"    │ ./src/default-with-named.ts    ║
-   ║ "my-pkg/default-export-equals" │ ./src/default-export-equals.ts ║
-   ║ "my-pkg/default-const"         │ ./src/default-const.ts         ║
-   ║ "my-pkg/default-literal"       │ ./src/default-literal.ts       ║
-   ║ bin:my-pkg                     │ ./src/index.ts                 ║
-   ╚════════════════════════════════╧════════════════════════════════╝
+   ╔═══════════════════════════════════╤═══════════════════════════════════╗
+   ║ Subpath                           │ Entrypoint                        ║
+   ╟───────────────────────────────────┼───────────────────────────────────╢
+   ║ "my-pkg"                          │ ./src/index.ts                    ║
+   ║ "my-pkg/hello"                    │ ./src/hello.ts                    ║
+   ║ "my-pkg/utils"                    │ ./src/utils.ts                    ║
+   ║ "my-pkg/plugins"                  │ ./src/plugins/index.ts            ║
+   ║ "my-pkg/plugins/*"                │ ./src/plugins/**/* (5 matches)    ║
+   ║ "my-pkg/default-function"         │ ./src/default-function.ts         ║
+   ║ "my-pkg/default-class"            │ ./src/default-class.ts            ║
+   ║ "my-pkg/default-object"           │ ./src/default-object.ts           ║
+   ║ "my-pkg/default-arrow"            │ ./src/default-arrow.ts            ║
+   ║ "my-pkg/default-with-named"       │ ./src/default-with-named.ts       ║
+   ║ "my-pkg/default-with-export-star" │ ./src/default-with-export-star.ts ║
+   ║ "my-pkg/default-export-equals"    │ ./src/default-export-equals.ts    ║
+   ║ "my-pkg/default-const"            │ ./src/default-const.ts            ║
+   ║ "my-pkg/default-literal"          │ ./src/default-literal.ts          ║
+   ║ bin:my-pkg                        │ ./src/index.ts                    ║
+   ╚═══════════════════════════════════╧═══════════════════════════════════╝
 »  Resolved build paths:
    ╔══════════╤═══════════════╗
    ║ Location │ Resolved path ║
@@ -260,6 +262,7 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
      "./src/default-object.ts",
      "./src/default-arrow.ts",
      "./src/default-with-named.ts",
+     "./src/default-with-export-star.ts",
      "./src/default-export-equals.ts",
      "./src/default-const.ts",
      "./src/default-literal.ts"
@@ -307,7 +310,7 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
 »  Copied asset: ./src/plugins/plugin-b.css → ./dist/plugins/plugin-b.css
 »  Building ESM...
 »  Found 5 asset import(s), copying to output directory...
-»  Writing files (125 total)...
+»  Writing files (133 total)...
      ./dist/assets/README.md
      ./dist/assets/config.json
      ./dist/assets/styles.css
@@ -367,6 +370,14 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
      ./dist/default-object.d.ts.map
      ./dist/default-object.js
      ./dist/default-object.js.map
+     ./dist/default-with-export-star.cjs
+     ./dist/default-with-export-star.cjs.map
+     ./dist/default-with-export-star.d.cts
+     ./dist/default-with-export-star.d.cts.map
+     ./dist/default-with-export-star.d.ts
+     ./dist/default-with-export-star.d.ts.map
+     ./dist/default-with-export-star.js
+     ./dist/default-with-export-star.js.map
      ./dist/default-with-named.cjs
      ./dist/default-with-named.cjs.map
      ./dist/default-with-named.d.cts
@@ -487,6 +498,11 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
        "types": "./dist/default-with-named.d.cts",
        "import": "./dist/default-with-named.js",
        "require": "./dist/default-with-named.cjs"
+     },
+     "./default-with-export-star": {
+       "types": "./dist/default-with-export-star.d.cts",
+       "import": "./dist/default-with-export-star.js",
+       "require": "./dist/default-with-export-star.cjs"
      },
      "./default-export-equals": {
        "types": "./dist/default-export-equals.d.cts",
@@ -637,6 +653,7 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
        "./default-object": "./src/default-object.ts",
        "./default-arrow": "./src/default-arrow.ts",
        "./default-with-named": "./src/default-with-named.ts",
+       "./default-with-export-star": "./src/default-with-export-star.ts",
        "./default-export-equals": "./src/default-export-equals.ts",
        "./default-const": "./src/default-const.ts",
        "./default-literal": "./src/default-literal.ts"
@@ -646,24 +663,25 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
 »  Reading tsconfig from ./tsconfig.custom-paths.json
 »  Determining entrypoints...
 »  Matching glob: ./src/plugins/**/*.{ts,tsx,mts,cts}
-   ╔════════════════════════════════╤════════════════════════════════╗
-   ║ Subpath                        │ Entrypoint                     ║
-   ╟────────────────────────────────┼────────────────────────────────╢
-   ║ "my-pkg"                       │ ./src/index.ts                 ║
-   ║ "my-pkg/hello"                 │ ./src/hello.ts                 ║
-   ║ "my-pkg/utils"                 │ ./src/utils.ts                 ║
-   ║ "my-pkg/plugins"               │ ./src/plugins/index.ts         ║
-   ║ "my-pkg/plugins/*"             │ ./src/plugins/**/* (5 matches) ║
-   ║ "my-pkg/default-function"      │ ./src/default-function.ts      ║
-   ║ "my-pkg/default-class"         │ ./src/default-class.ts         ║
-   ║ "my-pkg/default-object"        │ ./src/default-object.ts        ║
-   ║ "my-pkg/default-arrow"         │ ./src/default-arrow.ts         ║
-   ║ "my-pkg/default-with-named"    │ ./src/default-with-named.ts    ║
-   ║ "my-pkg/default-export-equals" │ ./src/default-export-equals.ts ║
-   ║ "my-pkg/default-const"         │ ./src/default-const.ts         ║
-   ║ "my-pkg/default-literal"       │ ./src/default-literal.ts       ║
-   ║ bin:my-pkg                     │ ./src/index.ts                 ║
-   ╚════════════════════════════════╧════════════════════════════════╝
+   ╔═══════════════════════════════════╤═══════════════════════════════════╗
+   ║ Subpath                           │ Entrypoint                        ║
+   ╟───────────────────────────────────┼───────────────────────────────────╢
+   ║ "my-pkg"                          │ ./src/index.ts                    ║
+   ║ "my-pkg/hello"                    │ ./src/hello.ts                    ║
+   ║ "my-pkg/utils"                    │ ./src/utils.ts                    ║
+   ║ "my-pkg/plugins"                  │ ./src/plugins/index.ts            ║
+   ║ "my-pkg/plugins/*"                │ ./src/plugins/**/* (5 matches)    ║
+   ║ "my-pkg/default-function"         │ ./src/default-function.ts         ║
+   ║ "my-pkg/default-class"            │ ./src/default-class.ts            ║
+   ║ "my-pkg/default-object"           │ ./src/default-object.ts           ║
+   ║ "my-pkg/default-arrow"            │ ./src/default-arrow.ts            ║
+   ║ "my-pkg/default-with-named"       │ ./src/default-with-named.ts       ║
+   ║ "my-pkg/default-with-export-star" │ ./src/default-with-export-star.ts ║
+   ║ "my-pkg/default-export-equals"    │ ./src/default-export-equals.ts    ║
+   ║ "my-pkg/default-const"            │ ./src/default-const.ts            ║
+   ║ "my-pkg/default-literal"          │ ./src/default-literal.ts          ║
+   ║ bin:my-pkg                        │ ./src/index.ts                    ║
+   ╚═══════════════════════════════════╧═══════════════════════════════════╝
 »  Resolved build paths:
    ╔════════════════╤═══════════════╗
    ║ Location       │ Resolved path ║
@@ -688,6 +706,7 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
      "./src/default-object.ts",
      "./src/default-arrow.ts",
      "./src/default-with-named.ts",
+     "./src/default-with-export-star.ts",
      "./src/default-export-equals.ts",
      "./src/default-const.ts",
      "./src/default-literal.ts"
@@ -736,7 +755,7 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
 »  [dryrun] Copied asset: ./src/plugins/plugin-b.css → ./build/src/plugins/plugin-b.css
 »  Building ESM...
 »  Found 5 asset import(s), copying to output directory...
-»  [dryrun] Writing files (125 total)...
+»  [dryrun] Writing files (133 total)...
      ./build/src/assets/README.md
      ./build/src/assets/config.json
      ./build/src/assets/styles.css
@@ -768,6 +787,10 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
      ./build/src/default-object.cjs.map
      ./build/src/default-object.js
      ./build/src/default-object.js.map
+     ./build/src/default-with-export-star.cjs
+     ./build/src/default-with-export-star.cjs.map
+     ./build/src/default-with-export-star.js
+     ./build/src/default-with-export-star.js.map
      ./build/src/default-with-named.cjs
      ./build/src/default-with-named.cjs.map
      ./build/src/default-with-named.js
@@ -830,6 +853,10 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
      ./types/src/default-object.d.cts.map
      ./types/src/default-object.d.ts
      ./types/src/default-object.d.ts.map
+     ./types/src/default-with-export-star.d.cts
+     ./types/src/default-with-export-star.d.cts.map
+     ./types/src/default-with-export-star.d.ts
+     ./types/src/default-with-export-star.d.ts.map
      ./types/src/default-with-named.d.cts
      ./types/src/default-with-named.d.cts.map
      ./types/src/default-with-named.d.ts
@@ -917,6 +944,11 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
        "import": "./build/src/default-with-named.js",
        "require": "./build/src/default-with-named.cjs"
      },
+     "./default-with-export-star": {
+       "types": "./types/src/default-with-export-star.d.cts",
+       "import": "./build/src/default-with-export-star.js",
+       "require": "./build/src/default-with-export-star.cjs"
+     },
      "./default-export-equals": {
        "types": "./types/src/default-export-equals.d.cts",
        "import": "./build/src/default-export-equals.js",
@@ -965,6 +997,7 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
        "./default-object": "./src/default-object.ts",
        "./default-arrow": "./src/default-arrow.ts",
        "./default-with-named": "./src/default-with-named.ts",
+       "./default-with-export-star": "./src/default-with-export-star.ts",
        "./default-export-equals": "./src/default-export-equals.ts",
        "./default-const": "./src/default-const.ts",
        "./default-literal": "./src/default-literal.ts"
@@ -977,24 +1010,25 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
      "files": ["**/*.js", "**/*.mjs", "**/*.cjs", "**/*.d.ts", "**/*.d.mts", "**/*.d.cts"]
 »  Determining entrypoints...
 »  Matching glob: ./src/plugins/**/*.{ts,tsx,mts,cts}
-   ╔════════════════════════════════╤════════════════════════════════╗
-   ║ Subpath                        │ Entrypoint                     ║
-   ╟────────────────────────────────┼────────────────────────────────╢
-   ║ "my-pkg"                       │ ./src/index.ts                 ║
-   ║ "my-pkg/hello"                 │ ./src/hello.ts                 ║
-   ║ "my-pkg/utils"                 │ ./src/utils.ts                 ║
-   ║ "my-pkg/plugins"               │ ./src/plugins/index.ts         ║
-   ║ "my-pkg/plugins/*"             │ ./src/plugins/**/* (5 matches) ║
-   ║ "my-pkg/default-function"      │ ./src/default-function.ts      ║
-   ║ "my-pkg/default-class"         │ ./src/default-class.ts         ║
-   ║ "my-pkg/default-object"        │ ./src/default-object.ts        ║
-   ║ "my-pkg/default-arrow"         │ ./src/default-arrow.ts         ║
-   ║ "my-pkg/default-with-named"    │ ./src/default-with-named.ts    ║
-   ║ "my-pkg/default-export-equals" │ ./src/default-export-equals.ts ║
-   ║ "my-pkg/default-const"         │ ./src/default-const.ts         ║
-   ║ "my-pkg/default-literal"       │ ./src/default-literal.ts       ║
-   ║ bin:my-pkg                     │ ./src/index.ts                 ║
-   ╚════════════════════════════════╧════════════════════════════════╝
+   ╔═══════════════════════════════════╤═══════════════════════════════════╗
+   ║ Subpath                           │ Entrypoint                        ║
+   ╟───────────────────────────────────┼───────────────────────────────────╢
+   ║ "my-pkg"                          │ ./src/index.ts                    ║
+   ║ "my-pkg/hello"                    │ ./src/hello.ts                    ║
+   ║ "my-pkg/utils"                    │ ./src/utils.ts                    ║
+   ║ "my-pkg/plugins"                  │ ./src/plugins/index.ts            ║
+   ║ "my-pkg/plugins/*"                │ ./src/plugins/**/* (5 matches)    ║
+   ║ "my-pkg/default-function"         │ ./src/default-function.ts         ║
+   ║ "my-pkg/default-class"            │ ./src/default-class.ts            ║
+   ║ "my-pkg/default-object"           │ ./src/default-object.ts           ║
+   ║ "my-pkg/default-arrow"            │ ./src/default-arrow.ts            ║
+   ║ "my-pkg/default-with-named"       │ ./src/default-with-named.ts       ║
+   ║ "my-pkg/default-with-export-star" │ ./src/default-with-export-star.ts ║
+   ║ "my-pkg/default-export-equals"    │ ./src/default-export-equals.ts    ║
+   ║ "my-pkg/default-const"            │ ./src/default-const.ts            ║
+   ║ "my-pkg/default-literal"          │ ./src/default-literal.ts          ║
+   ║ bin:my-pkg                        │ ./src/index.ts                    ║
+   ╚═══════════════════════════════════╧═══════════════════════════════════╝
 »  Resolved build paths:
    ╔══════════╤═══════════════╗
    ║ Location │ Resolved path ║
@@ -1019,6 +1053,7 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
      "./src/default-object.ts",
      "./src/default-arrow.ts",
      "./src/default-with-named.ts",
+     "./src/default-with-export-star.ts",
      "./src/default-export-equals.ts",
      "./src/default-const.ts",
      "./src/default-literal.ts"
@@ -1066,7 +1101,7 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
 »  [dryrun] Copied asset: ./src/plugins/plugin-b.css → ./plugins/plugin-b.css
 »  Building ESM...
 »  Found 5 asset import(s), copying to output directory...
-»  [dryrun] Writing files (125 total)...
+»  [dryrun] Writing files (133 total)...
      ./assets/README.md
      ./assets/config.json
      ./assets/styles.css
@@ -1126,6 +1161,14 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
      ./default-object.d.ts.map
      ./default-object.js
      ./default-object.js.map
+     ./default-with-export-star.cjs
+     ./default-with-export-star.cjs.map
+     ./default-with-export-star.d.cts
+     ./default-with-export-star.d.cts.map
+     ./default-with-export-star.d.ts
+     ./default-with-export-star.d.ts.map
+     ./default-with-export-star.js
+     ./default-with-export-star.js.map
      ./default-with-named.cjs
      ./default-with-named.cjs.map
      ./default-with-named.d.cts
@@ -1246,6 +1289,11 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
        "types": "./default-with-named.d.cts",
        "import": "./default-with-named.js",
        "require": "./default-with-named.cjs"
+     },
+     "./default-with-export-star": {
+       "types": "./default-with-export-star.d.cts",
+       "import": "./default-with-export-star.js",
+       "require": "./default-with-export-star.cjs"
      },
      "./default-export-equals": {
        "types": "./default-export-equals.d.cts",
