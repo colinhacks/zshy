@@ -9,20 +9,10 @@
 <br/>
 
 <p align="center">
-<!-- <a href="https://github.com/colinhacks/zshy/actions?query=branch%3Amain"><img src="https://github.com/colinhacks/zshy/actions/workflows/test.yml/badge.svg?event=push&branch=main" alt="zshy CI status" /></a> -->
 <a href="https://opensource.org/licenses/MIT" rel="nofollow"><img src="https://img.shields.io/github/license/colinhacks/zshy" alt="License"></a>
 <a href="https://www.npmjs.com/package/zshy" rel="nofollow"><img src="https://img.shields.io/npm/dw/zshy.svg" alt="npm"></a>
 <a href="https://github.com/colinhacks/zshy" rel="nofollow"><img src="https://img.shields.io/github/stars/colinhacks/zshy" alt="stars"></a>
 </p>
-
-<!-- <div align="center">
-  <a href="https://github.com/colinhacks/zshy">GitHub</a>
-  <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
-  <a href="https://twitter.com/colinhacks">𝕏</a>
-  <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
-  <a href="https://bsky.app/profile/colinhacks.com">Bluesky</a>
-  <br />
-</div> -->
 
 <br/>
 <br/>
@@ -34,12 +24,12 @@
 
 `zshy` (zee-shy) is a bundler-free batteries-included build tool for transpiling TypeScript libraries. It was originally created as an internal build tool for [Zod](https://github.com/colinhacks/zod) but is now available as a general-purpose tool for TypeScript libraries.
 
-- 🧱 **Dual-module builds** — Builds ESM and CJS outputs from a single TypeScript source file
 - 👑 **Powered by `tsc`** — The gold standard for TypeScript transpilation
 - 📦 **Bundler-free** — No bundler or bundler configs involved
 - 🟦 **No config file** — Reads from your `package.json` and `tsconfig.json`
 - 📝 **Declarative entrypoint map** — Specify your TypeScript entrypoints in `package.json#/zshy`
 - 🤖 **Auto-generated `"exports"`** — Writes `"exports"` map directly into your `package.json`
+- 🧱 **Dual-module builds** — Builds ESM and CJS outputs from a single TypeScript source file
 - 📂 **Unopinionated** — Use any file structure or import extension syntax you like
 - 📦 **Asset handling** — Non-JS assets are copied to the output directory
 - ⚛️ **Supports `.tsx`** — Rewrites to `.js/.cjs/.mjs` per your `tsconfig.json#/jsx*` settings
