@@ -58,11 +58,14 @@ export const createCjsInteropDeclarationTransformer =
               (m) => m.kind !== ts.SyntaxKind.ExportKeyword && m.kind !== ts.SyntaxKind.DefaultKeyword
             );
 
+            // Add declare modifier for declaration files
+            const declareModifiers = [factory.createModifier(ts.SyntaxKind.DeclareKeyword), ...(modifiers || [])];
+
             // rebuild the declaration without export/default
             let decl: ts.Statement;
             if (ts.isFunctionDeclaration(stmt)) {
               decl = factory.createFunctionDeclaration(
-                modifiers,
+                declareModifiers,
                 stmt.asteriskToken,
                 name,
                 stmt.typeParameters,
@@ -72,7 +75,7 @@ export const createCjsInteropDeclarationTransformer =
               );
             } else if (ts.isClassDeclaration(stmt)) {
               decl = factory.createClassDeclaration(
-                modifiers,
+                declareModifiers,
                 name,
                 stmt.typeParameters,
                 stmt.heritageClauses,
@@ -80,16 +83,16 @@ export const createCjsInteropDeclarationTransformer =
               );
             } else if (ts.isInterfaceDeclaration(stmt)) {
               decl = factory.createInterfaceDeclaration(
-                modifiers,
+                declareModifiers,
                 name,
                 stmt.typeParameters,
                 stmt.heritageClauses,
                 stmt.members
               );
             } else if (ts.isTypeAliasDeclaration(stmt)) {
-              decl = factory.createTypeAliasDeclaration(modifiers, name, stmt.typeParameters, stmt.type);
+              decl = factory.createTypeAliasDeclaration(declareModifiers, name, stmt.typeParameters, stmt.type);
             } else if (ts.isEnumDeclaration(stmt)) {
-              decl = factory.createEnumDeclaration(modifiers, name, stmt.members);
+              decl = factory.createEnumDeclaration(declareModifiers, name, stmt.members);
             } else {
               // unexpected — just keep original
               outStmts.push(stmt);

@@ -1,4 +1,4 @@
-class DefaultClass {
+declare class DefaultClass {
     constructor();
 }
 export = DefaultClass;
