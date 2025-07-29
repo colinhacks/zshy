@@ -504,7 +504,6 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
        "require": "./dist/default-literal.cjs"
      }
    }
-»  Updating package.json#/bin...
 »  Setting "bin": "./dist/index.cjs"
 »  Build complete!",
 }
@@ -934,7 +933,6 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
        "require": "./build/src/default-literal.cjs"
      }
    }
-»  [dryrun] Updating package.json#/bin...
 »  Setting "bin": "./build/src/index.cjs"
 »  [dryrun] Skipping package.json modification
 »  Build complete!",
@@ -1265,7 +1263,6 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
        "require": "./default-literal.cjs"
      }
    }
-»  [dryrun] Updating package.json#/bin...
 »  Setting "bin": "./index.cjs"
 »  [dryrun] Skipping package.json modification
 »  Build complete!",
