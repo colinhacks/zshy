@@ -39,6 +39,5 @@
     "resolveJsonModule": true,
     "noImplicitOverride": true,
     "noImplicitThis": true
-  },
-  "include": ["./**/*.ts", "src/plugins/b.cts"]
+  }
 }

@@ -28,6 +28,10 @@ export const analyzeExports = (
     else if (ts.isExportDeclaration(node) && node.exportClause) {
       hasNamedExports = true;
     }
+    // 3a) export * from "module" - also counts as named exports
+    else if (ts.isExportDeclaration(node) && !node.exportClause && node.moduleSpecifier) {
+      hasNamedExports = true;
+    }
     // 4) named `export const/let/var …`
     else if (ts.isVariableStatement(node) && node.modifiers?.some((m) => m.kind === ts.SyntaxKind.ExportKeyword)) {
       hasNamedExports = true;

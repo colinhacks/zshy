@@ -24,6 +24,7 @@
       "./default-object": "./src/default-object.ts",
       "./default-arrow": "./src/default-arrow.ts",
       "./default-with-named": "./src/default-with-named.ts",
+      "./default-with-export-star": "./src/default-with-export-star.ts",
       "./default-export-equals": "./src/default-export-equals.ts",
       "./default-const": "./src/default-const.ts",
       "./default-literal": "./src/default-literal.ts"
@@ -84,6 +85,11 @@
       "types": "./dist/default-with-named.d.cts",
       "import": "./dist/default-with-named.js",
       "require": "./dist/default-with-named.cjs"
+    },
+    "./default-with-export-star": {
+      "types": "./dist/default-with-export-star.d.cts",
+      "import": "./dist/default-with-export-star.js",
+      "require": "./dist/default-with-export-star.cjs"
     },
     "./default-export-equals": {
       "types": "./dist/default-export-equals.d.cts",
