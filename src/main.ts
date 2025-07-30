@@ -388,6 +388,7 @@ Examples:
     emitDeclarationOnly: false,
     rewriteRelativeImportExtensions: true,
     verbatimModuleSyntax: false,
+    composite: false,
   };
 
   if (relOutDir === "") {

@@ -70,7 +70,8 @@ exports[`zshy with different tsconfig configurations > should not edit package.j
      "noImplicitThis": true,
      "outDir": "<root>/test/no-edit-package-json/dist",
      "rootDir": "<root>/test/no-edit-package-json/src",
-     "emitDeclarationOnly": false
+     "emitDeclarationOnly": false,
+     "composite": false
    }
 »  Building CJS... (rewriting .ts -> .cjs/.d.cts)
 »  Enabling CJS interop transform...
@@ -160,7 +161,8 @@ exports[`zshy with different tsconfig configurations > should skip CJS build whe
      "noImplicitThis": true,
      "outDir": "<root>/test/esm-only/dist",
      "rootDir": "<root>/test/esm-only/src",
-     "emitDeclarationOnly": false
+     "emitDeclarationOnly": false,
+     "composite": false
    }
 »  Skipping CJS build (cjs: false)
 »  Building ESM...
@@ -298,6 +300,7 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
      "noImplicitThis": true,
      "outDir": "<root>/test/basic/dist",
      "rootDir": "<root>/test/basic/src",
+     "composite": false,
      "emitDeclarationOnly": false
    }
 »  Building CJS... (rewriting .ts -> .cjs/.d.cts)
@@ -586,7 +589,8 @@ exports[`zshy with different tsconfig configurations > should work with custom c
      "noEmit": false,
      "emitDeclarationOnly": false,
      "rewriteRelativeImportExtensions": true,
-     "verbatimModuleSyntax": false
+     "verbatimModuleSyntax": false,
+     "composite": false
    }
 »  Building CJS... (rewriting .ts -> .cjs/.d.cts)
 »  Enabling CJS interop transform...
@@ -743,7 +747,8 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
      "outDir": "<root>/test/basic/build",
      "rootDir": "<root>/test/basic",
      "declarationDir": "<root>/test/basic/types",
-     "emitDeclarationOnly": false
+     "emitDeclarationOnly": false,
+     "composite": false
    }
 »  Building CJS... (rewriting .ts -> .cjs/.d.cts)
 »  Enabling CJS interop transform...
@@ -1089,7 +1094,8 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
      "noImplicitThis": true,
      "rootDir": "<root>/test/basic/src",
      "outDir": "<root>/test/basic",
-     "emitDeclarationOnly": false
+     "emitDeclarationOnly": false,
+     "composite": false
    }
 »  Building CJS... (rewriting .ts -> .cjs/.d.cts)
 »  Enabling CJS interop transform...

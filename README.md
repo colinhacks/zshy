@@ -466,6 +466,7 @@ Yes! With some strategic overrides:
 - **`declaration`/`noEmit`/`emitDeclarationOnly`**: Overridden to ensure proper output
 - **`verbatimModuleSyntax`**: Set to `false` to allow multiple build formats
 - **`esModuleInterop`**: Set to `true` (it's a best practice)
+- **`composite`**: Set to `false` to avoid resolution issues. `zshy` will build all files that are reachable from your specified entrypoints.
 
 All other options are respected as defined, though `zshy` will also set the following reasonable defaults if they are not explicitly set:
 
