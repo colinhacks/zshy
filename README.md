@@ -73,7 +73,7 @@ pnpm add --save-dev zshy
 +   "exports": {
 +     ".": "./src/index.ts",
 +     "./utils": "./src/utils.ts",
-+     "./plugins/*": "./src/plugins/*"
++     "./plugins/*": "./src/plugins/*",
 +     "./components/**/*": "./src/components/**/*"
 +   }
 + }
