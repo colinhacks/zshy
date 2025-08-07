@@ -303,14 +303,14 @@ And the generated `"exports"` map will look like this:
 
 If your package is a CLI, specify your CLI entrypoint in `package.json#/zshy/bin`. `zshy` will include this entrypoint in your builds and automatically set `"bin"` in your package.json.
 
-```jsonc
+```diff
 {
   // package.json
   "name": "my-cli",
   "version": "1.0.0",
   "type": "module",
   "zshy": {
-    "bin": "./src/cli.ts" // 👈 specify CLI entrypoint
++   "bin": "./src/cli.ts"
   }
 }
 ```
@@ -327,13 +327,17 @@ The `"bin"` field is automatically written into your `package.json`:
     "bin": "./src/cli.ts"
   },
 + "bin": {
-+   "my-cli": "./dist/cli.cjs" // CommonJS entrypoint
++   "my-cli": "./dist/cli.cjs" // CLI entrypoint)
 + }
 }
 ```
 
-For packages that expose multiple CLI tools, `"bin"` can also be an object mapping
-each command name to its source file:
+> **Note** — The `"bin"` field defaults to the CJS build unless you have disabled it with `"cjs": false`.
+
+<details>
+<summary>Multiple CLIs</summary>
+
+For packages that expose multiple CLI tools, `"bin"` can also be an object mappingeach command name to its source file:
 
 ```jsonc
 {
@@ -370,6 +374,8 @@ This generates a corresponding object `"bin"` field:
   }
 }
 ```
+
+</details>
 
 Be sure to include a [shebang](<https://en.wikipedia.org/wiki/Shebang_(Unix)>) as the first line of your CLI entrypoint file:
 
