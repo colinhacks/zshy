@@ -186,6 +186,136 @@ exports[`zshy with different tsconfig configurations > should skip CJS build whe
 }
 `;
 
+exports[`zshy with different tsconfig configurations > should support multiple bin entries 1`] = `
+{
+  "exitCode": 0,
+  "stderr": "",
+  "stdout": "╔═══════════════════════════════════════════════╗
+   ║ zshy » the bundler-free TypeScript build tool ║
+   ╚═══════════════════════════════════════════════╝
+»  Starting build...
+»  Verbose mode enabled
+»  Detected package manager: <pm>
+»  Dry run mode enabled. No files will be written or modified.
+»  Build will fail only on errors (default)
+»  Detected project root: <root>/test/multi-bin
+»  Reading package.json from ./package.json
+»  Parsed zshy config: {
+     "exports": {
+       ".": "./src/index.ts"
+     },
+     "bin": {
+       "cli-one": "./src/cli-one.ts",
+       "cli-two": "./src/cli-two.ts"
+     }
+   }
+»  Reading tsconfig from ./tsconfig.basic.json
+»  The "files" key is missing in package.json. Setting to "dist".
+»  Determining entrypoints...
+   ╔═════════════════╤══════════════════╗
+   ║ Subpath         │ Entrypoint       ║
+   ╟─────────────────┼──────────────────╢
+   ║ "multi-bin-pkg" │ ./src/index.ts   ║
+   ║ bin:cli-one     │ ./src/cli-one.ts ║
+   ║ bin:cli-two     │ ./src/cli-two.ts ║
+   ╚═════════════════╧══════════════════╝
+»  Resolved build paths:
+   ╔══════════╤═══════════════╗
+   ║ Location │ Resolved path ║
+   ╟──────────┼───────────────╢
+   ║ rootDir  │ ./src         ║
+   ║ outDir   │ ./dist        ║
+   ╚══════════╧═══════════════╝
+»  Package is an ES module (package.json#/type is "module")
+»  [dryrun] Cleaning up outDir...
+»  [dryrun] Cleaning up declarationDir...
+»  Resolved entrypoints: [
+     "./src/index.ts",
+     "./src/cli-one.ts",
+     "./src/cli-two.ts"
+   ]
+»  Resolved compilerOptions: {
+     "lib": [
+       "lib.esnext.d.ts"
+     ],
+     "target": "ES2020",
+     "module": "ESNext",
+     "moduleResolution": "Bundler",
+     "moduleDetection": 2,
+     "allowJs": true,
+     "declaration": true,
+     "jsx": 4,
+     "allowImportingTsExtensions": true,
+     "rewriteRelativeImportExtensions": true,
+     "verbatimModuleSyntax": false,
+     "noEmit": false,
+     "strict": true,
+     "skipLibCheck": true,
+     "noFallthroughCasesInSwitch": true,
+     "noUncheckedIndexedAccess": true,
+     "esModuleInterop": true,
+     "forceConsistentCasingInFileNames": true,
+     "noUnusedLocals": true,
+     "noUnusedParameters": false,
+     "noPropertyAccessFromIndexSignature": false,
+     "sourceMap": true,
+     "declarationMap": true,
+     "resolveJsonModule": true,
+     "noImplicitOverride": true,
+     "noImplicitThis": true,
+     "outDir": "<root>/test/multi-bin/dist",
+     "rootDir": "<root>/test/multi-bin/src",
+     "composite": false,
+     "emitDeclarationOnly": false
+   }
+»  Building CJS... (rewriting .ts -> .cjs/.d.cts)
+»  Enabling CJS interop transform...
+»  Building ESM...
+»  [dryrun] Writing files (24 total)...
+     ./dist/cli-one.cjs
+     ./dist/cli-one.cjs.map
+     ./dist/cli-one.d.cts
+     ./dist/cli-one.d.cts.map
+     ./dist/cli-one.d.ts
+     ./dist/cli-one.d.ts.map
+     ./dist/cli-one.js
+     ./dist/cli-one.js.map
+     ./dist/cli-two.cjs
+     ./dist/cli-two.cjs.map
+     ./dist/cli-two.d.cts
+     ./dist/cli-two.d.cts.map
+     ./dist/cli-two.d.ts
+     ./dist/cli-two.d.ts.map
+     ./dist/cli-two.js
+     ./dist/cli-two.js.map
+     ./dist/index.cjs
+     ./dist/index.cjs.map
+     ./dist/index.d.cts
+     ./dist/index.d.cts.map
+     ./dist/index.d.ts
+     ./dist/index.d.ts.map
+     ./dist/index.js
+     ./dist/index.js.map
+»  [dryrun] Updating package.json...
+»  Setting "main": "./dist/index.cjs"
+»  Setting "module": "./dist/index.js"
+»  Setting "types": "./dist/index.d.cts"
+»  Setting "exports": {
+     ".": {
+       "types": "./dist/index.d.cts",
+       "import": "./dist/index.js",
+       "require": "./dist/index.cjs"
+     }
+   }
+»  Setting "bin": {
+     "cli-one": "./dist/cli-one.cjs",
+     "cli-two": "./dist/cli-two.cjs"
+   }
+»  [dryrun] Skipping package.json modification
+»  Build complete!",
+}
+`;
+
 exports[`zshy with different tsconfig configurations > should work with basic.test.tsconfig.json 1`] = `
 {
   "exitCode": 0,

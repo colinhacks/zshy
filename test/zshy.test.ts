@@ -166,6 +166,14 @@ describe("zshy with different tsconfig configurations", () => {
     });
     expect(snapshot).toMatchSnapshot();
   });
+
+  it("should support multiple bin entries", () => {
+    const snapshot = runZshyWithTsconfig("tsconfig.basic.json", {
+      dryRun: true,
+      cwd: process.cwd() + "/test/multi-bin",
+    });
+    expect(snapshot).toMatchSnapshot();
+  });
 });
 
 function normalizeOutput(output: string): string {

@@ -1,0 +1,16 @@
+{
+  "name": "multi-bin-pkg",
+  "version": "1.0.0",
+  "description": "Test fixture for zshy with multiple CLI bins",
+  "type": "module",
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  },
+  "zshy": {
+    "exports": "./src/index.ts",
+    "bin": {
+      "cli-one": "./src/cli-one.ts",
+      "cli-two": "./src/cli-two.ts"
+    }
+  }
+}
