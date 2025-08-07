@@ -332,6 +332,45 @@ The `"bin"` field is automatically written into your `package.json`:
 }
 ```
 
+For packages that expose multiple CLI tools, `"bin"` can also be an object mapping
+each command name to its source file:
+
+```jsonc
+{
+  // package.json
+  "name": "my-cli",
+  "version": "1.0.0",
+  "type": "module",
+  "zshy": {
+    "bin": {
+      "my-cli": "./src/cli.ts",
+      "other": "./src/other.ts"
+    }
+  }
+}
+```
+
+This generates a corresponding object `"bin"` field:
+
+```diff
+{
+  // package.json
+  "name": "my-cli",
+  "version": "1.0.0",
+  "zshy": {
+    "exports": "./src/index.ts",
+    "bin": {
+      "my-cli": "./src/cli.ts",
+      "other": "./src/other.ts"
+    }
+  },
+  "bin": {
+    "my-cli": "./dist/cli.cjs",
+    "other": "./dist/other.cjs"
+  }
+}
+```
+
 Be sure to include a [shebang](<https://en.wikipedia.org/wiki/Shebang_(Unix)>) as the first line of your CLI entrypoint file:
 
 ```ts
