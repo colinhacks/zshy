@@ -335,7 +335,6 @@ exports[`zshy with different tsconfig configurations > should support tsconfig p
      }
    }
 »  Reading tsconfig from ./tsconfig.json
-»  The "files" key is missing in package.json. Setting to "dist".
 »  Determining entrypoints...
    ╔═══════════════════════╤════════════════╗
    ║ Subpath               │ Entrypoint     ║
