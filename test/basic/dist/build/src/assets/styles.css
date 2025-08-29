@@ -1,0 +1,22 @@
+/* Test CSS for asset bundling */
+.test-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f0f0f0;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.test-button {
+  background-color: #007acc;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.test-button:hover {
+  background-color: #005a99;
+}

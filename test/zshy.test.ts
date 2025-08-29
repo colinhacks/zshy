@@ -119,7 +119,10 @@ describe("zshy with different tsconfig configurations", () => {
   it("should work with basic.test.tsconfig.json", () => {
     // only run this one with dryRun: false
     // results are tracked in git
-    const snapshot = runZshyWithTsconfig("tsconfig.basic.json", { dryRun: false, cwd: process.cwd() + "/test/basic" });
+    const snapshot = runZshyWithTsconfig("tsconfig.basic.json", {
+      dryRun: false,
+      cwd: process.cwd() + "/test/basic",
+    });
 
     expect(snapshot).toMatchSnapshot();
   });
