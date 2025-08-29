@@ -135,7 +135,9 @@ describe("zshy with different tsconfig configurations", () => {
 
   it("should work with tsconfig.flat.json", () => {
     const basicCwd = process.cwd() + "/test/basic";
-    const snapshot = runZshyWithTsconfig("tsconfig.flat.json", { dryRun: false, cwd: basicCwd });
+
+    // dry-run to avoid writing to disk
+    const snapshot = runZshyWithTsconfig("tsconfig.flat.json", { dryRun: true, cwd: basicCwd });
     expect(snapshot).toMatchSnapshot();
   });
 
