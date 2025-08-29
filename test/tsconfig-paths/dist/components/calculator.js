@@ -1,5 +1,5 @@
-import { add, multiply } from "../utils/math.js";
-import { config } from "../config.js";
+import { add, multiply } from "@utils/math";
+import { config } from "@/config";
 export class Calculator {
     constructor() {
         this.name = config.appName;

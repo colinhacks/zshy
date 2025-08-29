@@ -19,7 +19,7 @@
       "lib/*": ["lib/*"],
       "~/*": ["*"],
       "$config": ["config.ts"],
-      "#helpers": ["utils/helpers.ts"],
+      "#helpers": ["./utils/helpers.ts"],
       "@utils/*": ["${configDir}/src/utils/*"]
     }
   },

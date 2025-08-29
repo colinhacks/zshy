@@ -1,11 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.config = exports.add = exports.Calculator = void 0;
-const calculator_1 = require("./components/calculator.cjs");
+const calculator_1 = require("@components/calculator");
 Object.defineProperty(exports, "Calculator", { enumerable: true, get: function () { return calculator_1.Calculator; } });
-const math_1 = require("./utils/math.cjs");
+const math_1 = require("@utils/math");
 Object.defineProperty(exports, "add", { enumerable: true, get: function () { return math_1.add; } });
-const config_1 = require("./config.cjs");
+const config_1 = require("@/config");
 Object.defineProperty(exports, "config", { enumerable: true, get: function () { return config_1.config; } });
 // Test the imports work
 const calc = new calculator_1.Calculator();

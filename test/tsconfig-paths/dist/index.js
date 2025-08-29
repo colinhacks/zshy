@@ -1,6 +1,6 @@
-import { Calculator } from "./components/calculator.js";
-import { add } from "./utils/math.js";
-import { config } from "./config.js";
+import { Calculator } from "@components/calculator";
+import { add } from "@utils/math";
+import { config } from "@/config";
 export { Calculator, add, config };
 // Test the imports work
 const calc = new Calculator();
