@@ -933,8 +933,8 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
    ║ Location       │ Resolved path ║
    ╟────────────────┼───────────────╢
    ║ rootDir        │ .             ║
-   ║ outDir         │ ./build       ║
-   ║ declarationDir │ ./types       ║
+   ║ outDir         │ ./dist/build  ║
+   ║ declarationDir │ ./dist/types  ║
    ╚════════════════╧═══════════════╝
 »  Package is an ES module (package.json#/type is "module")
 »  Cleaning up outDir...
@@ -986,233 +986,233 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
      "resolveJsonModule": true,
      "noImplicitOverride": true,
      "noImplicitThis": true,
-     "outDir": "<root>/test/basic/build",
+     "outDir": "<root>/test/basic/dist/build",
      "rootDir": "<root>/test/basic",
-     "declarationDir": "<root>/test/basic/types",
+     "declarationDir": "<root>/test/basic/dist/types",
      "emitDeclarationOnly": false,
      "composite": false
    }
 »  Building CJS... (rewriting .ts -> .cjs/.d.cts)
 »  Enabling CJS interop transform...
 »  Found 5 asset import(s), copying to output directory...
-»  Copied asset: ./src/assets/README.md → ./build/src/assets/README.md
-»  Copied asset: ./src/assets/styles.css → ./build/src/assets/styles.css
-»  Copied asset: ./src/assets/config.json → ./build/src/assets/config.json
-»  Copied asset: ./src/plugins/plugin-a.css → ./build/src/plugins/plugin-a.css
-»  Copied asset: ./src/plugins/plugin-b.css → ./build/src/plugins/plugin-b.css
+»  Copied asset: ./src/assets/README.md → ./dist/build/src/assets/README.md
+»  Copied asset: ./src/assets/styles.css → ./dist/build/src/assets/styles.css
+»  Copied asset: ./src/assets/config.json → ./dist/build/src/assets/config.json
+»  Copied asset: ./src/plugins/plugin-a.css → ./dist/build/src/plugins/plugin-a.css
+»  Copied asset: ./src/plugins/plugin-b.css → ./dist/build/src/plugins/plugin-b.css
 »  Building ESM...
 »  Found 5 asset import(s), copying to output directory...
 »  Writing files (133 total)...
-     ./build/src/assets/README.md
-     ./build/src/assets/config.json
-     ./build/src/assets/styles.css
-     ./build/src/default-arrow.cjs
-     ./build/src/default-arrow.cjs.map
-     ./build/src/default-arrow.js
-     ./build/src/default-arrow.js.map
-     ./build/src/default-class.cjs
-     ./build/src/default-class.cjs.map
-     ./build/src/default-class.js
-     ./build/src/default-class.js.map
-     ./build/src/default-const.cjs
-     ./build/src/default-const.cjs.map
-     ./build/src/default-const.js
-     ./build/src/default-const.js.map
-     ./build/src/default-export-equals.cjs
-     ./build/src/default-export-equals.cjs.map
-     ./build/src/default-export-equals.js
-     ./build/src/default-export-equals.js.map
-     ./build/src/default-function.cjs
-     ./build/src/default-function.cjs.map
-     ./build/src/default-function.js
-     ./build/src/default-function.js.map
-     ./build/src/default-literal.cjs
-     ./build/src/default-literal.cjs.map
-     ./build/src/default-literal.js
-     ./build/src/default-literal.js.map
-     ./build/src/default-object.cjs
-     ./build/src/default-object.cjs.map
-     ./build/src/default-object.js
-     ./build/src/default-object.js.map
-     ./build/src/default-with-export-star.cjs
-     ./build/src/default-with-export-star.cjs.map
-     ./build/src/default-with-export-star.js
-     ./build/src/default-with-export-star.js.map
-     ./build/src/default-with-named.cjs
-     ./build/src/default-with-named.cjs.map
-     ./build/src/default-with-named.js
-     ./build/src/default-with-named.js.map
-     ./build/src/hello.cjs
-     ./build/src/hello.cjs.map
-     ./build/src/hello.js
-     ./build/src/hello.js.map
-     ./build/src/index.cjs
-     ./build/src/index.cjs.map
-     ./build/src/index.js
-     ./build/src/index.js.map
-     ./build/src/plugins/a.cjs
-     ./build/src/plugins/a.cjs.map
-     ./build/src/plugins/a.js
-     ./build/src/plugins/a.js.map
-     ./build/src/plugins/b.cjs
-     ./build/src/plugins/b.cjs.map
-     ./build/src/plugins/c.mjs
-     ./build/src/plugins/c.mjs.map
-     ./build/src/plugins/d/index.cjs
-     ./build/src/plugins/d/index.cjs.map
-     ./build/src/plugins/d/index.js
-     ./build/src/plugins/d/index.js.map
-     ./build/src/plugins/index.cjs
-     ./build/src/plugins/index.cjs.map
-     ./build/src/plugins/index.js
-     ./build/src/plugins/index.js.map
-     ./build/src/plugins/plugin-a.css
-     ./build/src/plugins/plugin-b.css
-     ./build/src/utils.cjs
-     ./build/src/utils.cjs.map
-     ./build/src/utils.js
-     ./build/src/utils.js.map
-     ./types/src/default-arrow.d.cts
-     ./types/src/default-arrow.d.cts.map
-     ./types/src/default-arrow.d.ts
-     ./types/src/default-arrow.d.ts.map
-     ./types/src/default-class.d.cts
-     ./types/src/default-class.d.cts.map
-     ./types/src/default-class.d.ts
-     ./types/src/default-class.d.ts.map
-     ./types/src/default-const.d.cts
-     ./types/src/default-const.d.cts.map
-     ./types/src/default-const.d.ts
-     ./types/src/default-const.d.ts.map
-     ./types/src/default-export-equals.d.cts
-     ./types/src/default-export-equals.d.cts.map
-     ./types/src/default-export-equals.d.ts
-     ./types/src/default-export-equals.d.ts.map
-     ./types/src/default-function.d.cts
-     ./types/src/default-function.d.cts.map
-     ./types/src/default-function.d.ts
-     ./types/src/default-function.d.ts.map
-     ./types/src/default-literal.d.cts
-     ./types/src/default-literal.d.cts.map
-     ./types/src/default-literal.d.ts
-     ./types/src/default-literal.d.ts.map
-     ./types/src/default-object.d.cts
-     ./types/src/default-object.d.cts.map
-     ./types/src/default-object.d.ts
-     ./types/src/default-object.d.ts.map
-     ./types/src/default-with-export-star.d.cts
-     ./types/src/default-with-export-star.d.cts.map
-     ./types/src/default-with-export-star.d.ts
-     ./types/src/default-with-export-star.d.ts.map
-     ./types/src/default-with-named.d.cts
-     ./types/src/default-with-named.d.cts.map
-     ./types/src/default-with-named.d.ts
-     ./types/src/default-with-named.d.ts.map
-     ./types/src/hello.d.cts
-     ./types/src/hello.d.cts.map
-     ./types/src/hello.d.ts
-     ./types/src/hello.d.ts.map
-     ./types/src/index.d.cts
-     ./types/src/index.d.cts.map
-     ./types/src/index.d.ts
-     ./types/src/index.d.ts.map
-     ./types/src/plugins/a.d.cts
-     ./types/src/plugins/a.d.cts.map
-     ./types/src/plugins/a.d.ts
-     ./types/src/plugins/a.d.ts.map
-     ./types/src/plugins/b.d.cts
-     ./types/src/plugins/b.d.cts.map
-     ./types/src/plugins/c.d.mts
-     ./types/src/plugins/c.d.mts.map
-     ./types/src/plugins/d/index.d.cts
-     ./types/src/plugins/d/index.d.cts.map
-     ./types/src/plugins/d/index.d.ts
-     ./types/src/plugins/d/index.d.ts.map
-     ./types/src/plugins/index.d.cts
-     ./types/src/plugins/index.d.cts.map
-     ./types/src/plugins/index.d.ts
-     ./types/src/plugins/index.d.ts.map
-     ./types/src/utils.d.cts
-     ./types/src/utils.d.cts.map
-     ./types/src/utils.d.ts
-     ./types/src/utils.d.ts.map
+     ./dist/build/src/assets/README.md
+     ./dist/build/src/assets/config.json
+     ./dist/build/src/assets/styles.css
+     ./dist/build/src/default-arrow.cjs
+     ./dist/build/src/default-arrow.cjs.map
+     ./dist/build/src/default-arrow.js
+     ./dist/build/src/default-arrow.js.map
+     ./dist/build/src/default-class.cjs
+     ./dist/build/src/default-class.cjs.map
+     ./dist/build/src/default-class.js
+     ./dist/build/src/default-class.js.map
+     ./dist/build/src/default-const.cjs
+     ./dist/build/src/default-const.cjs.map
+     ./dist/build/src/default-const.js
+     ./dist/build/src/default-const.js.map
+     ./dist/build/src/default-export-equals.cjs
+     ./dist/build/src/default-export-equals.cjs.map
+     ./dist/build/src/default-export-equals.js
+     ./dist/build/src/default-export-equals.js.map
+     ./dist/build/src/default-function.cjs
+     ./dist/build/src/default-function.cjs.map
+     ./dist/build/src/default-function.js
+     ./dist/build/src/default-function.js.map
+     ./dist/build/src/default-literal.cjs
+     ./dist/build/src/default-literal.cjs.map
+     ./dist/build/src/default-literal.js
+     ./dist/build/src/default-literal.js.map
+     ./dist/build/src/default-object.cjs
+     ./dist/build/src/default-object.cjs.map
+     ./dist/build/src/default-object.js
+     ./dist/build/src/default-object.js.map
+     ./dist/build/src/default-with-export-star.cjs
+     ./dist/build/src/default-with-export-star.cjs.map
+     ./dist/build/src/default-with-export-star.js
+     ./dist/build/src/default-with-export-star.js.map
+     ./dist/build/src/default-with-named.cjs
+     ./dist/build/src/default-with-named.cjs.map
+     ./dist/build/src/default-with-named.js
+     ./dist/build/src/default-with-named.js.map
+     ./dist/build/src/hello.cjs
+     ./dist/build/src/hello.cjs.map
+     ./dist/build/src/hello.js
+     ./dist/build/src/hello.js.map
+     ./dist/build/src/index.cjs
+     ./dist/build/src/index.cjs.map
+     ./dist/build/src/index.js
+     ./dist/build/src/index.js.map
+     ./dist/build/src/plugins/a.cjs
+     ./dist/build/src/plugins/a.cjs.map
+     ./dist/build/src/plugins/a.js
+     ./dist/build/src/plugins/a.js.map
+     ./dist/build/src/plugins/b.cjs
+     ./dist/build/src/plugins/b.cjs.map
+     ./dist/build/src/plugins/c.mjs
+     ./dist/build/src/plugins/c.mjs.map
+     ./dist/build/src/plugins/d/index.cjs
+     ./dist/build/src/plugins/d/index.cjs.map
+     ./dist/build/src/plugins/d/index.js
+     ./dist/build/src/plugins/d/index.js.map
+     ./dist/build/src/plugins/index.cjs
+     ./dist/build/src/plugins/index.cjs.map
+     ./dist/build/src/plugins/index.js
+     ./dist/build/src/plugins/index.js.map
+     ./dist/build/src/plugins/plugin-a.css
+     ./dist/build/src/plugins/plugin-b.css
+     ./dist/build/src/utils.cjs
+     ./dist/build/src/utils.cjs.map
+     ./dist/build/src/utils.js
+     ./dist/build/src/utils.js.map
+     ./dist/types/src/default-arrow.d.cts
+     ./dist/types/src/default-arrow.d.cts.map
+     ./dist/types/src/default-arrow.d.ts
+     ./dist/types/src/default-arrow.d.ts.map
+     ./dist/types/src/default-class.d.cts
+     ./dist/types/src/default-class.d.cts.map
+     ./dist/types/src/default-class.d.ts
+     ./dist/types/src/default-class.d.ts.map
+     ./dist/types/src/default-const.d.cts
+     ./dist/types/src/default-const.d.cts.map
+     ./dist/types/src/default-const.d.ts
+     ./dist/types/src/default-const.d.ts.map
+     ./dist/types/src/default-export-equals.d.cts
+     ./dist/types/src/default-export-equals.d.cts.map
+     ./dist/types/src/default-export-equals.d.ts
+     ./dist/types/src/default-export-equals.d.ts.map
+     ./dist/types/src/default-function.d.cts
+     ./dist/types/src/default-function.d.cts.map
+     ./dist/types/src/default-function.d.ts
+     ./dist/types/src/default-function.d.ts.map
+     ./dist/types/src/default-literal.d.cts
+     ./dist/types/src/default-literal.d.cts.map
+     ./dist/types/src/default-literal.d.ts
+     ./dist/types/src/default-literal.d.ts.map
+     ./dist/types/src/default-object.d.cts
+     ./dist/types/src/default-object.d.cts.map
+     ./dist/types/src/default-object.d.ts
+     ./dist/types/src/default-object.d.ts.map
+     ./dist/types/src/default-with-export-star.d.cts
+     ./dist/types/src/default-with-export-star.d.cts.map
+     ./dist/types/src/default-with-export-star.d.ts
+     ./dist/types/src/default-with-export-star.d.ts.map
+     ./dist/types/src/default-with-named.d.cts
+     ./dist/types/src/default-with-named.d.cts.map
+     ./dist/types/src/default-with-named.d.ts
+     ./dist/types/src/default-with-named.d.ts.map
+     ./dist/types/src/hello.d.cts
+     ./dist/types/src/hello.d.cts.map
+     ./dist/types/src/hello.d.ts
+     ./dist/types/src/hello.d.ts.map
+     ./dist/types/src/index.d.cts
+     ./dist/types/src/index.d.cts.map
+     ./dist/types/src/index.d.ts
+     ./dist/types/src/index.d.ts.map
+     ./dist/types/src/plugins/a.d.cts
+     ./dist/types/src/plugins/a.d.cts.map
+     ./dist/types/src/plugins/a.d.ts
+     ./dist/types/src/plugins/a.d.ts.map
+     ./dist/types/src/plugins/b.d.cts
+     ./dist/types/src/plugins/b.d.cts.map
+     ./dist/types/src/plugins/c.d.mts
+     ./dist/types/src/plugins/c.d.mts.map
+     ./dist/types/src/plugins/d/index.d.cts
+     ./dist/types/src/plugins/d/index.d.cts.map
+     ./dist/types/src/plugins/d/index.d.ts
+     ./dist/types/src/plugins/d/index.d.ts.map
+     ./dist/types/src/plugins/index.d.cts
+     ./dist/types/src/plugins/index.d.cts.map
+     ./dist/types/src/plugins/index.d.ts
+     ./dist/types/src/plugins/index.d.ts.map
+     ./dist/types/src/utils.d.cts
+     ./dist/types/src/utils.d.cts.map
+     ./dist/types/src/utils.d.ts
+     ./dist/types/src/utils.d.ts.map
 »  Updating package.json...
-»  Setting "main": "./build/src/index.cjs"
-»  Setting "module": "./build/src/index.js"
-»  Setting "types": "./types/src/index.d.cts"
+»  Setting "main": "./dist/build/src/index.cjs"
+»  Setting "module": "./dist/build/src/index.js"
+»  Setting "types": "./dist/types/src/index.d.cts"
 »  Setting "exports": {
      ".": {
-       "types": "./types/src/index.d.cts",
-       "import": "./build/src/index.js",
-       "require": "./build/src/index.cjs"
+       "types": "./dist/types/src/index.d.cts",
+       "import": "./dist/build/src/index.js",
+       "require": "./dist/build/src/index.cjs"
      },
      "./hello": {
-       "types": "./types/src/hello.d.cts",
-       "import": "./build/src/hello.js",
-       "require": "./build/src/hello.cjs"
+       "types": "./dist/types/src/hello.d.cts",
+       "import": "./dist/build/src/hello.js",
+       "require": "./dist/build/src/hello.cjs"
      },
      "./utils": {
-       "types": "./types/src/utils.d.cts",
-       "import": "./build/src/utils.js",
-       "require": "./build/src/utils.cjs"
+       "types": "./dist/types/src/utils.d.cts",
+       "import": "./dist/build/src/utils.js",
+       "require": "./dist/build/src/utils.cjs"
      },
      "./plugins": {
-       "types": "./types/src/plugins/index.d.cts",
-       "import": "./build/src/plugins/index.js",
-       "require": "./build/src/plugins/index.cjs"
+       "types": "./dist/types/src/plugins/index.d.cts",
+       "import": "./dist/build/src/plugins/index.js",
+       "require": "./dist/build/src/plugins/index.cjs"
      },
      "./plugins/*": {
-       "types": "./types/src/plugins/*",
-       "import": "./build/src/plugins/*",
-       "require": "./build/src/plugins/*"
+       "types": "./dist/types/src/plugins/*",
+       "import": "./dist/build/src/plugins/*",
+       "require": "./dist/build/src/plugins/*"
      },
      "./default-function": {
-       "types": "./types/src/default-function.d.cts",
-       "import": "./build/src/default-function.js",
-       "require": "./build/src/default-function.cjs"
+       "types": "./dist/types/src/default-function.d.cts",
+       "import": "./dist/build/src/default-function.js",
+       "require": "./dist/build/src/default-function.cjs"
      },
      "./default-class": {
-       "types": "./types/src/default-class.d.cts",
-       "import": "./build/src/default-class.js",
-       "require": "./build/src/default-class.cjs"
+       "types": "./dist/types/src/default-class.d.cts",
+       "import": "./dist/build/src/default-class.js",
+       "require": "./dist/build/src/default-class.cjs"
      },
      "./default-object": {
-       "types": "./types/src/default-object.d.cts",
-       "import": "./build/src/default-object.js",
-       "require": "./build/src/default-object.cjs"
+       "types": "./dist/types/src/default-object.d.cts",
+       "import": "./dist/build/src/default-object.js",
+       "require": "./dist/build/src/default-object.cjs"
      },
      "./default-arrow": {
-       "types": "./types/src/default-arrow.d.cts",
-       "import": "./build/src/default-arrow.js",
-       "require": "./build/src/default-arrow.cjs"
+       "types": "./dist/types/src/default-arrow.d.cts",
+       "import": "./dist/build/src/default-arrow.js",
+       "require": "./dist/build/src/default-arrow.cjs"
      },
      "./default-with-named": {
-       "types": "./types/src/default-with-named.d.cts",
-       "import": "./build/src/default-with-named.js",
-       "require": "./build/src/default-with-named.cjs"
+       "types": "./dist/types/src/default-with-named.d.cts",
+       "import": "./dist/build/src/default-with-named.js",
+       "require": "./dist/build/src/default-with-named.cjs"
      },
      "./default-with-export-star": {
-       "types": "./types/src/default-with-export-star.d.cts",
-       "import": "./build/src/default-with-export-star.js",
-       "require": "./build/src/default-with-export-star.cjs"
+       "types": "./dist/types/src/default-with-export-star.d.cts",
+       "import": "./dist/build/src/default-with-export-star.js",
+       "require": "./dist/build/src/default-with-export-star.cjs"
      },
      "./default-export-equals": {
-       "types": "./types/src/default-export-equals.d.cts",
-       "import": "./build/src/default-export-equals.js",
-       "require": "./build/src/default-export-equals.cjs"
+       "types": "./dist/types/src/default-export-equals.d.cts",
+       "import": "./dist/build/src/default-export-equals.js",
+       "require": "./dist/build/src/default-export-equals.cjs"
      },
      "./default-const": {
-       "types": "./types/src/default-const.d.cts",
-       "import": "./build/src/default-const.js",
-       "require": "./build/src/default-const.cjs"
+       "types": "./dist/types/src/default-const.d.cts",
+       "import": "./dist/build/src/default-const.js",
+       "require": "./dist/build/src/default-const.cjs"
      },
      "./default-literal": {
-       "types": "./types/src/default-literal.d.cts",
-       "import": "./build/src/default-literal.js",
-       "require": "./build/src/default-literal.cjs"
+       "types": "./dist/types/src/default-literal.d.cts",
+       "import": "./dist/build/src/default-literal.js",
+       "require": "./dist/build/src/default-literal.cjs"
      }
    }
-»  Setting "bin": "./build/src/index.cjs"
+»  Setting "bin": "./dist/build/src/index.cjs"
 »  Build complete!",
 }
 `;
