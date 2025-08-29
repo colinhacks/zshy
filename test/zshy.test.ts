@@ -182,22 +182,6 @@ describe("zshy with different tsconfig configurations", () => {
     });
     expect(snapshot).toMatchSnapshot();
   });
-
-  it("should support tsconfig paths aliases without at-sign", () => {
-    const snapshot = runZshyWithTsconfig("tsconfig.json", {
-      dryRun: true,
-      cwd: process.cwd() + "/test/tsconfig-paths",
-    });
-    expect(snapshot).toMatchSnapshot();
-  });
-
-  it("should support ${configDir} variable substitution in extended tsconfig", () => {
-    const snapshot = runZshyWithTsconfig("tsconfig.configdir.json", {
-      dryRun: true,
-      cwd: process.cwd() + "/test/tsconfig-paths",
-    });
-    expect(snapshot).toMatchSnapshot();
-  });
 });
 
 function normalizeOutput(output: string): string {

@@ -8,11 +8,9 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "declaration": true,
-    "outDir": "${configDir}/../dist",
-    "baseUrl": "${configDir}/../src",
+    "baseUrl": ".",
     "paths": {
-      "@shared/*": ["${configDir}/../src/utils/*"],
-      "~shared/*": ["${configDir}/../src/components/*"]
+      
     }
   }
 }
