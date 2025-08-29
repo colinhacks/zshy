@@ -1,0 +1,23 @@
+{
+  "name": "test-tsconfig-paths",
+  "version": "1.0.0",
+  "type": "module",
+  "zshy": {
+    "exports": {
+      ".": "./src/index.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.cts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.cts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  }
+}

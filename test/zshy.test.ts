@@ -174,6 +174,14 @@ describe("zshy with different tsconfig configurations", () => {
     });
     expect(snapshot).toMatchSnapshot();
   });
+
+  it("should support tsconfig paths aliases", () => {
+    const snapshot = runZshyWithTsconfig("tsconfig.json", {
+      dryRun: true,
+      cwd: process.cwd() + "/test/tsconfig-paths",
+    });
+    expect(snapshot).toMatchSnapshot();
+  });
 });
 
 function normalizeOutput(output: string): string {
