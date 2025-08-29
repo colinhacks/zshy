@@ -6,6 +6,7 @@ import { createCjsInteropDeclarationTransformer } from "./tx-cjs-interop-declara
 import { createExportEqualsTransformer } from "./tx-export-equals.js";
 import { createExtensionRewriteTransformer } from "./tx-extension-rewrite.js";
 import { createImportMetaShimTransformer } from "./tx-import-meta-shim.js";
+import { createPathsResolverTransformer } from "./tx-paths-resolver.js";
 import * as utils from "./utils.js";
 
 export interface BuildContext {
@@ -25,6 +26,8 @@ export interface ProjectOptions {
   verbose: boolean;
   dryRun: boolean;
   cjsInterop?: boolean; // Enable CJS interop for single default exports
+  paths?: Record<string, string[]>; // TypeScript paths configuration
+  baseUrl?: string; // TypeScript baseUrl configuration
 }
 
 export async function compileProject(config: ProjectOptions, entryPoints: string[], ctx: BuildContext): Promise<void> {
@@ -81,6 +84,14 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
     host,
   });
 
+  // Create a transformer factory to resolve tsconfig paths
+  const pathsResolverTransformer = config.paths ? createPathsResolverTransformer({
+    baseUrl: config.baseUrl,
+    paths: config.paths,
+    tsconfigDir: path.dirname(config.configPath),
+    rootDir: config.rootDir,
+  }) : null;
+
   // Create a transformer factory to rewrite extensions
   const extensionRewriteTransformer = createExtensionRewriteTransformer({
     rootDir: config.rootDir,
@@ -135,11 +146,24 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
   }
 
   // Prepare transformers
-  const before: ts.TransformerFactory<ts.SourceFile>[] = [
-    extensionRewriteTransformer as ts.TransformerFactory<ts.SourceFile>,
-  ];
+  const before: ts.TransformerFactory<ts.SourceFile>[] = [];
+  
+  // Add paths resolver transformer first if paths are configured
+  if (pathsResolverTransformer) {
+    before.push(pathsResolverTransformer as ts.TransformerFactory<ts.SourceFile>);
+  }
+  
+  // Then add extension rewriter
+  before.push(extensionRewriteTransformer as ts.TransformerFactory<ts.SourceFile>);
+  
   const after: ts.TransformerFactory<ts.SourceFile>[] = [];
-  const afterDeclarations: ts.TransformerFactory<ts.SourceFile | ts.Bundle>[] = [extensionRewriteTransformer];
+  const afterDeclarations: ts.TransformerFactory<ts.SourceFile | ts.Bundle>[] = [];
+  
+  // Add transformers for declarations
+  if (pathsResolverTransformer) {
+    afterDeclarations.push(pathsResolverTransformer);
+  }
+  afterDeclarations.push(extensionRewriteTransformer);
 
   // Add import.meta shim transformer for CJS builds
   if (config.format === "cjs") {

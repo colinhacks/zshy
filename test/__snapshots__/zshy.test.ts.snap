@@ -315,6 +315,111 @@ exports[`zshy with different tsconfig configurations > should support multiple b
 }
 `;
 
+exports[`zshy with different tsconfig configurations > should support tsconfig paths aliases 1`] = `
+{
+  "exitCode": 0,
+  "stderr": "",
+  "stdout": "╔═══════════════════════════════════════════════╗
+   ║ zshy » the bundler-free TypeScript build tool ║
+   ╚═══════════════════════════════════════════════╝
+»  Starting build...
+»  Verbose mode enabled
+»  Detected package manager: <pm>
+»  Dry run mode enabled. No files will be written or modified.
+»  Build will fail only on errors (default)
+»  Detected project root: <root>/test/tsconfig-paths
+»  Reading package.json from ./package.json
+»  Parsed zshy config: {
+     "exports": {
+       ".": "./src/index.ts"
+     }
+   }
+»  Reading tsconfig from ./tsconfig.json
+»  The "files" key is missing in package.json. Setting to "dist".
+»  Determining entrypoints...
+   ╔═══════════════════════╤════════════════╗
+   ║ Subpath               │ Entrypoint     ║
+   ╟───────────────────────┼────────────────╢
+   ║ "test-tsconfig-paths" │ ./src/index.ts ║
+   ╚═══════════════════════╧════════════════╝
+»  Resolved build paths:
+   ╔══════════╤═══════════════╗
+   ║ Location │ Resolved path ║
+   ╟──────────┼───────────────╢
+   ║ rootDir  │ ./src         ║
+   ║ outDir   │ ./dist        ║
+   ╚══════════╧═══════════════╝
+»  Package is an ES module (package.json#/type is "module")
+»  [dryrun] Cleaning up outDir...
+»  [dryrun] Cleaning up declarationDir...
+»  Resolved entrypoints: [
+     "./src/index.ts"
+   ]
+»  Resolved compilerOptions: {
+     "target": "ES2020",
+     "module": "ESNext",
+     "moduleResolution": "Bundler",
+     "esModuleInterop": true,
+     "strict": true,
+     "skipLibCheck": true,
+     "forceConsistentCasingInFileNames": true,
+     "declaration": true,
+     "outDir": "<root>/test/tsconfig-paths/dist",
+     "baseUrl": "<root>/test/tsconfig-paths/src",
+     "paths": {
+       "@utils/*": [
+         "utils/*"
+       ],
+       "@components/*": [
+         "components/*"
+       ],
+       "@/config": [
+         "config.ts"
+       ]
+     },
+     "pathsBasePath": "<root>/test/tsconfig-paths",
+     "noEmit": false,
+     "emitDeclarationOnly": false,
+     "rewriteRelativeImportExtensions": true,
+     "verbatimModuleSyntax": false,
+     "composite": false
+   }
+»  Building CJS... (rewriting .ts -> .cjs/.d.cts)
+»  Enabling CJS interop transform...
+»  Building ESM...
+»  [dryrun] Writing files (16 total)...
+     ./dist/components/calculator.cjs
+     ./dist/components/calculator.d.cts
+     ./dist/components/calculator.d.ts
+     ./dist/components/calculator.js
+     ./dist/config.cjs
+     ./dist/config.d.cts
+     ./dist/config.d.ts
+     ./dist/config.js
+     ./dist/index.cjs
+     ./dist/index.d.cts
+     ./dist/index.d.ts
+     ./dist/index.js
+     ./dist/utils/math.cjs
+     ./dist/utils/math.d.cts
+     ./dist/utils/math.d.ts
+     ./dist/utils/math.js
+»  [dryrun] Updating package.json...
+»  Setting "main": "./dist/index.cjs"
+»  Setting "module": "./dist/index.js"
+»  Setting "types": "./dist/index.d.cts"
+»  Setting "exports": {
+     ".": {
+       "types": "./dist/index.d.cts",
+       "import": "./dist/index.js",
+       "require": "./dist/index.cjs"
+     }
+   }
+»  [dryrun] Skipping package.json modification
+»  Build complete!",
+}
+`;
+
 exports[`zshy with different tsconfig configurations > should work with basic.test.tsconfig.json 1`] = `
 {
   "exitCode": 0,

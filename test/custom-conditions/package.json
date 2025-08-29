@@ -28,17 +28,17 @@
   "module": "./dist/index.js",
   "exports": {
     ".": {
-      "custom-src": "./src/index.ts",
-      "custom-cjs": "./dist/index.cjs",
       "custom-esm": "./dist/index.js",
+      "custom-cjs": "./dist/index.cjs",
+      "custom-src": "./src/index.ts",
       "types": "./dist/index.d.cts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
     "./utils": {
-      "custom-src": "./src/utils.ts",
-      "custom-cjs": "./dist/utils.cjs",
       "custom-esm": "./dist/utils.js",
+      "custom-cjs": "./dist/utils.cjs",
+      "custom-src": "./src/utils.ts",
       "types": "./dist/utils.d.cts",
       "import": "./dist/utils.js",
       "require": "./dist/utils.cjs"
