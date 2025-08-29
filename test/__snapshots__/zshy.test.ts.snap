@@ -100,7 +100,6 @@ exports[`zshy with different tsconfig configurations > should skip CJS build whe
 »  Starting build...
 »  Verbose mode enabled
 »  Detected package manager: <pm>
-»  Dry run mode enabled. No files will be written or modified.
 »  Build will fail only on errors (default)
 »  Detected project root: <root>/test/esm-only
 »  Reading package.json from ./package.json
@@ -125,8 +124,8 @@ exports[`zshy with different tsconfig configurations > should skip CJS build whe
    ║ outDir   │ ./dist        ║
    ╚══════════╧═══════════════╝
 »  Package is an ES module (package.json#/type is "module")
-»  [dryrun] Cleaning up outDir...
-»  [dryrun] Cleaning up declarationDir...
+»  Cleaning up outDir...
+»  Cleaning up declarationDir...
 »  Resolved entrypoints: [
      "./src/index.ts"
    ]
@@ -166,12 +165,12 @@ exports[`zshy with different tsconfig configurations > should skip CJS build whe
    }
 »  Skipping CJS build (cjs: false)
 »  Building ESM...
-»  [dryrun] Writing files (4 total)...
+»  Writing files (4 total)...
      ./dist/index.d.ts
      ./dist/index.d.ts.map
      ./dist/index.js
      ./dist/index.js.map
-»  [dryrun] Updating package.json...
+»  Updating package.json...
 »  Setting "main": "./dist/index.cjs"
 »  Setting "module": "./dist/index.js"
 »  Setting "types": "./dist/index.d.ts"
@@ -181,7 +180,6 @@ exports[`zshy with different tsconfig configurations > should skip CJS build whe
        "import": "./dist/index.js"
      }
    }
-»  [dryrun] Skipping package.json modification
 »  Build complete!",
 }
 `;
@@ -196,7 +194,6 @@ exports[`zshy with different tsconfig configurations > should support multiple b
 »  Starting build...
 »  Verbose mode enabled
 »  Detected package manager: <pm>
-»  Dry run mode enabled. No files will be written or modified.
 »  Build will fail only on errors (default)
 »  Detected project root: <root>/test/multi-bin
 »  Reading package.json from ./package.json
@@ -226,8 +223,8 @@ exports[`zshy with different tsconfig configurations > should support multiple b
    ║ outDir   │ ./dist        ║
    ╚══════════╧═══════════════╝
 »  Package is an ES module (package.json#/type is "module")
-»  [dryrun] Cleaning up outDir...
-»  [dryrun] Cleaning up declarationDir...
+»  Cleaning up outDir...
+»  Cleaning up declarationDir...
 »  Resolved entrypoints: [
      "./src/index.ts",
      "./src/cli-one.ts",
@@ -270,7 +267,7 @@ exports[`zshy with different tsconfig configurations > should support multiple b
 »  Building CJS... (rewriting .ts -> .cjs/.d.cts)
 »  Enabling CJS interop transform...
 »  Building ESM...
-»  [dryrun] Writing files (24 total)...
+»  Writing files (24 total)...
      ./dist/cli-one.cjs
      ./dist/cli-one.cjs.map
      ./dist/cli-one.d.cts
@@ -295,7 +292,7 @@ exports[`zshy with different tsconfig configurations > should support multiple b
      ./dist/index.d.ts.map
      ./dist/index.js
      ./dist/index.js.map
-»  [dryrun] Updating package.json...
+»  Updating package.json...
 »  Setting "main": "./dist/index.cjs"
 »  Setting "module": "./dist/index.js"
 »  Setting "types": "./dist/index.d.cts"
@@ -310,12 +307,11 @@ exports[`zshy with different tsconfig configurations > should support multiple b
      "cli-one": "./dist/cli-one.cjs",
      "cli-two": "./dist/cli-two.cjs"
    }
-»  [dryrun] Skipping package.json modification
 »  Build complete!",
 }
 `;
 
-exports[`zshy with different tsconfig configurations > should support tsconfig paths aliases 1`] = `
+exports[`zshy with different tsconfig configurations > should support tsconfig paths aliases with at-sign 1`] = `
 {
   "exitCode": 0,
   "stderr": "",
@@ -325,7 +321,6 @@ exports[`zshy with different tsconfig configurations > should support tsconfig p
 »  Starting build...
 »  Verbose mode enabled
 »  Detected package manager: <pm>
-»  Dry run mode enabled. No files will be written or modified.
 »  Build will fail only on errors (default)
 »  Detected project root: <root>/test/tsconfig-paths
 »  Reading package.json from ./package.json
@@ -349,8 +344,8 @@ exports[`zshy with different tsconfig configurations > should support tsconfig p
    ║ outDir   │ ./dist        ║
    ╚══════════╧═══════════════╝
 »  Package is an ES module (package.json#/type is "module")
-»  [dryrun] Cleaning up outDir...
-»  [dryrun] Cleaning up declarationDir...
+»  Cleaning up outDir...
+»  Cleaning up declarationDir...
 »  Resolved entrypoints: [
      "./src/index.ts"
    ]
@@ -363,20 +358,38 @@ exports[`zshy with different tsconfig configurations > should support tsconfig p
      "skipLibCheck": true,
      "forceConsistentCasingInFileNames": true,
      "declaration": true,
-     "outDir": "<root>/test/tsconfig-paths/dist",
      "baseUrl": "<root>/test/tsconfig-paths/src",
      "paths": {
-       "@utils/*": [
-         "utils/*"
-       ],
        "@components/*": [
-         "components/*"
+         "<root>/test/tsconfig-paths/src/components/*"
        ],
        "@/config": [
+         "<root>/test/tsconfig-paths/src/config.ts"
+       ],
+       "utils/*": [
+         "utils/*"
+       ],
+       "components/*": [
+         "components/*"
+       ],
+       "lib/*": [
+         "lib/*"
+       ],
+       "~/*": [
+         "*"
+       ],
+       "$config": [
          "config.ts"
+       ],
+       "#helpers": [
+         "./utils/helpers.ts"
+       ],
+       "@utils/*": [
+         "<root>/test/tsconfig-paths/src/utils/*"
        ]
      },
      "pathsBasePath": "<root>/test/tsconfig-paths",
+     "outDir": "<root>/test/tsconfig-paths/dist",
      "noEmit": false,
      "emitDeclarationOnly": false,
      "rewriteRelativeImportExtensions": true,
@@ -386,7 +399,7 @@ exports[`zshy with different tsconfig configurations > should support tsconfig p
 »  Building CJS... (rewriting .ts -> .cjs/.d.cts)
 »  Enabling CJS interop transform...
 »  Building ESM...
-»  [dryrun] Writing files (16 total)...
+»  Writing files (16 total)...
      ./dist/components/calculator.cjs
      ./dist/components/calculator.d.cts
      ./dist/components/calculator.d.ts
@@ -403,7 +416,7 @@ exports[`zshy with different tsconfig configurations > should support tsconfig p
      ./dist/utils/math.d.cts
      ./dist/utils/math.d.ts
      ./dist/utils/math.js
-»  [dryrun] Updating package.json...
+»  Updating package.json...
 »  Setting "main": "./dist/index.cjs"
 »  Setting "module": "./dist/index.js"
 »  Setting "types": "./dist/index.d.cts"
@@ -414,7 +427,6 @@ exports[`zshy with different tsconfig configurations > should support tsconfig p
        "require": "./dist/index.cjs"
      }
    }
-»  [dryrun] Skipping package.json modification
 »  Build complete!",
 }
 `;
@@ -771,7 +783,6 @@ exports[`zshy with different tsconfig configurations > should work with custom c
 »  Starting build...
 »  Verbose mode enabled
 »  Detected package manager: <pm>
-»  Dry run mode enabled. No files will be written or modified.
 »  Build will fail only on errors (default)
 »  Detected project root: <root>/test/custom-conditions
 »  Reading package.json from ./package.json
@@ -802,8 +813,8 @@ exports[`zshy with different tsconfig configurations > should work with custom c
    ║ outDir   │ ./dist        ║
    ╚══════════╧═══════════════╝
 »  Package is an ES module (package.json#/type is "module")
-»  [dryrun] Cleaning up outDir...
-»  [dryrun] Cleaning up declarationDir...
+»  Cleaning up outDir...
+»  Cleaning up declarationDir...
 »  Resolved entrypoints: [
      "./src/index.ts",
      "./src/utils.ts"
@@ -828,7 +839,7 @@ exports[`zshy with different tsconfig configurations > should work with custom c
 »  Building CJS... (rewriting .ts -> .cjs/.d.cts)
 »  Enabling CJS interop transform...
 »  Building ESM...
-»  [dryrun] Writing files (8 total)...
+»  Writing files (8 total)...
      ./dist/index.cjs
      ./dist/index.d.cts
      ./dist/index.d.ts
@@ -837,7 +848,7 @@ exports[`zshy with different tsconfig configurations > should work with custom c
      ./dist/utils.d.cts
      ./dist/utils.d.ts
      ./dist/utils.js
-»  [dryrun] Updating package.json...
+»  Updating package.json...
 »  Setting "main": "./dist/index.cjs"
 »  Setting "module": "./dist/index.js"
 »  Setting "types": "./dist/index.d.cts"
@@ -859,7 +870,6 @@ exports[`zshy with different tsconfig configurations > should work with custom c
        "require": "./dist/utils.cjs"
      }
    }
-»  [dryrun] Skipping package.json modification
 »  Build complete!",
 }
 `;
@@ -874,7 +884,6 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
 »  Starting build...
 »  Verbose mode enabled
 »  Detected package manager: <pm>
-»  Dry run mode enabled. No files will be written or modified.
 »  Build will fail only on errors (default)
 »  Detected project root: <root>/test/basic
 »  Reading package.json from ./package.json
@@ -928,7 +937,7 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
    ║ declarationDir │ ./types       ║
    ╚════════════════╧═══════════════╝
 »  Package is an ES module (package.json#/type is "module")
-»  [dryrun] Cleaning up outDir...
+»  Cleaning up outDir...
 »  Resolved entrypoints: [
      "./src/index.ts",
      "./src/hello.ts",
@@ -986,14 +995,14 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
 »  Building CJS... (rewriting .ts -> .cjs/.d.cts)
 »  Enabling CJS interop transform...
 »  Found 5 asset import(s), copying to output directory...
-»  [dryrun] Copied asset: ./src/assets/README.md → ./build/src/assets/README.md
-»  [dryrun] Copied asset: ./src/assets/styles.css → ./build/src/assets/styles.css
-»  [dryrun] Copied asset: ./src/assets/config.json → ./build/src/assets/config.json
-»  [dryrun] Copied asset: ./src/plugins/plugin-a.css → ./build/src/plugins/plugin-a.css
-»  [dryrun] Copied asset: ./src/plugins/plugin-b.css → ./build/src/plugins/plugin-b.css
+»  Copied asset: ./src/assets/README.md → ./build/src/assets/README.md
+»  Copied asset: ./src/assets/styles.css → ./build/src/assets/styles.css
+»  Copied asset: ./src/assets/config.json → ./build/src/assets/config.json
+»  Copied asset: ./src/plugins/plugin-a.css → ./build/src/plugins/plugin-a.css
+»  Copied asset: ./src/plugins/plugin-b.css → ./build/src/plugins/plugin-b.css
 »  Building ESM...
 »  Found 5 asset import(s), copying to output directory...
-»  [dryrun] Writing files (133 total)...
+»  Writing files (133 total)...
      ./build/src/assets/README.md
      ./build/src/assets/config.json
      ./build/src/assets/styles.css
@@ -1127,7 +1136,7 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
      ./types/src/utils.d.cts.map
      ./types/src/utils.d.ts
      ./types/src/utils.d.ts.map
-»  [dryrun] Updating package.json...
+»  Updating package.json...
 »  Setting "main": "./build/src/index.cjs"
 »  Setting "module": "./build/src/index.js"
 »  Setting "types": "./types/src/index.d.cts"
@@ -1204,7 +1213,6 @@ exports[`zshy with different tsconfig configurations > should work with tsconfig
      }
    }
 »  Setting "bin": "./build/src/index.cjs"
-»  [dryrun] Skipping package.json modification
 »  Build complete!",
 }
 `;

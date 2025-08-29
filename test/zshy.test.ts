@@ -119,20 +119,27 @@ describe("zshy with different tsconfig configurations", () => {
   it("should work with basic.test.tsconfig.json", () => {
     // only run this one with dryRun: false
     // results are tracked in git
-    const snapshot = runZshyWithTsconfig("tsconfig.basic.json", { dryRun: false, cwd: process.cwd() + "/test/basic" });
+    const snapshot = runZshyWithTsconfig("tsconfig.basic.json", {
+      dryRun: false,
+      cwd: process.cwd() + "/test/basic",
+    });
 
     expect(snapshot).toMatchSnapshot();
   });
 
-  const basicCwd = process.cwd() + "/test/basic";
-  console.log(basicCwd);
-
   it("should work with tsconfig.custom-paths.json", () => {
-    const snapshot = runZshyWithTsconfig("tsconfig.custom-paths.json", { dryRun: true, cwd: basicCwd });
+    const basicCwd = process.cwd() + "/test/basic";
+    const snapshot = runZshyWithTsconfig("tsconfig.custom-paths.json", {
+      dryRun: false,
+      cwd: basicCwd,
+    });
     expect(snapshot).toMatchSnapshot();
   });
 
   it("should work with tsconfig.flat.json", () => {
+    const basicCwd = process.cwd() + "/test/basic";
+
+    // dry-run to avoid writing to disk
     const snapshot = runZshyWithTsconfig("tsconfig.flat.json", { dryRun: true, cwd: basicCwd });
     expect(snapshot).toMatchSnapshot();
   });
@@ -152,7 +159,7 @@ describe("zshy with different tsconfig configurations", () => {
   it("should work with custom conditions", () => {
     // Run from the custom-conditions directory
     const snapshot = runZshyWithTsconfig("tsconfig.basic.json", {
-      dryRun: true,
+      dryRun: false,
       cwd: process.cwd() + "/test/custom-conditions",
     });
     expect(snapshot).toMatchSnapshot();
@@ -161,7 +168,7 @@ describe("zshy with different tsconfig configurations", () => {
   it("should skip CJS build when commonjs is false", () => {
     // Run from the esm-only directory
     const snapshot = runZshyWithTsconfig("tsconfig.basic.json", {
-      dryRun: true,
+      dryRun: false,
       cwd: process.cwd() + "/test/esm-only",
     });
     expect(snapshot).toMatchSnapshot();
@@ -169,15 +176,15 @@ describe("zshy with different tsconfig configurations", () => {
 
   it("should support multiple bin entries", () => {
     const snapshot = runZshyWithTsconfig("tsconfig.basic.json", {
-      dryRun: true,
+      dryRun: false,
       cwd: process.cwd() + "/test/multi-bin",
     });
     expect(snapshot).toMatchSnapshot();
   });
 
-  it("should support tsconfig paths aliases", () => {
+  it("should support tsconfig paths aliases with at-sign", () => {
     const snapshot = runZshyWithTsconfig("tsconfig.json", {
-      dryRun: true,
+      dryRun: false,
       cwd: process.cwd() + "/test/tsconfig-paths",
     });
     expect(snapshot).toMatchSnapshot();

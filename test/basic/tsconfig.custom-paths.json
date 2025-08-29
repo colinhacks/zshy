@@ -3,9 +3,9 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "moduleResolution": "node",
-    "outDir": "./build",
+    "outDir": "./dist/build",
     "rootDir": ".",
-    "declarationDir": "./types"
+    "declarationDir": "./dist/types"
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "build", "types"]
