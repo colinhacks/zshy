@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "declaration": true,
+    "outDir": "${configDir}/../dist",
+    "baseUrl": "${configDir}/../src",
+    "paths": {
+      "@shared/*": ["${configDir}/../src/utils/*"],
+      "~shared/*": ["${configDir}/../src/components/*"]
+    }
+  }
+}

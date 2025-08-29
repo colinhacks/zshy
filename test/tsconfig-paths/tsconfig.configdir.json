@@ -1,15 +1,6 @@
 {
+  "extends": "./shared/tsconfig.base.json",
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "esModuleInterop": true,
-    "strict": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "declaration": true,
-    "outDir": "./dist",
-    "baseUrl": "./src",
     "paths": {
       "@utils/*": ["utils/*"],
       "@components/*": ["components/*"],
@@ -19,7 +10,9 @@
       "lib/*": ["lib/*"],
       "~/*": ["*"],
       "$config": ["config.ts"],
-      "#helpers": ["utils/helpers.ts"]
+      "#helpers": ["utils/helpers.ts"],
+      "@shared/*": ["${configDir}/../src/utils/*"],
+      "~shared/*": ["${configDir}/../src/components/*"]
     }
   },
   "include": ["src/**/*"]

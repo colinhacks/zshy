@@ -682,8 +682,6 @@ Examples:
         pkgJsonDir,
         rootDir,
         cjsInterop: isCjsInterop,
-        paths: _parsedConfig.paths,
-        baseUrl: _parsedConfig.baseUrl,
         compilerOptions: {
           ...tsconfigJson,
           module: ts.ModuleKind.CommonJS,
@@ -710,8 +708,6 @@ Examples:
       pkgJsonDir,
       rootDir,
       cjsInterop: isCjsInterop,
-      paths: _parsedConfig.paths,
-      baseUrl: _parsedConfig.baseUrl,
       compilerOptions: {
         ...tsconfigJson,
         module: ts.ModuleKind.ESNext,
