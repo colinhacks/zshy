@@ -229,7 +229,8 @@ Multi-entrypoint packages can specify subpaths or wildcard exports in `package.j
     "exports": {
       ".": "./src/index.ts", // root entrypoint
       "./utils": "./src/utils.ts", // subpath
-      "./plugins/*": "./src/plugins/*" // wildcard
+      "./plugins/*": "./src/plugins/*", // wildcard
+      "./components/*": "./src/components/**/*" // deep wildcard
     }
   }
 }
@@ -327,7 +328,7 @@ The `"bin"` field is automatically written into your `package.json`:
     "bin": "./src/cli.ts"
   },
 + "bin": {
-+   "my-cli": "./dist/cli.cjs" // CLI entrypoint)
++   "my-cli": "./dist/cli.cjs" // CLI entrypoint
 + }
 }
 ```
