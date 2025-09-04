@@ -683,9 +683,9 @@ Examples:
 
     for (const file of files) {
       const source = path.resolve(rootDir, file);
-      fs.mkdirSync(outDir, { recursive: true });
       const dest = removeExtension(path.resolve(outDir, file));
       try {
+        fs.mkdirSync(outDir, { recursive: true });
         fs.symlinkSync(source, dest + ".js", "file");
         fs.symlinkSync(source, dest + ".d.ts", "file");
       } catch {}
