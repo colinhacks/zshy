@@ -27,6 +27,7 @@
 - 👑 **Powered by `tsc`** — The gold standard for TypeScript transpilation
 - 📦 **Bundler-free** — No bundler or bundler configs involved
 - 🟦 **No config file** — Reads from your `package.json` and `tsconfig.json`
+- 🔗 **No rebuild/watch modes** — Use `--dev` to symlink dist to source for live development
 - 📝 **Declarative entrypoint map** — Specify your TypeScript entrypoints in `package.json#/zshy`
 - 🤖 **Auto-generated `"exports"`** — Writes `"exports"` map directly into your `package.json`
 - 🧱 **Dual-module builds** — Builds ESM and CJS outputs from a single TypeScript source file
@@ -207,6 +208,7 @@ Options:
   -h, --help                        Show this help message
   -p, --project <path>              Path to tsconfig (default: ./tsconfig.json)
       --verbose                     Enable verbose output
+      --dev                         Enable development mode (symlink dist to source)
       --dry-run                     Don't write any files or update package.json
       --fail-threshold <threshold>  When to exit with non-zero error code
                                       "error" (default)

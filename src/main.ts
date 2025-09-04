@@ -44,6 +44,7 @@ export async function main(): Promise<void> {
       "--help": Boolean,
       "--verbose": Boolean,
       "--project": String,
+      "--dev": Boolean,
       "--dry-run": Boolean,
       "--fail-threshold": String,
       // "--attw": Boolean,
@@ -69,6 +70,7 @@ Options:
   -h, --help                        Show this help message
   -p, --project <path>              Path to tsconfig.json file
       --verbose                     Enable verbose output
+      --dev                         Enable development mode (symlink dist to source)
       --dry-run                     Don't write any files, just log what would be done
       --fail-threshold <threshold>  When to exit with non-zero error code
                                       "error" (default)
@@ -101,6 +103,7 @@ Examples:
   emojiLog("💎", "Starting build...");
 
   const isVerbose = !!args["--verbose"];
+  const isDev = !!args["--dev"];
   const isDryRun = !!args["--dry-run"];
   const failThreshold = args["--fail-threshold"] || "error"; // Default to 'error'
 
@@ -669,14 +672,57 @@ Examples:
   // Check if CJS should be skipped
   const skipCjs = config.cjs === false;
 
-  // CJS
-  if (!skipCjs) {
-    emojiLog("🧱", `Building CJS...${isTypeModule ? ` (rewriting .ts -> .cjs/.d.cts)` : ``}`);
+  if (isDev) {
+    // ESM linking
+    emojiLog("🔗", "Linking ESM... (symlinking dist to source)");
+
+    const patterns: string[] = ["**/*.{ts,tsx,mts,cts}", "!**/*.d.ts", "!**/*.d.mts", "!**/*.d.cts"];
+    const files = await globby(patterns, { cwd: rootDir, dot: false });
+
+    for (const file of files) {
+      const source = path.resolve(rootDir, file);
+      fs.mkdirSync(outDir, { recursive: true });
+      const dest = removeExtension(path.resolve(outDir, file));
+      try {
+        fs.symlinkSync(source, dest + ".js", "file");
+        fs.symlinkSync(source, dest + ".d.ts", "file");
+      } catch {}
+    }
+  } else {
+    // CJS
+    if (!skipCjs) {
+      emojiLog("🧱", `Building CJS...${isTypeModule ? ` (rewriting .ts -> .cjs/.d.cts)` : ``}`);
+      await compileProject(
+        {
+          configPath: tsconfigPath,
+          ext: isTypeModule ? "cjs" : "js",
+          format: "cjs",
+          verbose: isVerbose,
+          dryRun: isDryRun,
+          pkgJsonDir,
+          rootDir,
+          cjsInterop: isCjsInterop,
+          compilerOptions: {
+            ...tsconfigJson,
+            module: ts.ModuleKind.CommonJS,
+            moduleResolution: ts.ModuleResolutionKind.Node10,
+            outDir,
+          },
+        },
+        uniqueEntryPoints,
+        buildContext
+      );
+    } else {
+      emojiLog("⏭️", "Skipping CJS build (cjs: false)");
+    }
+
+    // ESM
+    emojiLog("🧱", `Building ESM...${isTypeModule ? `` : ` (rewriting .ts -> .mjs/.d.mts)`}`);
     await compileProject(
       {
         configPath: tsconfigPath,
-        ext: isTypeModule ? "cjs" : "js",
-        format: "cjs",
+        ext: isTypeModule ? "js" : "mjs",
+        format: "esm",
         verbose: isVerbose,
         dryRun: isDryRun,
         pkgJsonDir,
@@ -684,40 +730,15 @@ Examples:
         cjsInterop: isCjsInterop,
         compilerOptions: {
           ...tsconfigJson,
-          module: ts.ModuleKind.CommonJS,
-          moduleResolution: ts.ModuleResolutionKind.Node10,
+          module: ts.ModuleKind.ESNext,
+          moduleResolution: ts.ModuleResolutionKind.Bundler,
           outDir,
         },
       },
       uniqueEntryPoints,
       buildContext
     );
-  } else {
-    emojiLog("⏭️", "Skipping CJS build (cjs: false)");
   }
-
-  // ESM
-  emojiLog("🧱", `Building ESM...${isTypeModule ? `` : ` (rewriting .ts -> .mjs/.d.mts)`}`);
-  await compileProject(
-    {
-      configPath: tsconfigPath,
-      ext: isTypeModule ? "js" : "mjs",
-      format: "esm",
-      verbose: isVerbose,
-      dryRun: isDryRun,
-      pkgJsonDir,
-      rootDir,
-      cjsInterop: isCjsInterop,
-      compilerOptions: {
-        ...tsconfigJson,
-        module: ts.ModuleKind.ESNext,
-        moduleResolution: ts.ModuleResolutionKind.Bundler,
-        outDir,
-      },
-    },
-    uniqueEntryPoints,
-    buildContext
-  );
 
   ///////////////////////////////////
   ///      display written files  ///
