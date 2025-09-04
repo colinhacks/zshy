@@ -676,8 +676,10 @@ Examples:
     // ESM linking
     emojiLog("🔗", "Linking ESM... (symlinking dist to source)");
 
-    const patterns: string[] = ["**/*.{ts,tsx,mts,cts}", "!**/*.d.ts", "!**/*.d.mts", "!**/*.d.cts"];
-    const files = await globby(patterns, { cwd: rootDir, dot: false });
+    const files = await globby(["**/*.{ts,tsx,mts,cts}", "!**/*.d.ts", "!**/*.d.mts", "!**/*.d.cts"], {
+      cwd: rootDir,
+      dot: false,
+    });
 
     for (const file of files) {
       const source = path.resolve(rootDir, file);
