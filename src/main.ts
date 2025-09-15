@@ -8,6 +8,7 @@ import { type BuildContext, compileProject } from "./compile.js";
 import {
   emojiLog,
   formatForLog,
+  isAssetFile,
   isSourceFile,
   readTsconfig,
   relativePosix,
@@ -423,6 +424,7 @@ Examples:
   // Extract entry points from zshy exports config
   emojiLog("➡️", "Determining entrypoints...");
   const entryPoints: string[] = [];
+  const assetEntrypoints: Array<{ exportPath: string; sourcePath: string }> = [];
 
   const rows: string[][] = [["Subpath", "Entrypoint"]];
 
@@ -468,6 +470,10 @@ Examples:
         entryPoints.push(sourcePath);
 
         rows.push([`"${cleanExportPath}"`, sourcePath]);
+      } else {
+        // Any non-compilable file should be treated as an asset
+        assetEntrypoints.push({ exportPath, sourcePath });
+        rows.push([`"${cleanExportPath}"`, `${sourcePath} (asset)`]);
       }
     }
   }
@@ -720,6 +726,44 @@ Examples:
   );
 
   ///////////////////////////////////
+  ///      copy asset entrypoints  ///
+  ///////////////////////////////////
+
+  // Copy asset entrypoints to output directory
+  if (assetEntrypoints.length > 0) {
+    emojiLog("📄", `${prefix}Copying ${assetEntrypoints.length} asset entrypoint(s)...`);
+
+    for (const { sourcePath } of assetEntrypoints) {
+      const sourceFile = path.resolve(pkgJsonDir, sourcePath);
+      const relativePath = path.relative(rootDir, path.resolve(pkgJsonDir, sourcePath));
+      const destFile = path.resolve(outDir, relativePath);
+      const destDir = path.dirname(destFile);
+
+      if (!fs.existsSync(sourceFile)) {
+        emojiLog("⚠️", `Asset entrypoint not found: ${sourcePath}`, "warn");
+        continue;
+      }
+
+      if (!isDryRun) {
+        fs.mkdirSync(destDir, { recursive: true });
+        fs.copyFileSync(sourceFile, destFile);
+      }
+
+      // Track the copied file
+      buildContext.copiedAssets.add(toPosix(path.relative(pkgJsonDir, destFile)));
+
+      if (isVerbose) {
+        const relativeSource = toPosix(path.relative(pkgJsonDir, sourceFile));
+        const relativeDest = toPosix(path.relative(pkgJsonDir, destFile));
+        emojiLog(
+          "📋",
+          `${isDryRun ? "[dryrun] " : ""}Copied asset entrypoint: ./${relativeSource} → ./${relativeDest}`
+        );
+      }
+    }
+  }
+
+  ///////////////////////////////////
   ///      display written files  ///
   ///////////////////////////////////
 
@@ -856,6 +900,59 @@ Examples:
                 emojiLog("🔧", `Setting "types": ${formatForLog(dtsPath)}`);
               }
             }
+          }
+        }
+      }
+
+      // Handle asset entrypoints (only those that don't already have exports from TypeScript compilation)
+      for (const { exportPath, sourcePath } of assetEntrypoints) {
+        // Skip if this export path was already handled by TypeScript compilation
+        if (newExports[exportPath]) {
+          continue;
+        }
+
+        const absSourcePath = path.resolve(pkgJsonDir, sourcePath);
+        const relSourcePath = path.relative(rootDir, absSourcePath);
+        const absAssetPath = path.resolve(outDir, relSourcePath);
+        const relAssetPath = "./" + relativePosix(pkgJsonDir, absAssetPath);
+
+        // For asset entrypoints, all conditions point to the same copied asset file
+        const exportObj: Record<string, string> = {};
+
+        // Add custom conditions first in their original order
+        if (config.conditions) {
+          for (const [condition, value] of Object.entries(config.conditions)) {
+            if (value === "src") {
+              exportObj[condition] = sourcePath;
+            } else if (value === "esm" || value === "cjs") {
+              exportObj[condition] = relAssetPath;
+            }
+          }
+        }
+
+        // For asset files, all standard conditions point to the same file
+        exportObj.types = relAssetPath;
+        exportObj.import = relAssetPath;
+        if (!skipCjs) {
+          exportObj.require = relAssetPath;
+        }
+
+        newExports[exportPath] = exportObj;
+
+        // Handle root export special fields (only if no TypeScript root export exists)
+        if (exportPath === ".") {
+          if (!skipCjs) {
+            pkgJson.main = relAssetPath;
+            pkgJson.module = relAssetPath;
+            pkgJson.types = relAssetPath;
+          } else {
+            pkgJson.module = relAssetPath;
+            pkgJson.types = relAssetPath;
+          }
+          if (isVerbose) {
+            emojiLog("🔧", `Setting "main": ${formatForLog(relAssetPath)} (asset)`);
+            emojiLog("🔧", `Setting "module": ${formatForLog(relAssetPath)} (asset)`);
+            emojiLog("🔧", `Setting "types": ${formatForLog(relAssetPath)} (asset)`);
           }
         }
       }

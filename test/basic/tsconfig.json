@@ -1,45 +1,10 @@
 {
-  
-  
+  "description": "Test: Basic configuration with default settings. This tests the most common use case with minimal configuration. outDir: dist, rootDir: src, standard ES2020 target",
+  "extends": "../tsconfig.default.json",
   "compilerOptions": {
-    // Environment setup & latest features
-    "lib": ["ESNext"],
-    "target": "es2020",
-    "module": "esnext",
-    "moduleResolution": "bundler",
-
-    
-    "moduleDetection": "auto",
-    "allowJs": true,
-    "declaration": true,
-    "jsx": "react-jsx",
-    
-
-    // Bundler mode
-    "allowImportingTsExtensions": true,
-    "rewriteRelativeImportExtensions": true,
-    "verbatimModuleSyntax": false,
-    "noEmit": false,
-    
-    
-    // Best practices
-    "strict": true,
-    "skipLibCheck": false,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedIndexedAccess": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-
-    // Some stricter flags (disabled by default)
-    "noUnusedLocals": true,
-    "noUnusedParameters": false,
-    "noPropertyAccessFromIndexSignature": false,
-
-    // Build options
-    "sourceMap": true,
-    "declarationMap": true,
-    "resolveJsonModule": true,
-    "noImplicitOverride": true,
-    "noImplicitThis": true
-  }
+    "outDir": "./dist",
+    "composite": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
 }

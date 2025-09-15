@@ -10,6 +10,12 @@ export function emojiLog(_emoji: string, content: string, level: "log" | "warn" 
 }
 
 export function isSourceFile(filePath: string): boolean {
+  // Declaration files are not source files
+  if (filePath.endsWith(".d.ts") || filePath.endsWith(".d.mts") || filePath.endsWith(".d.cts")) {
+    return false;
+  }
+
+  // TypeScript source files
   return (
     filePath.endsWith(".ts") || filePath.endsWith(".mts") || filePath.endsWith(".cts") || filePath.endsWith(".tsx")
   );

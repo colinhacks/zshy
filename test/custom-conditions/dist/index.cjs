@@ -6,3 +6,4 @@ exports.hello = "Hello from custom conditions test!";
 function greet(name) {
     return `Hello, ${name}!`;
 }
+//# sourceMappingURL=index.js.map

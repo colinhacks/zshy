@@ -7,7 +7,7 @@
     "typescript": "^5.8.3"
   },
   "scripts": {
-    "build": "tsx ../../src/index.ts --project tsconfig.basic.json"
+    "build": "tsx ../../src/index.ts --project tsconfig.json"
   },
   "zshy": {
     "exports": "./src/index.ts",

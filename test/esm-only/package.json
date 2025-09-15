@@ -4,7 +4,7 @@
   "description": "Test fixture for zshy - represents a typical TypeScript library",
   "type": "module",
   "scripts": {
-    "build": "tsx ../../src/index.ts --project tsconfig.basic.json"
+    "build": "tsx ../../src/index.ts --project tsconfig.json"
   },
   "devDependencies": {
     "typescript": "^5.8.3"
