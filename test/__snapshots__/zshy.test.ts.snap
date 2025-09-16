@@ -443,6 +443,7 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
 »  Reading package.json from ./package.json
 »  Parsed zshy config: {
      "exports": {
+       "./package.json": "./package.json",
        ".": "./src/index.ts",
        "./hello": "./src/hello.ts",
        "./utils": "./src/utils.ts",
@@ -482,8 +483,8 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
    ║ "my-pkg/default-export-equals"    │ ./src/default-export-equals.ts    ║
    ║ "my-pkg/default-const"            │ ./src/default-const.ts            ║
    ║ "my-pkg/default-literal"          │ ./src/default-literal.ts          ║
-   ║ "my-pkg/env.d.ts"                 │ ./src/env.d.ts (asset)            ║
-   ║ "my-pkg/config.json"              │ ./src/assets/config.json (asset)  ║
+   ║ "my-pkg/env.d.ts"                 │ ./src/env.d.ts                    ║
+   ║ "my-pkg/config.json"              │ ./src/assets/config.json          ║
    ║ bin:my-pkg                        │ ./src/index.ts                    ║
    ╚═══════════════════════════════════╧═══════════════════════════════════╝
 »  Resolved build paths:
@@ -700,6 +701,7 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
 »  Setting "module": "./dist/index.js"
 »  Setting "types": "./dist/index.d.cts"
 »  Setting "exports": {
+     "./package.json": "./package.json",
      ".": {
        "types": "./dist/index.d.cts",
        "import": "./dist/index.js",
