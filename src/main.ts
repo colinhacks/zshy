@@ -8,7 +8,6 @@ import { type BuildContext, compileProject } from "./compile.js";
 import {
   emojiLog,
   formatForLog,
-  isAssetFile,
   isSourceFile,
   readTsconfig,
   relativePosix,
@@ -473,7 +472,7 @@ Examples:
       } else {
         // Any non-compilable file should be treated as an asset
         assetEntrypoints.push({ exportPath, sourcePath });
-        rows.push([`"${cleanExportPath}"`, `${sourcePath} (asset)`]);
+        rows.push([`"${cleanExportPath}"`, `${sourcePath}`]);
       }
     }
   }
@@ -950,9 +949,9 @@ Examples:
             pkgJson.types = relAssetPath;
           }
           if (isVerbose) {
-            emojiLog("🔧", `Setting "main": ${formatForLog(relAssetPath)} (asset)`);
-            emojiLog("🔧", `Setting "module": ${formatForLog(relAssetPath)} (asset)`);
-            emojiLog("🔧", `Setting "types": ${formatForLog(relAssetPath)} (asset)`);
+            emojiLog("🔧", `Setting "main": ${formatForLog(relAssetPath)}`);
+            emojiLog("🔧", `Setting "module": ${formatForLog(relAssetPath)}`);
+            emojiLog("🔧", `Setting "types": ${formatForLog(relAssetPath)}`);
           }
         }
       }
