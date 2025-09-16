@@ -459,7 +459,8 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
        "./default-const": "./src/default-const.ts",
        "./default-literal": "./src/default-literal.ts",
        "./env.d.ts": "./src/env.d.ts",
-       "./config.json": "./src/assets/config.json"
+       "./config.json": "./src/assets/config.json",
+       "./assets/test.txt": "./assets/test.txt"
      },
      "bin": "./src/index.ts"
    }
@@ -485,6 +486,7 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
    ║ "my-pkg/default-literal"          │ ./src/default-literal.ts          ║
    ║ "my-pkg/env.d.ts"                 │ ./src/env.d.ts                    ║
    ║ "my-pkg/config.json"              │ ./src/assets/config.json          ║
+   ║ "my-pkg/assets/test.txt"          │ ./assets/test.txt                 ║
    ║ bin:my-pkg                        │ ./src/index.ts                    ║
    ╚═══════════════════════════════════╧═══════════════════════════════════╝
 »  Resolved build paths:
@@ -559,9 +561,10 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
 »  Copied asset: ./src/plugins/plugin-b.css → ./dist/plugins/plugin-b.css
 »  Building ESM...
 »  Found 5 asset import(s), copying to output directory...
-»  Copying 2 asset entrypoint(s)...
-»  Copied asset entrypoint: ./src/env.d.ts → ./dist/env.d.ts
-»  Copied asset entrypoint: ./src/assets/config.json → ./dist/assets/config.json
+»  Copying 3 assets...
+»  Copied asset: ./src/env.d.ts → ./dist/env.d.ts
+»  Copied asset: ./src/assets/config.json → ./dist/assets/config.json
+»  Copied asset: ./assets/test.txt → ./assets/test.txt
 »  Writing files (133 total)...
      ./dist/assets/README.md
      ./dist/assets/config.json
@@ -773,7 +776,8 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
        "require": "./dist/default-literal.cjs"
      },
      "./env.d.ts": "./dist/env.d.ts",
-     "./config.json": "./dist/assets/config.json"
+     "./config.json": "./dist/assets/config.json",
+     "./assets/test.txt": "./assets/test.txt"
    }
 »  Setting "bin": "./dist/index.cjs"
 »  Build complete!",
