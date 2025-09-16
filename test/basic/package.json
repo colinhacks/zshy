@@ -110,15 +110,7 @@
       "import": "./dist/default-literal.js",
       "require": "./dist/default-literal.cjs"
     },
-    "./env.d.ts": {
-      "types": "./dist/env.d.ts",
-      "import": "./dist/env.d.ts",
-      "require": "./dist/env.d.ts"
-    },
-    "./config.json": {
-      "types": "./dist/assets/config.json",
-      "import": "./dist/assets/config.json",
-      "require": "./dist/assets/config.json"
-    }
+    "./env.d.ts": "./dist/env.d.ts",
+    "./config.json": "./dist/assets/config.json"
   }
 }

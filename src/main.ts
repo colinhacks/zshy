@@ -915,28 +915,8 @@ Examples:
         const absAssetPath = path.resolve(outDir, relSourcePath);
         const relAssetPath = "./" + relativePosix(pkgJsonDir, absAssetPath);
 
-        // For asset entrypoints, all conditions point to the same copied asset file
-        const exportObj: Record<string, string> = {};
-
-        // Add custom conditions first in their original order
-        if (config.conditions) {
-          for (const [condition, value] of Object.entries(config.conditions)) {
-            if (value === "src") {
-              exportObj[condition] = sourcePath;
-            } else if (value === "esm" || value === "cjs") {
-              exportObj[condition] = relAssetPath;
-            }
-          }
-        }
-
-        // For asset files, all standard conditions point to the same file
-        exportObj.types = relAssetPath;
-        exportObj.import = relAssetPath;
-        if (!skipCjs) {
-          exportObj.require = relAssetPath;
-        }
-
-        newExports[exportPath] = exportObj;
+        // Assets are not source code - they just get copied and referenced with a simple path
+        newExports[exportPath] = relAssetPath;
 
         // Handle root export special fields (only if no TypeScript root export exists)
         if (exportPath === ".") {
