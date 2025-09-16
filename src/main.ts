@@ -423,6 +423,7 @@ Examples:
   // Extract entry points from zshy exports config
   emojiLog("➡️", "Determining entrypoints...");
   const entryPoints: string[] = [];
+  const assetEntrypoints: Array<{ exportPath: string; sourcePath: string }> = [];
 
   const rows: string[][] = [["Subpath", "Entrypoint"]];
 
@@ -468,6 +469,10 @@ Examples:
         entryPoints.push(sourcePath);
 
         rows.push([`"${cleanExportPath}"`, sourcePath]);
+      } else {
+        // Any non-compilable file should be treated as an asset
+        assetEntrypoints.push({ exportPath, sourcePath });
+        rows.push([`"${cleanExportPath}"`, `${sourcePath}`]);
       }
     }
   }
@@ -720,6 +725,41 @@ Examples:
   );
 
   ///////////////////////////////////
+  ///      copy asset entrypoints  ///
+  ///////////////////////////////////
+
+  // Copy asset entrypoints to output directory
+  if (assetEntrypoints.length > 0) {
+    emojiLog("📄", `${prefix}Copying ${assetEntrypoints.length} asset${assetEntrypoints.length === 1 ? "" : "s"}...`);
+
+    for (const { sourcePath } of assetEntrypoints) {
+      const sourceFile = path.resolve(pkgJsonDir, sourcePath);
+      const relativePath = path.relative(rootDir, path.resolve(pkgJsonDir, sourcePath));
+      const destFile = path.resolve(outDir, relativePath);
+      const destDir = path.dirname(destFile);
+
+      if (!fs.existsSync(sourceFile)) {
+        emojiLog("⚠️", `Asset not found: ${sourcePath}`, "warn");
+        continue;
+      }
+
+      if (!isDryRun) {
+        fs.mkdirSync(destDir, { recursive: true });
+        fs.copyFileSync(sourceFile, destFile);
+      }
+
+      // Track the copied file
+      buildContext.copiedAssets.add(toPosix(path.relative(pkgJsonDir, destFile)));
+
+      if (isVerbose) {
+        const relativeSource = toPosix(path.relative(pkgJsonDir, sourceFile));
+        const relativeDest = toPosix(path.relative(pkgJsonDir, destFile));
+        emojiLog("📋", `${isDryRun ? "[dryrun] " : ""}Copied asset: ./${relativeSource} → ./${relativeDest}`);
+      }
+    }
+  }
+
+  ///////////////////////////////////
   ///      display written files  ///
   ///////////////////////////////////
 
@@ -860,6 +900,39 @@ Examples:
         }
       }
 
+      // Handle asset entrypoints (only those that don't already have exports from TypeScript compilation)
+      for (const { exportPath, sourcePath } of assetEntrypoints) {
+        // Skip if this export path was already handled by TypeScript compilation
+        if (newExports[exportPath]) {
+          continue;
+        }
+
+        const absSourcePath = path.resolve(pkgJsonDir, sourcePath);
+        const relSourcePath = path.relative(rootDir, absSourcePath);
+        const absAssetPath = path.resolve(outDir, relSourcePath);
+        const relAssetPath = "./" + relativePosix(pkgJsonDir, absAssetPath);
+
+        // Assets are not source code - they just get copied and referenced with a simple path
+        newExports[exportPath] = relAssetPath;
+
+        // Handle root export special fields (only if no TypeScript root export exists)
+        if (exportPath === ".") {
+          if (!skipCjs) {
+            pkgJson.main = relAssetPath;
+            pkgJson.module = relAssetPath;
+            pkgJson.types = relAssetPath;
+          } else {
+            pkgJson.module = relAssetPath;
+            pkgJson.types = relAssetPath;
+          }
+          if (isVerbose) {
+            emojiLog("🔧", `Setting "main": ${formatForLog(relAssetPath)}`);
+            emojiLog("🔧", `Setting "module": ${formatForLog(relAssetPath)}`);
+            emojiLog("🔧", `Setting "types": ${formatForLog(relAssetPath)}`);
+          }
+        }
+      }
+
       pkgJson.exports = newExports;
       if (isVerbose) {
         emojiLog("🔧", `Setting "exports": ${formatForLog(newExports)}`);
@@ -962,7 +1035,7 @@ Examples:
   if (buildContext.errorCount > 0 || buildContext.warningCount > 0) {
     emojiLog(
       "📊",
-      `Compilation finished with ${buildContext.errorCount} error(s) and ${buildContext.warningCount} warning(s)`
+      `Compilation finished with ${buildContext.errorCount} error${buildContext.errorCount === 1 ? "" : "s"} and ${buildContext.warningCount} warning${buildContext.warningCount === 1 ? "" : "s"}`
     );
 
     // Apply threshold rules for exit code

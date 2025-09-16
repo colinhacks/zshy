@@ -6,7 +6,7 @@
   "main": "./dist/index.cjs",
   "types": "./dist/index.d.cts",
   "scripts": {
-    "build": "tsx ../../src/index.ts --project tsconfig.basic.json"
+    "build": "tsx ../../src/index.ts --project tsconfig.json"
   },
   "devDependencies": {
     "typescript": "^5.8.3"

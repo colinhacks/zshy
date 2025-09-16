@@ -1,0 +1,30 @@
+{
+  "name": "my-pkg",
+  "version": "1.0.0",
+  "description": "Test fixture for zshy - custom outDir and declarationDir",
+  "type": "module",
+  "scripts": {
+    "build": "tsx ../../src/index.ts --project tsconfig.json"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  },
+  "zshy": {
+    "exports": {
+      ".": "./src/index.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/build/src/index.cjs",
+  "module": "./dist/build/src/index.js",
+  "types": "./dist/types/src/index.d.cts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/src/index.d.cts",
+      "import": "./dist/build/src/index.js",
+      "require": "./dist/build/src/index.cjs"
+    }
+  }
+}
