@@ -730,7 +730,7 @@ Examples:
 
   // Copy asset entrypoints to output directory
   if (assetEntrypoints.length > 0) {
-    emojiLog("📄", `${prefix}Copying ${assetEntrypoints.length} asset entrypoint(s)...`);
+    emojiLog("📄", `${prefix}Copying ${assetEntrypoints.length} asset${assetEntrypoints.length === 1 ? "" : "s"}...`);
 
     for (const { sourcePath } of assetEntrypoints) {
       const sourceFile = path.resolve(pkgJsonDir, sourcePath);
@@ -739,7 +739,7 @@ Examples:
       const destDir = path.dirname(destFile);
 
       if (!fs.existsSync(sourceFile)) {
-        emojiLog("⚠️", `Asset entrypoint not found: ${sourcePath}`, "warn");
+        emojiLog("⚠️", `Asset not found: ${sourcePath}`, "warn");
         continue;
       }
 
@@ -754,10 +754,7 @@ Examples:
       if (isVerbose) {
         const relativeSource = toPosix(path.relative(pkgJsonDir, sourceFile));
         const relativeDest = toPosix(path.relative(pkgJsonDir, destFile));
-        emojiLog(
-          "📋",
-          `${isDryRun ? "[dryrun] " : ""}Copied asset entrypoint: ./${relativeSource} → ./${relativeDest}`
-        );
+        emojiLog("📋", `${isDryRun ? "[dryrun] " : ""}Copied asset: ./${relativeSource} → ./${relativeDest}`);
       }
     }
   }
@@ -1038,7 +1035,7 @@ Examples:
   if (buildContext.errorCount > 0 || buildContext.warningCount > 0) {
     emojiLog(
       "📊",
-      `Compilation finished with ${buildContext.errorCount} error(s) and ${buildContext.warningCount} warning(s)`
+      `Compilation finished with ${buildContext.errorCount} error${buildContext.errorCount === 1 ? "" : "s"} and ${buildContext.warningCount} warning${buildContext.warningCount === 1 ? "" : "s"}`
     );
 
     // Apply threshold rules for exit code

@@ -30,7 +30,8 @@
       "./default-const": "./src/default-const.ts",
       "./default-literal": "./src/default-literal.ts",
       "./env.d.ts": "./src/env.d.ts",
-      "./config.json": "./src/assets/config.json"
+      "./config.json": "./src/assets/config.json",
+      "./assets/test.txt": "./assets/test.txt"
     },
     "bin": "./src/index.ts"
   },
@@ -111,6 +112,7 @@
       "require": "./dist/default-literal.cjs"
     },
     "./env.d.ts": "./dist/env.d.ts",
-    "./config.json": "./dist/assets/config.json"
+    "./config.json": "./dist/assets/config.json",
+    "./assets/test.txt": "./assets/test.txt"
   }
 }
