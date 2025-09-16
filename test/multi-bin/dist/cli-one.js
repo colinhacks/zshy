@@ -1,4 +1,4 @@
 #!/usr/bin/env node
+"use strict";
 console.log('cli-one');
-export {};
 //# sourceMappingURL=cli-one.js.map
