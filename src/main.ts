@@ -406,13 +406,11 @@ Examples:
      "files": ["**/*.js", "**/*.mjs", "**/*.cjs", "**/*.d.ts", "**/*.d.mts", "**/*.d.cts"]`
       );
     }
-  } else {
-    if (!pkgJson.files) {
-      emojiLog("⚠️", `The "files" key is missing in package.json. Setting to "${relOutDir}".`);
-      pkgJson.files = [relOutDir];
-      if (relOutDir !== relDeclarationDir) {
-        pkgJson.files.push(relDeclarationDir);
-      }
+  } else if (!pkgJson.files) {
+    emojiLog("⚠️", `The "files" key is missing in package.json. Setting to "${relOutDir}".`);
+    pkgJson.files = [relOutDir];
+    if (relOutDir !== relDeclarationDir) {
+      pkgJson.files.push(relDeclarationDir);
     }
   }
 
