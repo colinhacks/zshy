@@ -85,12 +85,14 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
   });
 
   // Create a transformer factory to resolve tsconfig paths
-  const pathsResolverTransformer = config.paths ? createPathsResolverTransformer({
-    baseUrl: config.baseUrl,
-    paths: config.paths,
-    tsconfigDir: path.dirname(config.configPath),
-    rootDir: config.rootDir,
-  }) : null;
+  const pathsResolverTransformer = config.paths
+    ? createPathsResolverTransformer({
+        baseUrl: config.baseUrl,
+        paths: config.paths,
+        tsconfigDir: path.dirname(config.configPath),
+        rootDir: config.rootDir,
+      })
+    : null;
 
   // Create a transformer factory to rewrite extensions
   const extensionRewriteTransformer = createExtensionRewriteTransformer({
@@ -147,18 +149,18 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
 
   // Prepare transformers
   const before: ts.TransformerFactory<ts.SourceFile>[] = [];
-  
+
   // Add paths resolver transformer first if paths are configured
   if (pathsResolverTransformer) {
     before.push(pathsResolverTransformer as ts.TransformerFactory<ts.SourceFile>);
   }
-  
+
   // Then add extension rewriter
   before.push(extensionRewriteTransformer as ts.TransformerFactory<ts.SourceFile>);
-  
+
   const after: ts.TransformerFactory<ts.SourceFile>[] = [];
   const afterDeclarations: ts.TransformerFactory<ts.SourceFile | ts.Bundle>[] = [];
-  
+
   // Add transformers for declarations
   if (pathsResolverTransformer) {
     afterDeclarations.push(pathsResolverTransformer);

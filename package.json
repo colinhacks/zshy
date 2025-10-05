@@ -51,13 +51,13 @@
   },
   "dependencies": {
     "arg": "^5.0.2",
-    "globby": "^14.1.0",
+    "fast-glob": "^3.3.2",
     "table": "^6.9.0"
   },
   "scripts": {
     "build": "tsx src/index.ts",
     "test": "vitest run",
-    "test:basic": "tsx ./src/index.ts --project ./test/tsconfig.basic.json",
+    "test:basic": "tsx ./src/index.ts --project ./test/basic/tsconfig.json --dry-run",
     "clean": "git clean -xdf . -e node_modules"
   },
   "zshy": {
