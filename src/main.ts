@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import parseArgs from "arg";
-import { globby } from "globby";
+import glob from "fast-glob";
 import { table } from "table";
 import * as ts from "typescript";
 import { type BuildContext, compileProject } from "./compile.js";
@@ -458,7 +458,7 @@ Examples:
         if (isVerbose) {
           emojiLog("🔍", `Matching glob: ${pattern}`);
         }
-        const wildcardFiles = await globby([pattern], {
+        const wildcardFiles = await glob(pattern, {
           ignore: ["**/*.d.ts", "**/*.d.mts", "**/*.d.cts"],
           cwd: pkgJsonDir,
         });
