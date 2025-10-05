@@ -58,23 +58,31 @@ pnpm add --save-dev zshy
 
 ### 2. Specify your entrypoint(s) in `package.json#zshy`:
 
+Single entrypoint:
+
 ```diff
+// package.json
+{
+  "name": "my-pkg",
+  "version": "1.0.0",
++ "zshy": "./src/index.ts"
+}
+```
+
+Multiple entrypoints:
+
+```diff
+// package.json
 {
   "name": "my-pkg",
   "version": "1.0.0",
 
-  // with a single entrypoint
-+ "zshy": "./src/index.ts"
-
-  // with multiple entrypoints (subpaths, wildcards, deep wildcards)
 + "zshy": {
-+   "main": "./src/index.ts",
-+   "module": "./src/index.ts",
 +   "exports": {
 +     ".": "./src/index.ts",
 +     "./utils": "./src/utils.ts",
-+     "./plugins/*": "./src/plugins/*",
-+     "./components/**/*": "./src/components/**/*"
++     "./plugins/*": "./src/plugins/*",               // wildcard
++     "./components/**/*": "./src/components/**/*"    // deep wildcard
 +   }
 + }
 }
