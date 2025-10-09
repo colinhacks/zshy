@@ -25,11 +25,11 @@ export const analyzeExports = (
       defaultExportNode = node;
     }
     // 3) named re-exports (`export { a, b } from …` or `export { x }`)
-    else if (ts.isExportDeclaration(node) && node.exportClause) {
+    else if (ts.isExportDeclaration(node) && node.exportClause && !node.isTypeOnly) {
       hasNamedExports = true;
     }
     // 3a) export * from "module" - also counts as named exports
-    else if (ts.isExportDeclaration(node) && !node.exportClause && node.moduleSpecifier) {
+    else if (ts.isExportDeclaration(node) && !node.exportClause && node.moduleSpecifier && !node.isTypeOnly) {
       hasNamedExports = true;
     }
     // 4) named `export const/let/var …`
