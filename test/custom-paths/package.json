@@ -24,7 +24,8 @@
     ".": {
       "types": "./dist/types/src/index.d.cts",
       "import": "./dist/build/src/index.js",
-      "require": "./dist/build/src/index.cjs"
+      "require": "./dist/build/src/index.cjs",
+      "default": "./dist/build/src/index.js"
     }
   }
 }
