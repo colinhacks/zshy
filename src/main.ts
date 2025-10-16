@@ -17,8 +17,6 @@ import {
 
 interface RawConfig {
   exports?: Record<string, string>;
-  main?: string;
-  module?: string;
   bin?: Record<string, string> | string | null;
   cjs?: boolean | null;
   conditions?: Record<string, "esm" | "cjs" | "src">;
@@ -28,8 +26,6 @@ interface RawConfig {
 
 interface NormalizedConfig {
   exports: Record<string, string>;
-  main?: string;
-  module?: string;
   bin: Record<string, string> | string | null;
   conditions: Record<string, "esm" | "cjs" | "src">;
   cjs: boolean;
@@ -208,11 +204,8 @@ Examples:
     if (typeof rawConfig.exports === "string") {
       rawConfig.exports = { ".": rawConfig.exports };
     } else if (typeof rawConfig.exports === "undefined") {
-      // Check if at least one of exports, main, or module are provided
-      if (!rawConfig.main && !rawConfig.module) {
-        emojiLog("❌", `Missing "exports", "main", or "module" key in package.json#/${CONFIG_KEY}`, "error");
-        process.exit(1);
-      }
+      emojiLog("❌", `Missing "exports" key in package.json#/${CONFIG_KEY}`, "error");
+      process.exit(1);
     } else if (typeof rawConfig.exports !== "object") {
       emojiLog("❌", `Invalid "exports" key in package.json#/${CONFIG_KEY}`, "error");
       process.exit(1);
@@ -432,27 +425,7 @@ Examples:
 
   const rows: string[][] = [["Subpath", "Entrypoint"]];
 
-  // Extract entry points from exports, main, and/or module
-  const entryPointSources: Array<{ exportPath: string; sourcePath: string }> = [];
-
-  // Add exports if specified
-  if (config.exports) {
-    for (const [exportPath, sourcePath] of Object.entries(config.exports)) {
-      entryPointSources.push({ exportPath, sourcePath });
-    }
-  }
-
-  // Add main if specified
-  if (config.main) {
-    entryPointSources.push({ exportPath: ".", sourcePath: config.main });
-  }
-
-  // Add module if specified and different from main
-  if (config.module && config.module !== config.main) {
-    entryPointSources.push({ exportPath: ".", sourcePath: config.module });
-  }
-
-  for (const { exportPath, sourcePath } of entryPointSources) {
+  for (const [exportPath, sourcePath] of Object.entries(config.exports ?? {})) {
     if (exportPath.includes("package.json")) continue;
     let cleanExportPath!: string;
     if (exportPath === ".") {
@@ -550,7 +523,7 @@ Examples:
   if (entryPoints.length === 0) {
     emojiLog(
       "❌",
-      "No entry points found matching the specified patterns in package.json#/zshy exports, main, module, or bin",
+      "No entry points found matching the specified patterns in package.json#/zshy exports or bin",
       "error"
     );
     process.exit(1);
@@ -807,22 +780,6 @@ Examples:
   ///   generate exports      ///
   ///////////////////////////////
 
-  // Helper function to generate package.json field paths from a source file path
-  const generatePackageJsonPaths = (sourcePath: string): { cjsPath?: string; esmPath: string; dtsPath: string } => {
-    const absSourcePath = path.resolve(pkgJsonDir, sourcePath);
-    const relSourcePath = path.relative(rootDir, absSourcePath);
-    const absJsPath = path.resolve(outDir, relSourcePath);
-    const absDtsPath = path.resolve(declarationDir, relSourcePath);
-
-    const cjsPath = skipCjs
-      ? undefined
-      : "./" + relativePosix(pkgJsonDir, removeExtension(absJsPath) + (isTypeModule ? ".cjs" : ".js"));
-    const esmPath = "./" + relativePosix(pkgJsonDir, removeExtension(absJsPath) + (isTypeModule ? ".js" : ".mjs"));
-    const dtsPath = "./" + relativePosix(pkgJsonDir, removeExtension(absDtsPath) + ".d.ts");
-
-    return { cjsPath, esmPath, dtsPath };
-  };
-
   // generate package.json exports
   if (config.noEdit) {
     emojiLog("📦", "[noedit] Skipping modification of package.json");
@@ -974,40 +931,9 @@ Examples:
         }
       }
 
-      // Set exports if they were specified in the zshy config
-      if (config.exports) {
-        pkgJson.exports = newExports;
-        if (isVerbose) {
-          emojiLog("🔧", `Setting "exports": ${formatForLog(newExports)}`);
-        }
-      }
-
-      // Handle main field if specified
-      if (config.main) {
-        const { cjsPath, dtsPath } = generatePackageJsonPaths(config.main);
-
-        if (cjsPath) {
-          pkgJson.main = cjsPath;
-        }
-        pkgJson.types = dtsPath;
-
-        if (isVerbose) {
-          if (cjsPath) {
-            emojiLog("🔧", `Setting "main": ${formatForLog(cjsPath)}`);
-          }
-          emojiLog("🔧", `Setting "types": ${formatForLog(dtsPath)}`);
-        }
-      }
-
-      // Handle module field if specified
-      if (config.module) {
-        const { esmPath } = generatePackageJsonPaths(config.module);
-
-        pkgJson.module = esmPath;
-
-        if (isVerbose) {
-          emojiLog("🔧", `Setting "module": ${formatForLog(esmPath)}`);
-        }
+      pkgJson.exports = newExports;
+      if (isVerbose) {
+        emojiLog("🔧", `Setting "exports": ${formatForLog(newExports)}`);
       }
     }
 

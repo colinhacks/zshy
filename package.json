@@ -76,8 +76,7 @@
       "@zod/source": "./src/index.ts",
       "types": "./dist/index.d.cts",
       "import": "./dist/index.js",
-      "require": "./dist/index.cjs",
-      "default": "./dist/index.js"
+      "require": "./dist/index.cjs"
     }
   },
   "files": [

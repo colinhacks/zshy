@@ -32,8 +32,7 @@
     ".": {
       "types": "./index.d.cts",
       "import": "./index.js",
-      "require": "./index.cjs",
-      "default": "./index.js"
+      "require": "./index.cjs"
     }
   }
 }

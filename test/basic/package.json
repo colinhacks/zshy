@@ -44,26 +44,22 @@
     ".": {
       "types": "./dist/index.d.cts",
       "import": "./dist/index.js",
-      "require": "./dist/index.cjs",
-      "default": "./dist/index.js"
+      "require": "./dist/index.cjs"
     },
     "./hello": {
       "types": "./dist/hello.d.cts",
       "import": "./dist/hello.js",
-      "require": "./dist/hello.cjs",
-      "default": "./dist/hello.js"
+      "require": "./dist/hello.cjs"
     },
     "./utils": {
       "types": "./dist/utils.d.cts",
       "import": "./dist/utils.js",
-      "require": "./dist/utils.cjs",
-      "default": "./dist/utils.js"
+      "require": "./dist/utils.cjs"
     },
     "./plugins": {
       "types": "./dist/plugins/index.d.cts",
       "import": "./dist/plugins/index.js",
-      "require": "./dist/plugins/index.cjs",
-      "default": "./dist/plugins/index.js"
+      "require": "./dist/plugins/index.cjs"
     },
     "./plugins/*": {
       "types": "./dist/plugins/*",
@@ -73,56 +69,47 @@
     "./default-function": {
       "types": "./dist/default-function.d.cts",
       "import": "./dist/default-function.js",
-      "require": "./dist/default-function.cjs",
-      "default": "./dist/default-function.js"
+      "require": "./dist/default-function.cjs"
     },
     "./default-class": {
       "types": "./dist/default-class.d.cts",
       "import": "./dist/default-class.js",
-      "require": "./dist/default-class.cjs",
-      "default": "./dist/default-class.js"
+      "require": "./dist/default-class.cjs"
     },
     "./default-object": {
       "types": "./dist/default-object.d.cts",
       "import": "./dist/default-object.js",
-      "require": "./dist/default-object.cjs",
-      "default": "./dist/default-object.js"
+      "require": "./dist/default-object.cjs"
     },
     "./default-arrow": {
       "types": "./dist/default-arrow.d.cts",
       "import": "./dist/default-arrow.js",
-      "require": "./dist/default-arrow.cjs",
-      "default": "./dist/default-arrow.js"
+      "require": "./dist/default-arrow.cjs"
     },
     "./default-with-named": {
       "types": "./dist/default-with-named.d.cts",
       "import": "./dist/default-with-named.js",
-      "require": "./dist/default-with-named.cjs",
-      "default": "./dist/default-with-named.js"
+      "require": "./dist/default-with-named.cjs"
     },
     "./default-with-export-star": {
       "types": "./dist/default-with-export-star.d.cts",
       "import": "./dist/default-with-export-star.js",
-      "require": "./dist/default-with-export-star.cjs",
-      "default": "./dist/default-with-export-star.js"
+      "require": "./dist/default-with-export-star.cjs"
     },
     "./default-export-equals": {
       "types": "./dist/default-export-equals.d.cts",
       "import": "./dist/default-export-equals.js",
-      "require": "./dist/default-export-equals.cjs",
-      "default": "./dist/default-export-equals.js"
+      "require": "./dist/default-export-equals.cjs"
     },
     "./default-const": {
       "types": "./dist/default-const.d.cts",
       "import": "./dist/default-const.js",
-      "require": "./dist/default-const.cjs",
-      "default": "./dist/default-const.js"
+      "require": "./dist/default-const.cjs"
     },
     "./default-literal": {
       "types": "./dist/default-literal.d.cts",
       "import": "./dist/default-literal.js",
-      "require": "./dist/default-literal.cjs",
-      "default": "./dist/default-literal.js"
+      "require": "./dist/default-literal.cjs"
     },
     "./env.d.ts": "./dist/env.d.ts",
     "./config.json": "./dist/assets/config.json",

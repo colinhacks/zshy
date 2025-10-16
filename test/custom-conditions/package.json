@@ -33,8 +33,7 @@
       "custom-src": "./src/index.ts",
       "types": "./dist/index.d.cts",
       "import": "./dist/index.js",
-      "require": "./dist/index.cjs",
-      "default": "./dist/index.js"
+      "require": "./dist/index.cjs"
     },
     "./utils": {
       "custom-esm": "./dist/utils.js",
@@ -42,8 +41,7 @@
       "custom-src": "./src/utils.ts",
       "types": "./dist/utils.d.cts",
       "import": "./dist/utils.js",
-      "require": "./dist/utils.cjs",
-      "default": "./dist/utils.js"
+      "require": "./dist/utils.cjs"
     }
   }
 }
