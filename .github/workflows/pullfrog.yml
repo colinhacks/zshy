@@ -1,0 +1,30 @@
+name: Pullfrog
+on:
+  workflow_dispatch:
+    inputs:
+      prompt:
+        type: string
+        description: 'Agent prompt'
+  workflow_call:
+    inputs:
+      prompt:
+        description: 'Agent prompt'
+        type: string
+
+permissions:
+  id-token: write
+
+jobs:
+  agent-run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Run agent
+        uses: pullfrog/action@v0
+        with:
+          prompt: ${{ github.event.inputs.prompt }}
+          github_installation_token: ${{ secrets.GITHUB_INSTALLATION_TOKEN }}
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
