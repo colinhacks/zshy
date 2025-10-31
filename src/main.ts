@@ -32,6 +32,24 @@ interface NormalizedConfig {
   tsconfig: string;
   noEdit: boolean;
 }
+
+const getVerbosity = (
+  verbosityArg: string | undefined,
+  verboseFlag: boolean | undefined
+): "verbose" | "normal" | "silent" => {
+  switch (verbosityArg) {
+    case "verbose":
+      return "verbose";
+    case "silent":
+      return "silent";
+    default:
+      if (verboseFlag === true) {
+        return "verbose";
+      }
+      return "normal";
+  }
+};
+
 export async function main(): Promise<void> {
   ///////////////////////////////////
   ///    parse command line args  ///
@@ -43,6 +61,7 @@ export async function main(): Promise<void> {
     args = parseArgs({
       "--help": Boolean,
       "--verbose": Boolean,
+      "--verbosity": String, // Either 'verbose', 'normal' or 'silent'
       "--project": String,
       "--dry-run": Boolean,
       "--fail-threshold": String,
@@ -69,6 +88,7 @@ Options:
   -h, --help                        Show this help message
   -p, --project <path>              Path to tsconfig.json file
       --verbose                     Enable verbose output
+      --verbosity <level>           Set the verbosity level (either "verbose", "normal", or "silent", default: "normal")
       --dry-run                     Don't write any files, just log what would be done
       --fail-threshold <threshold>  When to exit with non-zero error code
                                       "error" (default)
@@ -78,7 +98,7 @@ Options:
 Examples:
   zshy                                    # Run build
   zshy --project ./tsconfig.build.json    # Use specific tsconfig file (defaults to tsconfig.json)
-  zshy --verbose                          # Enable verbose logging
+  zshy --verbosity verbose                # Enable verbose logging
   zshy --dry-run                          # Preview changes without writing files
 		`);
     process.exit(0);
@@ -94,13 +114,14 @@ Examples:
   } else {
     pmExec = "npx";
   }
+  const logVerbosity = getVerbosity(args["--verbosity"], args["--verbose"]);
 
-  console.log(`   ╔═══════════════════════════════════════════════╗`);
-  console.log(`   ║ zshy » the bundler-free TypeScript build tool ║`);
-  console.log(`   ╚═══════════════════════════════════════════════╝`);
-  emojiLog("💎", "Starting build...");
+  if (logVerbosity !== "silent") {
+    console.log(`   ╔═══════════════════════════════════════════════╗`);
+    console.log(`   ║ zshy » the bundler-free TypeScript build tool ║`);
+    console.log(`   ╚═══════════════════════════════════════════════╝`);
+  }
 
-  const isVerbose = !!args["--verbose"];
   const isDryRun = !!args["--dry-run"];
   const failThreshold = args["--fail-threshold"] || "error"; // Default to 'error'
 
@@ -118,7 +139,7 @@ Examples:
 
   const isAttw = false; // args["--attw"];
 
-  if (isVerbose) {
+  if (logVerbosity === "verbose") {
     emojiLog("ℹ️", "Verbose mode enabled");
     emojiLog("📦", `Detected package manager: ${pmExec}`);
   }
@@ -128,7 +149,7 @@ Examples:
   }
 
   // Display message about fail threshold setting
-  if (isVerbose) {
+  if (logVerbosity === "verbose") {
     if (failThreshold === "never") {
       emojiLog("ℹ️", "Build will always succeed regardless of errors or warnings");
     } else if (failThreshold === "warn") {
@@ -177,8 +198,11 @@ Examples:
   const pkgJsonRelPath = relativePosix(pkgJsonDir, packageJsonPath);
 
   // print project root
-  emojiLog("⚙️", `Detected project root: ${pkgJsonDir}`);
-  emojiLog("📦", `Reading package.json from ./${pkgJsonRelPath}`);
+  if (logVerbosity !== "silent") {
+    emojiLog("💎", "Starting build...");
+    emojiLog("⚙️", `Detected project root: ${pkgJsonDir}`);
+    emojiLog("📦", `Reading package.json from ./${pkgJsonRelPath}`);
+  }
 
   /////////////////////////////////
   ///    parse zshy config      ///
@@ -250,7 +274,7 @@ Examples:
     process.exit(1);
   }
 
-  if (isVerbose) {
+  if (logVerbosity === "verbose") {
     emojiLog("🔧", `Parsed zshy config: ${formatForLog(rawConfig)}`);
   }
 
@@ -353,7 +377,9 @@ Examples:
     emojiLog("❌", `tsconfig.json not found at ${toPosix(path.resolve(tsconfigPath))}`, "error");
     process.exit(1);
   }
-  emojiLog("📁", `Reading tsconfig from ./${relativePosix(pkgJsonDir, tsconfigPath)}`);
+  if (logVerbosity !== "silent") {
+    emojiLog("📁", `Reading tsconfig from ./${relativePosix(pkgJsonDir, tsconfigPath)}`);
+  }
 
   // if (_parsedConfig.rootDir) {
   // 	console.error(
@@ -419,7 +445,9 @@ Examples:
   /////////////////////////////////
 
   // Extract entry points from zshy exports config
-  emojiLog("➡️", "Determining entrypoints...");
+  if (logVerbosity !== "silent") {
+    emojiLog("➡️", "Determining entrypoints...");
+  }
   const entryPoints: string[] = [];
   const assetEntrypoints: Array<{ exportPath: string; sourcePath: string }> = [];
 
@@ -453,7 +481,7 @@ Examples:
           pattern = sourcePath.slice(0, -2) + "/*.{ts,tsx,mts,cts}";
         }
 
-        if (isVerbose) {
+        if (logVerbosity === "verbose") {
           emojiLog("🔍", `Matching glob: ${pattern}`);
         }
         const wildcardFiles = await glob(pattern, {
@@ -494,22 +522,24 @@ Examples:
     }
   }
 
-  console.log(
-    "   " +
-      table(rows, {
-        drawHorizontalLine: (lineIndex, rowCount) => {
-          return (
-            lineIndex === 0 ||
-            lineIndex === 1 ||
-            // lineIndex === rowCount - 1 ||
-            lineIndex === rowCount
-          );
-        },
-      })
-        .split("\n")
-        .join("\n   ")
-        .trim()
-  );
+  if (logVerbosity !== "silent") {
+    console.log(
+      "   " +
+        table(rows, {
+          drawHorizontalLine: (lineIndex, rowCount) => {
+            return (
+              lineIndex === 0 ||
+              lineIndex === 1 ||
+              // lineIndex === rowCount - 1 ||
+              lineIndex === rowCount
+            );
+          },
+        })
+          .split("\n")
+          .join("\n   ")
+          .trim()
+    );
+  }
 
   // disallow .mts and .cts files
   // if (entryPoints.some((ep) => ep.endsWith(".mts") || ep.endsWith(".cts"))) {
@@ -567,7 +597,9 @@ Examples:
   //////////////////////////////////
   ///   display resolved paths   ///
   //////////////////////////////////
-  emojiLog("🔧", "Resolved build paths:");
+  if (logVerbosity !== "silent") {
+    emojiLog("🔧", "Resolved build paths:");
+  }
   const pathRows: string[][] = [["Location", "Resolved path"]];
 
   pathRows.push(["rootDir", relRootDir ? `./${relRootDir}` : "."]);
@@ -577,31 +609,35 @@ Examples:
     pathRows.push(["declarationDir", relDeclarationDir ? `./${relDeclarationDir}` : "."]);
   }
 
-  console.log(
-    "   " +
-      table(pathRows, {
-        drawHorizontalLine: (lineIndex, rowCount) => {
-          return (
-            lineIndex === 0 ||
-            lineIndex === 1 ||
-            // lineIndex === rowCount - 1 ||
-            lineIndex === rowCount
-          );
-        },
-      })
-        .split("\n")
-        .join("\n   ")
-        .trim()
-  );
+  if (logVerbosity !== "silent") {
+    console.log(
+      "   " +
+        table(pathRows, {
+          drawHorizontalLine: (lineIndex, rowCount) => {
+            return (
+              lineIndex === 0 ||
+              lineIndex === 1 ||
+              // lineIndex === rowCount - 1 ||
+              lineIndex === rowCount
+            );
+          },
+        })
+          .split("\n")
+          .join("\n   ")
+          .trim()
+    );
+  }
 
   const isTypeModule = pkgJson.type === "module";
-  if (isTypeModule) {
-    emojiLog("🟨", `Package is an ES module (package.json#/type is "module")`);
-  } else {
-    emojiLog(
-      "🐢",
-      `Package is a CommonJS module (${pkgJson.type === "commonjs" ? 'package.json#/type is "commonjs"' : 'package.json#/type not set to "module"'})`
-    );
+  if (logVerbosity !== "silent") {
+    if (isTypeModule) {
+      emojiLog("🟨", `Package is an ES module (package.json#/type is "module")`);
+    } else {
+      emojiLog(
+        "🐢",
+        `Package is a CommonJS module (${pkgJson.type === "commonjs" ? 'package.json#/type is "commonjs"' : 'package.json#/type not set to "module"'})`
+      );
+    }
   }
 
   //////////////////////////////////////////////
@@ -609,16 +645,20 @@ Examples:
   //////////////////////////////////////////////
   const prefix = isDryRun ? "[dryrun] " : "";
   if (relRootDir.startsWith(relOutDir)) {
-    emojiLog("🗑️", `${prefix}Skipping cleanup of outDir as it contains source files`);
+    if (logVerbosity !== "silent") {
+      emojiLog("🗑️", `${prefix}Skipping cleanup of outDir as it contains source files`);
+    }
   } else {
     // source files are in the outDir, so skip cleanup
     // clean up outDir and declarationDir
-    emojiLog("🗑️", `${prefix}Cleaning up outDir...`);
+    if (logVerbosity !== "silent") {
+      emojiLog("🗑️", `${prefix}Cleaning up outDir...`);
+    }
     if (!isDryRun) {
       fs.rmSync(outDir, { recursive: true, force: true });
 
       // // print success message in verbose mode
-      if (isVerbose) {
+      if (logVerbosity === "verbose") {
         if (fs.existsSync(outDir)) {
           emojiLog("❌", `Failed to clean up outDir: ${relOutDir}. Directory still exists.`, "error");
         }
@@ -628,13 +668,17 @@ Examples:
   if (relDeclarationDir !== relOutDir) {
     // already done
   } else if (relRootDir.startsWith(relDeclarationDir)) {
-    emojiLog("🗑️", `${prefix}Skipping cleanup of declarationDir as it contains source files`);
+    if (logVerbosity !== "silent") {
+      emojiLog("🗑️", `${prefix}Skipping cleanup of declarationDir as it contains source files`);
+    }
   } else {
-    emojiLog("🗑️", `${prefix}Cleaning up declarationDir...`);
+    if (logVerbosity !== "silent") {
+      emojiLog("🗑️", `${prefix}Cleaning up declarationDir...`);
+    }
     if (!isDryRun) {
       fs.rmSync(declarationDir, { recursive: true, force: true });
       // // print success message in verbose mode
-      if (isVerbose) {
+      if (logVerbosity === "verbose") {
         if (fs.existsSync(declarationDir)) {
           emojiLog("❌", `Failed to clean up declarationDir: ${relDeclarationDir}. Directory still exists.`, "error");
         }
@@ -648,7 +692,7 @@ Examples:
 
   const uniqueEntryPoints = [...new Set(entryPoints)];
   // try {
-  if (isVerbose) {
+  if (logVerbosity === "verbose") {
     emojiLog("→", `Resolved entrypoints: ${formatForLog(uniqueEntryPoints)}`);
     emojiLog(
       "→",
@@ -674,13 +718,15 @@ Examples:
 
   // CJS
   if (!skipCjs) {
-    emojiLog("🧱", `Building CJS...${isTypeModule ? ` (rewriting .ts -> .cjs/.d.cts)` : ``}`);
+    if (logVerbosity !== "silent") {
+      emojiLog("🧱", `Building CJS...${isTypeModule ? ` (rewriting .ts -> .cjs/.d.cts)` : ``}`);
+    }
     await compileProject(
       {
         configPath: tsconfigPath,
         ext: isTypeModule ? "cjs" : "js",
         format: "cjs",
-        verbose: isVerbose,
+        verbose: logVerbosity === "verbose",
         dryRun: isDryRun,
         pkgJsonDir,
         rootDir,
@@ -696,17 +742,21 @@ Examples:
       buildContext
     );
   } else {
-    emojiLog("⏭️", "Skipping CJS build (cjs: false)");
+    if (logVerbosity !== "silent") {
+      emojiLog("⏭️", "Skipping CJS build (cjs: false)");
+    }
   }
 
   // ESM
-  emojiLog("🧱", `Building ESM...${isTypeModule ? `` : ` (rewriting .ts -> .mjs/.d.mts)`}`);
+  if (logVerbosity !== "silent") {
+    emojiLog("🧱", `Building ESM...${isTypeModule ? `` : ` (rewriting .ts -> .mjs/.d.mts)`}`);
+  }
   await compileProject(
     {
       configPath: tsconfigPath,
       ext: isTypeModule ? "js" : "mjs",
       format: "esm",
-      verbose: isVerbose,
+      verbose: logVerbosity === "verbose",
       dryRun: isDryRun,
       pkgJsonDir,
       rootDir,
@@ -728,7 +778,9 @@ Examples:
 
   // Copy asset entrypoints to output directory
   if (assetEntrypoints.length > 0) {
-    emojiLog("📄", `${prefix}Copying ${assetEntrypoints.length} asset${assetEntrypoints.length === 1 ? "" : "s"}...`);
+    if (logVerbosity !== "silent") {
+      emojiLog("📄", `${prefix}Copying ${assetEntrypoints.length} asset${assetEntrypoints.length === 1 ? "" : "s"}...`);
+    }
 
     for (const { sourcePath } of assetEntrypoints) {
       const sourceFile = path.resolve(pkgJsonDir, sourcePath);
@@ -749,7 +801,7 @@ Examples:
       // Track the copied file
       buildContext.copiedAssets.add(toPosix(path.relative(pkgJsonDir, destFile)));
 
-      if (isVerbose) {
+      if (logVerbosity === "verbose") {
         const relativeSource = toPosix(path.relative(pkgJsonDir, sourceFile));
         const relativeDest = toPosix(path.relative(pkgJsonDir, destFile));
         emojiLog("📋", `${isDryRun ? "[dryrun] " : ""}Copied asset: ./${relativeSource} → ./${relativeDest}`);
@@ -762,7 +814,7 @@ Examples:
   ///////////////////////////////////
 
   // Display files that were written or would be written (only in verbose mode)
-  if (isVerbose && buildContext.writtenFiles.size > 0) {
+  if (logVerbosity === "verbose" && buildContext.writtenFiles.size > 0) {
     emojiLog("📜", `${prefix}Writing files (${buildContext.writtenFiles.size} total)...`);
 
     // Sort files by relative path for consistent display
@@ -782,10 +834,14 @@ Examples:
 
   // generate package.json exports
   if (config.noEdit) {
-    emojiLog("📦", "[noedit] Skipping modification of package.json");
+    if (logVerbosity !== "silent") {
+      emojiLog("📦", "[noedit] Skipping modification of package.json");
+    }
   } else {
     // Generate exports based on zshy config
-    emojiLog("📦", `${prefix}Updating package.json...`);
+    if (logVerbosity !== "silent") {
+      emojiLog("📦", `${prefix}Updating package.json...`);
+    }
     const newExports: Record<string, any> = {};
 
     if (config.exports) {
@@ -888,7 +944,7 @@ Examples:
                 pkgJson.module = esmPath;
                 pkgJson.types = dtsPath;
               }
-              if (isVerbose) {
+              if (logVerbosity === "verbose") {
                 emojiLog("🔧", `Setting "main": ${formatForLog(cjsPath)}`);
                 emojiLog("🔧", `Setting "module": ${formatForLog(esmPath)}`);
                 emojiLog("🔧", `Setting "types": ${formatForLog(dtsPath)}`);
@@ -923,7 +979,7 @@ Examples:
             pkgJson.module = relAssetPath;
             pkgJson.types = relAssetPath;
           }
-          if (isVerbose) {
+          if (logVerbosity === "verbose") {
             emojiLog("🔧", `Setting "main": ${formatForLog(relAssetPath)}`);
             emojiLog("🔧", `Setting "module": ${formatForLog(relAssetPath)}`);
             emojiLog("🔧", `Setting "types": ${formatForLog(relAssetPath)}`);
@@ -932,7 +988,7 @@ Examples:
       }
 
       pkgJson.exports = newExports;
-      if (isVerbose) {
+      if (logVerbosity === "verbose") {
         emojiLog("🔧", `Setting "exports": ${formatForLog(newExports)}`);
       }
     }
@@ -970,7 +1026,7 @@ Examples:
         pkgJson.bin = newBin;
       }
 
-      if (isVerbose) {
+      if (logVerbosity === "verbose") {
         emojiLog("🔧", `Setting "bin": ${formatForLog(pkgJson.bin)}`);
       }
     }
@@ -988,7 +1044,9 @@ Examples:
   if (isAttw) {
     // run `@arethetypeswrong/cli --pack .` to check types
 
-    emojiLog("🔍", "Checking types with @arethetypeswrong/cli...");
+    if (logVerbosity !== "silent") {
+      emojiLog("🔍", "Checking types with @arethetypeswrong/cli...");
+    }
     const { execFile } = await import("node:child_process");
     const { promisify } = await import("node:util");
 
@@ -1053,6 +1111,8 @@ Examples:
       emojiLog("🎉", `Build complete with warnings`);
     }
   } else {
-    emojiLog("🎉", "Build complete! ✅");
+    if (logVerbosity !== "silent") {
+      emojiLog("🎉", `${pkgJson.name} - Build complete! ✅`);
+    }
   }
 }
