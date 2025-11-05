@@ -121,6 +121,7 @@ Examples:
     console.log(`   ╔═══════════════════════════════════════════════╗`);
     console.log(`   ║ zshy » the bundler-free TypeScript build tool ║`);
     console.log(`   ╚═══════════════════════════════════════════════╝`);
+    emojiLog("💎", "Starting build...");
   }
 
   const isDryRun = !!args["--dry-run"];
@@ -200,7 +201,6 @@ Examples:
 
   // print project root
   if (logVerbosity !== "silent") {
-    emojiLog("💎", "Starting build...");
     emojiLog("⚙️", `Detected project root: ${pkgJsonDir}`);
     emojiLog("📦", `Reading package.json from ./${pkgJsonRelPath}`);
   }
@@ -1128,7 +1128,7 @@ Examples:
     }
   } else {
     if (logVerbosity !== "silent") {
-      emojiLog("🎉", `${pkgJson.name} - Build complete! ✅`);
+      emojiLog("🎉", "Build complete! ✅");
     }
   }
 }
