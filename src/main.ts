@@ -22,6 +22,9 @@ interface RawConfig {
   conditions?: Record<string, "esm" | "cjs" | "src">;
   tsconfig?: string; // optional path to tsconfig.json file
   noEdit?: boolean;
+  // Array of glob patterns (relative to package root) to ignore when discovering
+  // wildcard entrypoints. Acts like tsconfig "exclude" for zshy builds.
+  ignore?: string[];
 }
 
 interface NormalizedConfig {
@@ -31,6 +34,7 @@ interface NormalizedConfig {
   cjs: boolean;
   tsconfig: string;
   noEdit: boolean;
+  ignore?: string[];
 }
 export async function main(): Promise<void> {
   ///////////////////////////////////
@@ -242,6 +246,18 @@ Examples:
         process.exit(1);
       }
     }
+
+    // Validate ignore globs if present
+    if (rawConfig.ignore !== undefined) {
+      if (!Array.isArray(rawConfig.ignore) || rawConfig.ignore.some((g) => typeof g !== "string")) {
+        emojiLog(
+          "❌",
+          `Invalid "ignore" key in package.json#/${CONFIG_KEY}, expected an array of glob strings`,
+          "error"
+        );
+        process.exit(1);
+      }
+    }
   } else if (typeof pkgJson[CONFIG_KEY] === "undefined") {
     emojiLog("❌", `Missing "${CONFIG_KEY}" key in package.json`, "error");
     process.exit(1);
@@ -271,6 +287,8 @@ Examples:
     config.cjs = true; // Default to true if not specified
   }
   config.noEdit ??= false;
+  // Normalize ignore to an array (or undefined)
+  if (config.ignore && config.ignore.length === 0) config.ignore = undefined;
 
   // Validate that if cjs is disabled, no conditions are set to "cjs"
   if (config.cjs === false && config.conditions) {
@@ -457,8 +475,16 @@ Examples:
           emojiLog("🔍", `Matching glob: ${pattern}`);
         }
         const wildcardFiles = await glob(pattern, {
-          ignore: ["**/*.d.ts", "**/*.d.mts", "**/*.d.cts"],
+          // Treat zshy.ignore like tsconfig "exclude". Apply on wildcard
+          // discovery so these files never become tsc rootNames.
+          ignore: [
+            "**/*.d.ts",
+            "**/*.d.mts",
+            "**/*.d.cts",
+            ...(config.ignore ?? []),
+          ],
           cwd: pkgJsonDir,
+          dot: true,
         });
         entryPoints.push(...wildcardFiles);
 
@@ -527,6 +553,32 @@ Examples:
       "error"
     );
     process.exit(1);
+  }
+
+
+  // If ignore is specified, also remove any explicitly matched files that
+  // might have slipped in via non-wildcard entries. We compute the ignored
+  // set once using fast-glob and filter entryPoints by relative posix path.
+  if (config.ignore && config.ignore.length > 0) {
+    const ignoredSet = new Set<string>();
+    // Resolve each ignore pattern to file paths
+    for (const patt of config.ignore) {
+      const matches = await glob(patt, { cwd: pkgJsonDir, dot: true });
+      for (const m of matches) ignoredSet.add(toPosix(m));
+    }
+
+    const before = entryPoints.length;
+    // Filter entryPoints if they are in the ignored set
+    const filtered = entryPoints.filter((ep) => {
+      const rel = toPosix(path.relative(pkgJsonDir, path.resolve(pkgJsonDir, ep)));
+      return !ignoredSet.has(rel);
+    });
+    if (filtered.length !== before) {
+      const removed = before - filtered.length;
+      emojiLog("⚠️", `Ignoring ${removed} file${removed === 1 ? "" : "s"} via zshy.ignore`);
+    }
+    entryPoints.length = 0;
+    entryPoints.push(...filtered);
   }
 
   ///////////////////////////////
