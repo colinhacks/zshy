@@ -1,0 +1,10 @@
+{
+  "description": "Test: Reproduces issue #53 - test files in __tests__ directories being included in build output",
+  "extends": "../tsconfig.default.json",
+  "compilerOptions": {
+    "outDir": "./dist"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}
+

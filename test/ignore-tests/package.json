@@ -1,0 +1,42 @@
+{
+  "name": "test-ignore-tests",
+  "version": "1.0.0",
+  "description": "Test fixture for issue #53 - tests in __tests__ directories being included in build",
+  "type": "module",
+  "scripts": {
+    "build": "tsx ../../src/index.ts --project tsconfig.json"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  },
+  "zshy": {
+    "exports": {
+      ".": "./src/index.ts",
+      "./utils/*": "./src/utils/**/*",
+      "./components/*": "./src/components/*"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.cts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.cts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./utils/*": {
+      "types": "./dist/utils/*",
+      "import": "./dist/utils/*",
+      "require": "./dist/utils/*"
+    },
+    "./components/*": {
+      "types": "./dist/components/*",
+      "import": "./dist/components/*",
+      "require": "./dist/components/*"
+    }
+  }
+}

@@ -90,3 +90,20 @@ export const relativePosix = (from: string, to: string): string => {
   const relativePath = path.relative(from, to);
   return toPosix(relativePath);
 };
+
+export function isTestFile(filePath: string): boolean {
+  const posixPath = toPosix(filePath);
+
+  // Exclude files in __tests__ directories
+  if (posixPath.includes("/__tests__/") || posixPath.includes("\\__tests__\\")) {
+    return true;
+  }
+
+  // Exclude files matching .test.{ext} or .spec.{ext} pattern
+  const testPattern = /\.(test|spec)\.(ts|tsx|mts|cts)$/;
+  if (testPattern.test(filePath)) {
+    return true;
+  }
+
+  return false;
+}

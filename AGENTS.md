@@ -1,0 +1,2 @@
+- use `pnpm`
+- use Vitest for testing
