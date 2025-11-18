@@ -6,13 +6,14 @@ import { table } from "table";
 import * as ts from "typescript";
 import { type BuildContext, compileProject } from "./compile.js";
 import {
-  emojiLog,
   formatForLog,
   isSourceFile,
   isTestFile,
+  log,
   readTsconfig,
   relativePosix,
   removeExtension,
+  setSilent,
   toPosix,
 } from "./utils.js";
 
@@ -33,7 +34,10 @@ interface NormalizedConfig {
   tsconfig: string;
   noEdit: boolean;
 }
+
 export async function main(): Promise<void> {
+  log.prefix = "»  ";
+
   ///////////////////////////////////
   ///    parse command line args  ///
   ///////////////////////////////////
@@ -44,6 +48,7 @@ export async function main(): Promise<void> {
     args = parseArgs({
       "--help": Boolean,
       "--verbose": Boolean,
+      "--silent": Boolean,
       "--project": String,
       "--dry-run": Boolean,
       "--fail-threshold": String,
@@ -55,7 +60,7 @@ export async function main(): Promise<void> {
     });
   } catch (error) {
     if (error instanceof Error) {
-      emojiLog("❌", error.message, "error");
+      log.error(`❌ ${error.message}`);
     }
     console.error(`Use --help for usage information`);
     process.exit(1);
@@ -70,6 +75,7 @@ Options:
   -h, --help                        Show this help message
   -p, --project <path>              Path to tsconfig.json file
       --verbose                     Enable verbose output
+      --silent                      Suppress all output
       --dry-run                     Don't write any files, just log what would be done
       --fail-threshold <threshold>  When to exit with non-zero error code
                                       "error" (default)
@@ -80,6 +86,7 @@ Examples:
   zshy                                    # Run build
   zshy --project ./tsconfig.build.json    # Use specific tsconfig file (defaults to tsconfig.json)
   zshy --verbose                          # Enable verbose logging
+  zshy --silent                           # Suppress all output
   zshy --dry-run                          # Preview changes without writing files
 		`);
     process.exit(0);
@@ -96,12 +103,27 @@ Examples:
     pmExec = "npx";
   }
 
-  console.log(`   ╔═══════════════════════════════════════════════╗`);
-  console.log(`   ║ zshy » the bundler-free TypeScript build tool ║`);
-  console.log(`   ╚═══════════════════════════════════════════════╝`);
-  emojiLog("💎", "Starting build...");
+  // Validate that --verbose and --silent are not both passed
+  if (args["--verbose"] && args["--silent"]) {
+    log.error("❌ Cannot use both --verbose and --silent flags together");
+    process.exit(1);
+  }
 
+  // Set silent mode if --silent flag is passed
+  const isSilent = !!args["--silent"];
   const isVerbose = !!args["--verbose"];
+  setSilent(isSilent);
+
+  if (!isSilent) {
+    const originalPrefix = log.prefix;
+    log.prefix = undefined;
+    log.info(`   ╔═══════════════════════════════════════════════╗`);
+    log.info(`   ║ zshy » the bundler-free TypeScript build tool ║`);
+    log.info(`   ╚═══════════════════════════════════════════════╝`);
+    log.prefix = originalPrefix;
+    log.info("Starting build...");
+  }
+
   const isDryRun = !!args["--dry-run"];
   const failThreshold = args["--fail-threshold"] || "error"; // Default to 'error'
 
@@ -109,10 +131,8 @@ Examples:
 
   // Validate that the threshold value is one of the allowed values
   if (failThreshold !== "never" && failThreshold !== "warn" && failThreshold !== "error") {
-    emojiLog(
-      "❌",
-      `Invalid value for --fail-threshold: "${failThreshold}". Valid values are "never", "warn", or "error"`,
-      "error"
+    log.error(
+      `❌ Invalid value for --fail-threshold: "${failThreshold}". Valid values are "never", "warn", or "error"`
     );
     process.exit(1);
   }
@@ -120,22 +140,22 @@ Examples:
   const isAttw = false; // args["--attw"];
 
   if (isVerbose) {
-    emojiLog("ℹ️", "Verbose mode enabled");
-    emojiLog("📦", `Detected package manager: ${pmExec}`);
+    log.info("Verbose mode enabled");
+    log.info(`Detected package manager: ${pmExec}`);
   }
 
   if (isDryRun) {
-    emojiLog("🔍", "Dry run mode enabled. No files will be written or modified.");
+    log.info("Dry run mode enabled. No files will be written or modified.");
   }
 
   // Display message about fail threshold setting
   if (isVerbose) {
     if (failThreshold === "never") {
-      emojiLog("ℹ️", "Build will always succeed regardless of errors or warnings");
+      log.info("Build will always succeed regardless of errors or warnings");
     } else if (failThreshold === "warn") {
-      emojiLog("⚠️", "Build will fail on warnings or errors");
+      log.warn("Build will fail on warnings or errors");
     } else {
-      emojiLog("ℹ️", "Build will fail only on errors (default)");
+      log.info("Build will fail only on errors (default)");
     }
   }
   ///////////////////////////////////
@@ -156,7 +176,7 @@ Examples:
   }
 
   if (!fs.existsSync(packageJsonPath)) {
-    emojiLog("❌", "package.json not found in current directory or any parent directories", "error");
+    log.error("❌ package.json not found in current directory or any parent directories");
     process.exit(1);
   }
 
@@ -178,8 +198,10 @@ Examples:
   const pkgJsonRelPath = relativePosix(pkgJsonDir, packageJsonPath);
 
   // print project root
-  emojiLog("⚙️", `Detected project root: ${pkgJsonDir}`);
-  emojiLog("📦", `Reading package.json from ./${pkgJsonRelPath}`);
+  if (!isSilent) {
+    log.info(`Detected project root: ${pkgJsonDir}`);
+    log.info(`Reading package.json from ./${pkgJsonRelPath}`);
+  }
 
   /////////////////////////////////
   ///    parse zshy config      ///
@@ -191,7 +213,7 @@ Examples:
   let rawConfig!: RawConfig;
 
   if (!pkgJson[CONFIG_KEY]) {
-    emojiLog("❌", `No "${CONFIG_KEY}" key found in package.json`, "error");
+    log.error(`❌ No "${CONFIG_KEY}" key found in package.json`);
     process.exit(1);
   }
 
@@ -205,10 +227,10 @@ Examples:
     if (typeof rawConfig.exports === "string") {
       rawConfig.exports = { ".": rawConfig.exports };
     } else if (typeof rawConfig.exports === "undefined") {
-      emojiLog("❌", `Missing "exports" key in package.json#/${CONFIG_KEY}`, "error");
+      log.error(`❌ Missing "exports" key in package.json#/${CONFIG_KEY}`);
       process.exit(1);
     } else if (typeof rawConfig.exports !== "object") {
-      emojiLog("❌", `Invalid "exports" key in package.json#/${CONFIG_KEY}`, "error");
+      log.error(`❌ Invalid "exports" key in package.json#/${CONFIG_KEY}`);
       process.exit(1);
     }
 
@@ -219,7 +241,7 @@ Examples:
       } else if (typeof rawConfig.bin === "object" && rawConfig.bin !== null) {
         // Object format is valid
       } else {
-        emojiLog("❌", `Invalid "bin" key in package.json#/${CONFIG_KEY}, expected string or object`, "error");
+        log.error(`❌ Invalid "bin" key in package.json#/${CONFIG_KEY}, expected string or object`);
         process.exit(1);
       }
     }
@@ -230,37 +252,33 @@ Examples:
         // const { import: importCondition, require: requireCondition, ...rest } = config.conditions;
         for (const [condition, value] of Object.entries(rawConfig.conditions)) {
           if (value !== "esm" && value !== "cjs" && value !== "src") {
-            emojiLog(
-              "❌",
-              `Invalid condition value "${value}" for "${condition}" in package.json#/${CONFIG_KEY}/conditions. Valid values are "esm", "cjs", "src", or null`,
-              "error"
+            log.error(
+              `❌ Invalid condition value "${value}" for "${condition}" in package.json#/${CONFIG_KEY}/conditions. Valid values are "esm", "cjs", "src", or null`
             );
             process.exit(1);
           }
         }
       } else {
-        emojiLog("❌", `Invalid "conditions" key in package.json#/${CONFIG_KEY}, expected object`, "error");
+        log.error(`❌ Invalid "conditions" key in package.json#/${CONFIG_KEY}, expected object`);
         process.exit(1);
       }
     }
   } else if (typeof pkgJson[CONFIG_KEY] === "undefined") {
-    emojiLog("❌", `Missing "${CONFIG_KEY}" key in package.json`, "error");
+    log.error(`❌ Missing "${CONFIG_KEY}" key in package.json`);
     process.exit(1);
   } else {
-    emojiLog("❌", `Invalid "${CONFIG_KEY}" key in package.json, expected string or object`, "error");
+    log.error(`❌ Invalid "${CONFIG_KEY}" key in package.json, expected string or object`);
     process.exit(1);
   }
 
   if (isVerbose) {
-    emojiLog("🔧", `Parsed zshy config: ${formatForLog(rawConfig)}`);
+    log.info(`Parsed zshy config: ${formatForLog(rawConfig)}`);
   }
 
   // Check for deprecated sourceDialects
   if ("sourceDialects" in rawConfig) {
-    emojiLog(
-      "❌",
-      'The "sourceDialects" option is no longer supported. Use "conditions" instead to configure custom export conditions.',
-      "error"
+    log.error(
+      '❌ The "sourceDialects" option is no longer supported. Use "conditions" instead to configure custom export conditions.'
     );
     process.exit(1);
   }
@@ -278,10 +296,8 @@ Examples:
     const cjsConditions = Object.entries(config.conditions).filter(([_, value]) => value === "cjs");
     if (cjsConditions.length > 0) {
       const conditionNames = cjsConditions.map(([name]) => name).join(", ");
-      emojiLog(
-        "❌",
-        `CJS is disabled (cjs: false) but the following conditions are set to "cjs": ${conditionNames}. Either enable CJS or change these conditions.`,
-        "error"
+      log.error(
+        `❌ CJS is disabled (cjs: false) but the following conditions are set to "cjs": ${conditionNames}. Either enable CJS or change these conditions.`
       );
       process.exit(1);
     }
@@ -289,10 +305,8 @@ Examples:
 
   // Validate that if cjs is disabled, package.json type must be "module"
   if (config.cjs === false && pkgJson.type !== "module") {
-    emojiLog(
-      "❌",
-      `CJS is disabled (cjs: false) but package.json#/type is not set to "module". When disabling CommonJS builds, you must set "type": "module" in your package.json.`,
-      "error"
+    log.error(
+      `❌ CJS is disabled (cjs: false) but package.json#/type is not set to "module". When disabling CommonJS builds, you must set "type": "module" in your package.json.`
     );
     process.exit(1);
   }
@@ -309,18 +323,14 @@ Examples:
 
     if (fs.existsSync(resolvedProjectPath)) {
       if (fs.statSync(resolvedProjectPath).isDirectory()) {
-        emojiLog(
-          "❌",
-          `--project must point to a tsconfig.json file, not a directory: ${resolvedProjectPath}`,
-          "error"
-        );
+        log.error(`--project must point to a tsconfig.json file, not a directory: ${resolvedProjectPath}`);
         process.exit(1);
       } else {
         // Use the file directly
         tsconfigPath = resolvedProjectPath;
       }
     } else {
-      emojiLog("❌", `tsconfig.json file not found: ${resolvedProjectPath}`, "error");
+      log.error(`tsconfig.json file not found: ${resolvedProjectPath}`);
       process.exit(1);
     }
   } else if (config.tsconfig) {
@@ -329,18 +339,14 @@ Examples:
 
     if (fs.existsSync(resolvedProjectPath)) {
       if (fs.statSync(resolvedProjectPath).isDirectory()) {
-        emojiLog(
-          "❌",
-          `zshy.tsconfig must point to a tsconfig.json file, not a directory: ${resolvedProjectPath}`,
-          "error"
-        );
+        log.error(`zshy.tsconfig must point to a tsconfig.json file, not a directory: ${resolvedProjectPath}`);
         process.exit(1);
       } else {
         // Use the file directly
         tsconfigPath = resolvedProjectPath;
       }
     } else {
-      emojiLog("❌", `Tsconfig file not found: ${resolvedProjectPath}`, "error");
+      log.error(`Tsconfig file not found: ${resolvedProjectPath}`);
       process.exit(1);
     }
   } else {
@@ -351,10 +357,12 @@ Examples:
   const _parsedConfig = readTsconfig(tsconfigPath);
   if (!fs.existsSync(tsconfigPath)) {
     // Check if tsconfig.json exists
-    emojiLog("❌", `tsconfig.json not found at ${toPosix(path.resolve(tsconfigPath))}`, "error");
+    log.error(`❌ tsconfig.json not found at ${toPosix(path.resolve(tsconfigPath))}`);
     process.exit(1);
   }
-  emojiLog("📁", `Reading tsconfig from ./${relativePosix(pkgJsonDir, tsconfigPath)}`);
+  if (!isSilent) {
+    log.info(`Reading tsconfig from ./${relativePosix(pkgJsonDir, tsconfigPath)}`);
+  }
 
   // if (_parsedConfig.rootDir) {
   // 	console.error(
@@ -394,21 +402,19 @@ Examples:
 
   if (relOutDir === "") {
     if (!pkgJson.files) {
-      emojiLog(
-        "⚠️",
+      log.info(
         'You\'re building your code to the project root. This means your compiled files will be generated alongside your source files.\n   ➜ Setting "files" in package.json to exclude TypeScript source from the published package.'
       );
       pkgJson.files = ["**/*.js", "**/*.mjs", "**/*.cjs", "**/*.d.ts", "**/*.d.mts", "**/*.d.cts"];
     } else {
-      emojiLog(
-        `⚠️`,
+      log.info(
         `You\'re building your code to the project root. This means your compiled files will be generated alongside your source files.
-   Ensure that your "files" in package.json excludes TypeScript source files, or your users may experience .d.ts resolution issues in some environments:
+   Ensure that your "files" in package.json does not include TypeScript source files, or your users may experience .d.ts resolution issues in some environments:
      "files": ["**/*.js", "**/*.mjs", "**/*.cjs", "**/*.d.ts", "**/*.d.mts", "**/*.d.cts"]`
       );
     }
   } else if (!pkgJson.files) {
-    emojiLog("⚠️", `The "files" key is missing in package.json. Setting to "${relOutDir}".`);
+    log.warn(`The "files" key is missing in package.json. Setting to "${relOutDir}".`);
     pkgJson.files = [relOutDir];
     if (relOutDir !== relDeclarationDir) {
       pkgJson.files.push(relDeclarationDir);
@@ -420,7 +426,9 @@ Examples:
   /////////////////////////////////
 
   // Extract entry points from zshy exports config
-  emojiLog("➡️", "Determining entrypoints...");
+  if (!isSilent) {
+    log.info("Determining entrypoints...");
+  }
   const entryPoints: string[] = [];
   const assetEntrypoints: Array<{ exportPath: string; sourcePath: string }> = [];
 
@@ -434,13 +442,13 @@ Examples:
     } else if (exportPath.startsWith("./")) {
       cleanExportPath = pkgJson.name + "/" + exportPath.slice(2);
     } else {
-      emojiLog("⚠️", `Invalid subpath export "${exportPath}" — should start with "./"`, "warn");
+      log.warn(`Invalid subpath export "${exportPath}" — should start with "./"`);
       process.exit(1);
     }
     if (typeof sourcePath === "string") {
       if (sourcePath.includes("*")) {
         if (!sourcePath.endsWith("/*") && !sourcePath.endsWith("/**/*")) {
-          emojiLog("❌", `Wildcard paths should end with /* or /**/* (for deep globs): ${sourcePath}`, "error");
+          log.error(`❌ Wildcard paths should end with /* or /**/* (for deep globs): ${sourcePath}`);
           process.exit(1);
         }
 
@@ -455,7 +463,7 @@ Examples:
         }
 
         if (isVerbose) {
-          emojiLog("🔍", `Matching glob: ${pattern}`);
+          log.info(`Matching glob: ${pattern}`);
         }
         const wildcardFiles = await glob(pattern, {
           ignore: ["**/*.d.ts", "**/*.d.mts", "**/*.d.cts"],
@@ -469,7 +477,7 @@ Examples:
       } else if (isSourceFile(sourcePath)) {
         // Skip test files even if explicitly specified
         if (isTestFile(sourcePath)) {
-          emojiLog("⚠️", `Skipping test file: ${sourcePath}`, "warn");
+          log.warn(`Skipping test file: ${sourcePath}`);
           continue;
         }
         entryPoints.push(sourcePath);
@@ -489,7 +497,7 @@ Examples:
       // Single bin entry
       if (isSourceFile(config.bin)) {
         if (isTestFile(config.bin)) {
-          emojiLog("⚠️", `Skipping test file in bin: ${config.bin}`, "warn");
+          log.warn(`Skipping test file in bin: ${config.bin}`);
         } else {
           entryPoints.push(config.bin);
           rows.push([`bin:${pkgJson.name}`, config.bin]);
@@ -500,7 +508,7 @@ Examples:
       for (const [binName, sourcePath] of Object.entries(config.bin)) {
         if (typeof sourcePath === "string" && isSourceFile(sourcePath)) {
           if (isTestFile(sourcePath)) {
-            emojiLog("⚠️", `Skipping test file in bin: ${sourcePath}`, "warn");
+            log.warn(`Skipping test file in bin: ${sourcePath}`);
           } else {
             entryPoints.push(sourcePath);
             rows.push([`bin:${binName}`, sourcePath]);
@@ -510,22 +518,27 @@ Examples:
     }
   }
 
-  console.log(
-    "   " +
-      table(rows, {
-        drawHorizontalLine: (lineIndex, rowCount) => {
-          return (
-            lineIndex === 0 ||
-            lineIndex === 1 ||
-            // lineIndex === rowCount - 1 ||
-            lineIndex === rowCount
-          );
-        },
-      })
-        .split("\n")
-        .join("\n   ")
-        .trim()
-  );
+  if (!isSilent) {
+    const originalPrefix = log.prefix;
+    log.prefix = undefined;
+    log.info(
+      "   " +
+        table(rows, {
+          drawHorizontalLine: (lineIndex, rowCount) => {
+            return (
+              lineIndex === 0 ||
+              lineIndex === 1 ||
+              // lineIndex === rowCount - 1 ||
+              lineIndex === rowCount
+            );
+          },
+        })
+          .split("\n")
+          .join("\n   ")
+          .trim()
+    );
+    log.prefix = originalPrefix;
+  }
 
   // disallow .mts and .cts files
   // if (entryPoints.some((ep) => ep.endsWith(".mts") || ep.endsWith(".cts"))) {
@@ -537,11 +550,7 @@ Examples:
   //   process.exit(1);
   // }
   if (entryPoints.length === 0) {
-    emojiLog(
-      "❌",
-      "No entry points found matching the specified patterns in package.json#/zshy exports or bin",
-      "error"
-    );
+    log.error("❌ No entry points found matching the specified patterns in package.json#/zshy exports or bin");
     process.exit(1);
   }
 
@@ -583,7 +592,9 @@ Examples:
   //////////////////////////////////
   ///   display resolved paths   ///
   //////////////////////////////////
-  emojiLog("🔧", "Resolved build paths:");
+  if (!isSilent) {
+    log.info("Resolved build paths:");
+  }
   const pathRows: string[][] = [["Location", "Resolved path"]];
 
   pathRows.push(["rootDir", relRootDir ? `./${relRootDir}` : "."]);
@@ -593,31 +604,37 @@ Examples:
     pathRows.push(["declarationDir", relDeclarationDir ? `./${relDeclarationDir}` : "."]);
   }
 
-  console.log(
-    "   " +
-      table(pathRows, {
-        drawHorizontalLine: (lineIndex, rowCount) => {
-          return (
-            lineIndex === 0 ||
-            lineIndex === 1 ||
-            // lineIndex === rowCount - 1 ||
-            lineIndex === rowCount
-          );
-        },
-      })
-        .split("\n")
-        .join("\n   ")
-        .trim()
-  );
+  if (!isSilent) {
+    const originalPrefix = log.prefix;
+    log.prefix = undefined;
+    log.info(
+      "   " +
+        table(pathRows, {
+          drawHorizontalLine: (lineIndex, rowCount) => {
+            return (
+              lineIndex === 0 ||
+              lineIndex === 1 ||
+              // lineIndex === rowCount - 1 ||
+              lineIndex === rowCount
+            );
+          },
+        })
+          .split("\n")
+          .join("\n   ")
+          .trim()
+    );
+    log.prefix = originalPrefix;
+  }
 
   const isTypeModule = pkgJson.type === "module";
-  if (isTypeModule) {
-    emojiLog("🟨", `Package is an ES module (package.json#/type is "module")`);
-  } else {
-    emojiLog(
-      "🐢",
-      `Package is a CommonJS module (${pkgJson.type === "commonjs" ? 'package.json#/type is "commonjs"' : 'package.json#/type not set to "module"'})`
-    );
+  if (!isSilent) {
+    if (isTypeModule) {
+      log.info(`Package is an ES module (package.json#/type is "module")`);
+    } else {
+      log.info(
+        `Package is a CommonJS module (${pkgJson.type === "commonjs" ? 'package.json#/type is "commonjs"' : 'package.json#/type not set to "module"'})`
+      );
+    }
   }
 
   //////////////////////////////////////////////
@@ -625,18 +642,22 @@ Examples:
   //////////////////////////////////////////////
   const prefix = isDryRun ? "[dryrun] " : "";
   if (relRootDir.startsWith(relOutDir)) {
-    emojiLog("🗑️", `${prefix}Skipping cleanup of outDir as it contains source files`);
+    if (!isSilent) {
+      log.info(`${prefix}Skipping cleanup of outDir as it contains source files`);
+    }
   } else {
     // source files are in the outDir, so skip cleanup
     // clean up outDir and declarationDir
-    emojiLog("🗑️", `${prefix}Cleaning up outDir...`);
+    if (!isSilent) {
+      log.info(`${prefix}Cleaning up outDir...`);
+    }
     if (!isDryRun) {
       fs.rmSync(outDir, { recursive: true, force: true });
 
       // // print success message in verbose mode
       if (isVerbose) {
         if (fs.existsSync(outDir)) {
-          emojiLog("❌", `Failed to clean up outDir: ${relOutDir}. Directory still exists.`, "error");
+          log.error(`❌ Failed to clean up outDir: ${relOutDir}. Directory still exists.`);
         }
       }
     }
@@ -644,15 +665,19 @@ Examples:
   if (relDeclarationDir !== relOutDir) {
     // already done
   } else if (relRootDir.startsWith(relDeclarationDir)) {
-    emojiLog("🗑️", `${prefix}Skipping cleanup of declarationDir as it contains source files`);
+    if (!isSilent) {
+      log.info(`${prefix}Skipping cleanup of declarationDir as it contains source files`);
+    }
   } else {
-    emojiLog("🗑️", `${prefix}Cleaning up declarationDir...`);
+    if (!isSilent) {
+      log.info(`${prefix}Cleaning up declarationDir...`);
+    }
     if (!isDryRun) {
       fs.rmSync(declarationDir, { recursive: true, force: true });
       // // print success message in verbose mode
       if (isVerbose) {
         if (fs.existsSync(declarationDir)) {
-          emojiLog("❌", `Failed to clean up declarationDir: ${relDeclarationDir}. Directory still exists.`, "error");
+          log.error(`❌ Failed to clean up declarationDir: ${relDeclarationDir}. Directory still exists.`);
         }
       }
     }
@@ -665,9 +690,8 @@ Examples:
   const uniqueEntryPoints = [...new Set(entryPoints)];
   // try {
   if (isVerbose) {
-    emojiLog("→", `Resolved entrypoints: ${formatForLog(uniqueEntryPoints)}`);
-    emojiLog(
-      "→",
+    log.info(`Resolved entrypoints: ${formatForLog(uniqueEntryPoints)}`);
+    log.info(
       `Resolved compilerOptions: ${formatForLog({
         ...tsconfigJson,
         module: ts.ModuleKind[tsconfigJson.module!],
@@ -690,7 +714,9 @@ Examples:
 
   // CJS
   if (!skipCjs) {
-    emojiLog("🧱", `Building CJS...${isTypeModule ? ` (rewriting .ts -> .cjs/.d.cts)` : ``}`);
+    if (!isSilent) {
+      log.info(`Building CJS...${isTypeModule ? ` (rewriting .ts -> .cjs/.d.cts)` : ``}`);
+    }
     await compileProject(
       {
         configPath: tsconfigPath,
@@ -712,11 +738,15 @@ Examples:
       buildContext
     );
   } else {
-    emojiLog("⏭️", "Skipping CJS build (cjs: false)");
+    if (!isSilent) {
+      log.info("Skipping CJS build (cjs: false)");
+    }
   }
 
   // ESM
-  emojiLog("🧱", `Building ESM...${isTypeModule ? `` : ` (rewriting .ts -> .mjs/.d.mts)`}`);
+  if (!isSilent) {
+    log.info(`Building ESM...${isTypeModule ? `` : ` (rewriting .ts -> .mjs/.d.mts)`}`);
+  }
   await compileProject(
     {
       configPath: tsconfigPath,
@@ -744,7 +774,9 @@ Examples:
 
   // Copy asset entrypoints to output directory
   if (assetEntrypoints.length > 0) {
-    emojiLog("📄", `${prefix}Copying ${assetEntrypoints.length} asset${assetEntrypoints.length === 1 ? "" : "s"}...`);
+    if (!isSilent) {
+      log.info(`${prefix}Copying ${assetEntrypoints.length} asset${assetEntrypoints.length === 1 ? "" : "s"}...`);
+    }
 
     for (const { sourcePath } of assetEntrypoints) {
       const sourceFile = path.resolve(pkgJsonDir, sourcePath);
@@ -753,7 +785,7 @@ Examples:
       const destDir = path.dirname(destFile);
 
       if (!fs.existsSync(sourceFile)) {
-        emojiLog("⚠️", `Asset not found: ${sourcePath}`, "warn");
+        log.warn(`Asset not found: ${sourcePath}`);
         continue;
       }
 
@@ -768,7 +800,7 @@ Examples:
       if (isVerbose) {
         const relativeSource = toPosix(path.relative(pkgJsonDir, sourceFile));
         const relativeDest = toPosix(path.relative(pkgJsonDir, destFile));
-        emojiLog("📋", `${isDryRun ? "[dryrun] " : ""}Copied asset: ./${relativeSource} → ./${relativeDest}`);
+        log.info(`${isDryRun ? "[dryrun] " : ""}Copied asset: ./${relativeSource} → ./${relativeDest}`);
       }
     }
   }
@@ -779,7 +811,7 @@ Examples:
 
   // Display files that were written or would be written (only in verbose mode)
   if (isVerbose && buildContext.writtenFiles.size > 0) {
-    emojiLog("📜", `${prefix}Writing files (${buildContext.writtenFiles.size} total)...`);
+    log.info(`${prefix}Writing files (${buildContext.writtenFiles.size} total)...`);
 
     // Sort files by relative path for consistent display
     const sortedFiles = [...buildContext.writtenFiles]
@@ -787,9 +819,13 @@ Examples:
       .sort()
       .map((relPath) => (relPath.startsWith(".") ? relPath : `./${relPath}`));
 
+    // Temporarily disable prefix for individual file listings
+    const originalPrefix = log.prefix;
+    log.prefix = undefined;
     sortedFiles.forEach((file) => {
-      console.log(`     ${file}`);
+      log.info(`     ${file}`);
     });
+    log.prefix = originalPrefix;
   }
 
   ///////////////////////////////
@@ -798,10 +834,14 @@ Examples:
 
   // generate package.json exports
   if (config.noEdit) {
-    emojiLog("📦", "[noedit] Skipping modification of package.json");
+    if (!isSilent) {
+      log.info("[noedit] Skipping modification of package.json");
+    }
   } else {
     // Generate exports based on zshy config
-    emojiLog("📦", `${prefix}Updating package.json...`);
+    if (!isSilent) {
+      log.info(`${prefix}Updating package.json...`);
+    }
     const newExports: Record<string, any> = {};
 
     if (config.exports) {
@@ -823,7 +863,7 @@ Examples:
             const finalExportPath = exportPath;
 
             if (finalExportPath.includes("**")) {
-              emojiLog("❌", `Export keys cannot contain "**": ${finalExportPath}`, "error");
+              log.error(`❌ Export keys cannot contain "**": ${finalExportPath}`);
               process.exit(1);
             }
 
@@ -905,9 +945,9 @@ Examples:
                 pkgJson.types = dtsPath;
               }
               if (isVerbose) {
-                emojiLog("🔧", `Setting "main": ${formatForLog(cjsPath)}`);
-                emojiLog("🔧", `Setting "module": ${formatForLog(esmPath)}`);
-                emojiLog("🔧", `Setting "types": ${formatForLog(dtsPath)}`);
+                log.info(`Setting "main": ${formatForLog(cjsPath)}`);
+                log.info(`Setting "module": ${formatForLog(esmPath)}`);
+                log.info(`Setting "types": ${formatForLog(dtsPath)}`);
               }
             }
           }
@@ -940,16 +980,16 @@ Examples:
             pkgJson.types = relAssetPath;
           }
           if (isVerbose) {
-            emojiLog("🔧", `Setting "main": ${formatForLog(relAssetPath)}`);
-            emojiLog("🔧", `Setting "module": ${formatForLog(relAssetPath)}`);
-            emojiLog("🔧", `Setting "types": ${formatForLog(relAssetPath)}`);
+            log.info(`Setting "main": ${formatForLog(relAssetPath)}`);
+            log.info(`Setting "module": ${formatForLog(relAssetPath)}`);
+            log.info(`Setting "types": ${formatForLog(relAssetPath)}`);
           }
         }
       }
 
       pkgJson.exports = newExports;
       if (isVerbose) {
-        emojiLog("🔧", `Setting "exports": ${formatForLog(newExports)}`);
+        log.info(`Setting "exports": ${formatForLog(newExports)}`);
       }
     }
 
@@ -987,7 +1027,7 @@ Examples:
       }
 
       if (isVerbose) {
-        emojiLog("🔧", `Setting "bin": ${formatForLog(pkgJson.bin)}`);
+        log.info(`Setting "bin": ${formatForLog(pkgJson.bin)}`);
       }
     }
 
@@ -995,7 +1035,7 @@ Examples:
       ///////////////////////////////
       ///     write pkg json      ///
       ///////////////////////////////
-      emojiLog("📦", "[dryrun] Skipping package.json modification");
+      log.info("[dryrun] Skipping package.json modification");
     } else {
       fs.writeFileSync(packageJsonPath, JSON.stringify(pkgJson, null, indent) + "\n");
     }
@@ -1004,7 +1044,9 @@ Examples:
   if (isAttw) {
     // run `@arethetypeswrong/cli --pack .` to check types
 
-    emojiLog("🔍", "Checking types with @arethetypeswrong/cli...");
+    if (!isSilent) {
+      log.info("Checking types with @arethetypeswrong/cli...");
+    }
     const { execFile } = await import("node:child_process");
     const { promisify } = await import("node:util");
 
@@ -1037,38 +1079,39 @@ Examples:
         .join("\n");
 
       if (exitCode === 0) {
-        console.log(indentedOutput);
+        log.info(indentedOutput);
       } else {
-        console.error(indentedOutput);
-        emojiLog("⚠️", "ATTW found issues, but the build was not affected.", "warn");
+        log.error(indentedOutput);
+        log.warn("ATTW found issues, but the build was not affected.");
       }
     }
   }
 
   // Report total compilation results
   if (buildContext.errorCount > 0 || buildContext.warningCount > 0) {
-    emojiLog(
-      "📊",
+    log.info(
       `Compilation finished with ${buildContext.errorCount} error${buildContext.errorCount === 1 ? "" : "s"} and ${buildContext.warningCount} warning${buildContext.warningCount === 1 ? "" : "s"}`
     );
 
     // Apply threshold rules for exit code
     if (failThreshold !== "never" && buildContext.errorCount > 0) {
       // Both 'warn' and 'error' thresholds cause failure on errors
-      emojiLog("❌", `Build completed with errors`, "error");
+      log.error("❌ Build completed with errors");
       process.exit(1);
     } else if (failThreshold === "warn" && buildContext.warningCount > 0) {
       // Only 'warn' threshold causes failure on warnings
-      emojiLog("⚠️", `Build completed with warnings (exiting with error due to --fail-threshold=warn)`, "warn");
+      log.warn(`Build completed with warnings (exiting with error due to --fail-threshold=warn)`);
       process.exit(1);
     } else if (buildContext.errorCount > 0) {
       // If we got here with errors, we're in 'never' mode
-      emojiLog("⚠️", `Build completed with errors (continuing due to --fail-threshold=never)`, "warn");
+      log.warn(`Build completed with errors (continuing due to --fail-threshold=never)`);
     } else {
       // Just warnings and not failing on them
-      emojiLog("🎉", `Build complete with warnings`);
+      log.info(`Build complete with warnings`);
     }
   } else {
-    emojiLog("🎉", "Build complete! ✅");
+    if (!isSilent) {
+      log.info("Build complete! ✅");
+    }
   }
 }
