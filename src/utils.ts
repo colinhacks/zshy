@@ -5,9 +5,34 @@ export function formatForLog(data: unknown) {
   return JSON.stringify(data, null, 2).split("\n").join("\n   ");
 }
 
-export function emojiLog(_emoji: string, content: string, level: "log" | "warn" | "error" = "log") {
-  console[level]("»  " + content);
+// Global logging state
+let isSilent = false;
+
+export function setSilent(silent: boolean) {
+  isSilent = silent;
 }
+
+export const log = {
+  prefix: undefined as string | undefined,
+
+  info: function (message: string) {
+    if (!isSilent) {
+      console.log((this.prefix || "") + message);
+    }
+  },
+
+  error: function (message: string) {
+    if (!isSilent) {
+      console.error((this.prefix || "") + message);
+    }
+  },
+
+  warn: function (message: string) {
+    if (!isSilent) {
+      console.warn((this.prefix || "") + message);
+    }
+  },
+};
 
 export function isSourceFile(filePath: string): boolean {
   // Declaration files are not source files
@@ -56,7 +81,7 @@ export function readTsconfig(tsconfigPath: string) {
   );
 
   if (parsedConfig.errors.length > 0) {
-    emojiLog("❌", "Error parsing tsconfig.json:", "error");
+    log.error("Error parsing tsconfig.json:");
     for (const error of parsedConfig.errors) {
       console.error(
         ts.formatDiagnostic(error, {
@@ -70,7 +95,7 @@ export function readTsconfig(tsconfigPath: string) {
   }
 
   if (!parsedConfig.options) {
-    emojiLog("❌", "Error reading tsconfig.json#/compilerOptions", "error");
+    log.error("Error reading tsconfig.json#/compilerOptions");
     process.exit(1);
   }
   return parsedConfig.options!;

@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
 import { main } from "./main.js";
-import { emojiLog } from "./utils.js";
+import { log } from "./utils.js";
 
 // Run the script
 main().catch((error) => {
-  emojiLog("❌", `Build failed: ${error}`, "error");
+  log.error(`Build failed: ${error}`);
   process.exit(1);
 });

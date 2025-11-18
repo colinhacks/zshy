@@ -127,7 +127,7 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
     }
 
     if (errorCount > 0 || warningCount > 0) {
-      utils.emojiLog("⚠️", `Found ${errorCount} error(s) and ${warningCount} warning(s)`, "warn");
+      utils.log.warn(`Found ${errorCount} error(s) and ${warningCount} warning(s)`);
     }
 
     // Format diagnostics with color and context like tsc, keeping original order
@@ -182,7 +182,7 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
   // Add CJS interop transformer for single default exports
   if (config.cjsInterop && config.format === "cjs") {
     if (config.verbose) {
-      utils.emojiLog("🔄", `Enabling CJS interop transform...`);
+      utils.log.info(`Enabling CJS interop transform...`);
     }
     before.push(createCjsInteropTransformer());
   }
@@ -200,7 +200,7 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
   });
 
   if (emitResult.emitSkipped) {
-    utils.emojiLog("❌", "Emit was skipped due to errors", "error");
+    utils.log.error("Emit was skipped due to errors");
   } else {
     // console.log(`✅ Emitted ${config.jsExtension} and ${config.dtsExtension}
     // files`);
@@ -221,10 +221,8 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
     ctx.errorCount += emitErrors.length;
     ctx.warningCount += emitWarnings.length;
 
-    utils.emojiLog(
-      "❌",
-      `Found ${emitErrors.length} error(s) and ${emitWarnings.length} warning(s) during emit:`,
-      "error"
+    utils.log.error(
+      `Found ${emitErrors.length} error(s) and ${emitWarnings.length} warning(s) during emit:`
     );
     console.log();
 
@@ -247,7 +245,7 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
   // Copy assets if any were found and rootDir is provided
   if (assetImports.size > 0) {
     if (config.verbose) {
-      utils.emojiLog("📄", `Found ${assetImports.size} asset import(s), copying to output directory...`);
+      utils.log.info(`Found ${assetImports.size} asset import(s), copying to output directory...`);
     }
 
     // utils.copyAssets(assetImports, config, ctx);
@@ -258,7 +256,7 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
 
         if (!fs.existsSync(sourceFile)) {
           if (config.verbose) {
-            utils.emojiLog("⚠️", `Asset not found: ${assetPath} (resolved to ${sourceFile})`, "warn");
+            utils.log.warn(`Asset not found: ${assetPath} (resolved to ${sourceFile})`);
           }
           continue;
         }
@@ -291,13 +289,12 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
         if (config.verbose) {
           const relativeSource = config.pkgJsonDir ? utils.relativePosix(config.pkgJsonDir, sourceFile) : sourceFile;
           const relativeDest = config.pkgJsonDir ? utils.relativePosix(config.pkgJsonDir, destFile) : destFile;
-          utils.emojiLog(
-            "📄",
+          utils.log.info(
             `${config.dryRun ? "[dryrun] " : ""}Copied asset: ./${relativeSource} → ./${relativeDest}`
           );
         }
       } catch (error) {
-        utils.emojiLog("❌", `Failed to copy asset ${assetPath}: ${error}`, "error");
+        utils.log.error(`Failed to copy asset ${assetPath}: ${error}`);
       }
     }
   }
