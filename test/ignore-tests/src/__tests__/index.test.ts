@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest";
 import { greet, version } from "../index";
 
 // This is a test file that should NOT be included in the build output
@@ -12,4 +13,3 @@ describe("version", () => {
     expect(version).toBe("1.0.0");
   });
 });
-

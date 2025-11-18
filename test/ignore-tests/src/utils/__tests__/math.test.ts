@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest";
 import { add, multiply } from "../math";
 
 // This is a nested test file that should NOT be included in the build output
@@ -12,4 +13,3 @@ describe("multiply", () => {
     expect(multiply(3, 4)).toBe(12);
   });
 });
-

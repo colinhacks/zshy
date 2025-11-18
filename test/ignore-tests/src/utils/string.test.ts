@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest";
 import { capitalize, reverse } from "./string";
 
 // This is a test file in the same directory as the source file
@@ -13,4 +14,3 @@ describe("reverse", () => {
     expect(reverse("abc")).toBe("cba");
   });
 });
-

@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest";
 import { Button } from "./button";
 
 // This is a test file in the same directory as the source file
@@ -8,4 +9,3 @@ describe("Button", () => {
     expect(result).toBe("Button(Click me)");
   });
 });
-

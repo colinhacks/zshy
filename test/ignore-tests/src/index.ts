@@ -3,4 +3,3 @@ export function greet(name: string): string {
 }
 
 export const version = "1.0.0";
-

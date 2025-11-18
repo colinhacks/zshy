@@ -3,7 +3,6 @@ export interface ButtonProps {
   onClick: () => void;
 }
 
-export function Button({ label, onClick }: ButtonProps): string {
+export function Button({ label }: ButtonProps): string {
   return `Button(${label})`;
 }
-
