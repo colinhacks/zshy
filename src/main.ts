@@ -896,8 +896,12 @@ Examples:
 
             // Add standard conditions
             exportObj.types = relDtsPath;
-            exportObj.import = relJsPath;
-            if (!skipCjs) {
+            if (skipCjs) {
+              // ESM-only: use default condition instead of import
+              exportObj.default = relJsPath;
+            } else {
+              // Dual CJS/ESM: use import and require
+              exportObj.import = relJsPath;
               exportObj.require = relJsPath;
             }
 
@@ -927,8 +931,12 @@ Examples:
 
             // Add standard conditions
             exportObj.types = dtsPath;
-            exportObj.import = esmPath;
-            if (!skipCjs) {
+            if (skipCjs) {
+              // ESM-only: use default condition instead of import
+              exportObj.default = esmPath;
+            } else {
+              // Dual CJS/ESM: use import and require
+              exportObj.import = esmPath;
               exportObj.require = cjsPath;
             }
 

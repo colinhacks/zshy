@@ -316,7 +316,7 @@ exports[`zshy with different tsconfig configurations > should skip CJS build whe
 »  Setting "exports": {
      ".": {
        "types": "./dist/index.d.ts",
-       "import": "./dist/index.js"
+       "default": "./dist/index.js"
      }
    }
 »  Build complete!",
