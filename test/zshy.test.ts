@@ -188,6 +188,14 @@ describe("zshy with different tsconfig configurations", () => {
     });
     expect(snapshot).toMatchSnapshot();
   });
+
+  it("should reproduce issue #53 - test files in __tests__ directories are included in build", () => {
+    const snapshot = runZshyWithTsconfig("tsconfig.json", {
+      dryRun: false,
+      cwd: process.cwd() + "/test/ignore-tests",
+    });
+    expect(snapshot).toMatchSnapshot();
+  });
 });
 
 function normalizeOutput(output: string): string {

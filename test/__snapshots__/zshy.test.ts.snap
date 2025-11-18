@@ -89,6 +89,147 @@ exports[`zshy with different tsconfig configurations > should not edit package.j
 }
 `;
 
+exports[`zshy with different tsconfig configurations > should reproduce issue #53 - test files in __tests__ directories are included in build 1`] = `
+{
+  "exitCode": 0,
+  "stderr": "",
+  "stdout": "╔═══════════════════════════════════════════════╗
+   ║ zshy » the bundler-free TypeScript build tool ║
+   ╚═══════════════════════════════════════════════╝
+»  Starting build...
+»  Verbose mode enabled
+»  Detected package manager: <pm>
+»  Build will fail only on errors (default)
+»  Detected project root: <root>/test/ignore-tests
+»  Reading package.json from ./package.json
+»  Parsed zshy config: {
+     "exports": {
+       ".": "./src/index.ts",
+       "./utils/*": "./src/utils/**/*",
+       "./components/*": "./src/components/*"
+     }
+   }
+»  Reading tsconfig from ./tsconfig.json
+»  Determining entrypoints...
+»  Matching glob: ./src/utils/**/*.{ts,tsx,mts,cts}
+»  Matching glob: ./src/components/*.{ts,tsx,mts,cts}
+   ╔══════════════════════════════════╤════════════════════════════════╗
+   ║ Subpath                          │ Entrypoint                     ║
+   ╟──────────────────────────────────┼────────────────────────────────╢
+   ║ "test-ignore-tests"              │ ./src/index.ts                 ║
+   ║ "test-ignore-tests/utils/*"      │ ./src/utils/**/* (2 matches)   ║
+   ║ "test-ignore-tests/components/*" │ ./src/components/* (1 matches) ║
+   ╚══════════════════════════════════╧════════════════════════════════╝
+»  Resolved build paths:
+   ╔══════════╤═══════════════╗
+   ║ Location │ Resolved path ║
+   ╟──────────┼───────────────╢
+   ║ rootDir  │ ./src         ║
+   ║ outDir   │ ./dist        ║
+   ╚══════════╧═══════════════╝
+»  Package is an ES module (package.json#/type is "module")
+»  Cleaning up outDir...
+»  Cleaning up declarationDir...
+»  Resolved entrypoints: [
+     "./src/index.ts",
+     "./src/utils/math.ts",
+     "./src/utils/string.ts",
+     "./src/components/button.ts"
+   ]
+»  Resolved compilerOptions: {
+     "lib": [
+       "lib.esnext.d.ts"
+     ],
+     "target": "ES2020",
+     "module": "ESNext",
+     "moduleResolution": "Bundler",
+     "moduleDetection": 2,
+     "allowJs": true,
+     "declaration": true,
+     "jsx": 4,
+     "allowImportingTsExtensions": true,
+     "rewriteRelativeImportExtensions": true,
+     "verbatimModuleSyntax": false,
+     "noEmit": false,
+     "strict": true,
+     "skipLibCheck": true,
+     "noFallthroughCasesInSwitch": true,
+     "noUncheckedIndexedAccess": true,
+     "esModuleInterop": true,
+     "forceConsistentCasingInFileNames": true,
+     "noUnusedLocals": true,
+     "noUnusedParameters": false,
+     "noPropertyAccessFromIndexSignature": false,
+     "sourceMap": true,
+     "declarationMap": true,
+     "resolveJsonModule": true,
+     "noImplicitOverride": true,
+     "noImplicitThis": true,
+     "outDir": "<root>/test/ignore-tests/dist",
+     "emitDeclarationOnly": false,
+     "composite": false
+   }
+»  Building CJS... (rewriting .ts -> .cjs/.d.cts)
+»  Enabling CJS interop transform...
+»  Building ESM...
+»  Writing files (32 total)...
+     ./dist/components/button.cjs
+     ./dist/components/button.cjs.map
+     ./dist/components/button.d.cts
+     ./dist/components/button.d.cts.map
+     ./dist/components/button.d.ts
+     ./dist/components/button.d.ts.map
+     ./dist/components/button.js
+     ./dist/components/button.js.map
+     ./dist/index.cjs
+     ./dist/index.cjs.map
+     ./dist/index.d.cts
+     ./dist/index.d.cts.map
+     ./dist/index.d.ts
+     ./dist/index.d.ts.map
+     ./dist/index.js
+     ./dist/index.js.map
+     ./dist/utils/math.cjs
+     ./dist/utils/math.cjs.map
+     ./dist/utils/math.d.cts
+     ./dist/utils/math.d.cts.map
+     ./dist/utils/math.d.ts
+     ./dist/utils/math.d.ts.map
+     ./dist/utils/math.js
+     ./dist/utils/math.js.map
+     ./dist/utils/string.cjs
+     ./dist/utils/string.cjs.map
+     ./dist/utils/string.d.cts
+     ./dist/utils/string.d.cts.map
+     ./dist/utils/string.d.ts
+     ./dist/utils/string.d.ts.map
+     ./dist/utils/string.js
+     ./dist/utils/string.js.map
+»  Updating package.json...
+»  Setting "main": "./dist/index.cjs"
+»  Setting "module": "./dist/index.js"
+»  Setting "types": "./dist/index.d.cts"
+»  Setting "exports": {
+     ".": {
+       "types": "./dist/index.d.cts",
+       "import": "./dist/index.js",
+       "require": "./dist/index.cjs"
+     },
+     "./utils/*": {
+       "types": "./dist/utils/*",
+       "import": "./dist/utils/*",
+       "require": "./dist/utils/*"
+     },
+     "./components/*": {
+       "types": "./dist/components/*",
+       "import": "./dist/components/*",
+       "require": "./dist/components/*"
+     }
+   }
+»  Build complete!",
+}
+`;
+
 exports[`zshy with different tsconfig configurations > should skip CJS build when commonjs is false 1`] = `
 {
   "exitCode": 0,

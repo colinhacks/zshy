@@ -9,6 +9,7 @@ import {
   emojiLog,
   formatForLog,
   isSourceFile,
+  isTestFile,
   readTsconfig,
   relativePosix,
   removeExtension,
@@ -460,10 +461,17 @@ Examples:
           ignore: ["**/*.d.ts", "**/*.d.mts", "**/*.d.cts"],
           cwd: pkgJsonDir,
         });
-        entryPoints.push(...wildcardFiles);
+        // Filter out test files (__tests__ directories, .test.*, .spec.*)
+        const filteredFiles = wildcardFiles.filter((file) => !isTestFile(file));
+        entryPoints.push(...filteredFiles);
 
-        rows.push([`"${cleanExportPath}"`, `${sourcePath} (${wildcardFiles.length} matches)`]);
+        rows.push([`"${cleanExportPath}"`, `${sourcePath} (${filteredFiles.length} matches)`]);
       } else if (isSourceFile(sourcePath)) {
+        // Skip test files even if explicitly specified
+        if (isTestFile(sourcePath)) {
+          emojiLog("⚠️", `Skipping test file: ${sourcePath}`, "warn");
+          continue;
+        }
         entryPoints.push(sourcePath);
 
         rows.push([`"${cleanExportPath}"`, sourcePath]);
@@ -480,15 +488,23 @@ Examples:
     if (typeof config.bin === "string") {
       // Single bin entry
       if (isSourceFile(config.bin)) {
-        entryPoints.push(config.bin);
-        rows.push([`bin:${pkgJson.name}`, config.bin]);
+        if (isTestFile(config.bin)) {
+          emojiLog("⚠️", `Skipping test file in bin: ${config.bin}`, "warn");
+        } else {
+          entryPoints.push(config.bin);
+          rows.push([`bin:${pkgJson.name}`, config.bin]);
+        }
       }
     } else {
       // Multiple bin entries
       for (const [binName, sourcePath] of Object.entries(config.bin)) {
         if (typeof sourcePath === "string" && isSourceFile(sourcePath)) {
-          entryPoints.push(sourcePath);
-          rows.push([`bin:${binName}`, sourcePath]);
+          if (isTestFile(sourcePath)) {
+            emojiLog("⚠️", `Skipping test file in bin: ${sourcePath}`, "warn");
+          } else {
+            entryPoints.push(sourcePath);
+            rows.push([`bin:${binName}`, sourcePath]);
+          }
         }
       }
     }
