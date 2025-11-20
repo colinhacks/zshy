@@ -6,6 +6,8 @@ import { table } from "table";
 import * as ts from "typescript";
 import { type BuildContext, compileProject } from "./compile.js";
 import {
+  detectConfigIndention,
+  findConfigPath,
   formatForLog,
   isSourceFile,
   isTestFile,
@@ -163,22 +165,7 @@ Examples:
   ///////////////////////////////////
 
   // Find package.json by scanning up the file system
-  let packageJsonPath = "./package.json";
-  let currentDir = process.cwd();
-
-  while (currentDir !== path.dirname(currentDir)) {
-    const candidatePath = path.join(currentDir, "package.json");
-    if (fs.existsSync(candidatePath)) {
-      packageJsonPath = candidatePath;
-      break;
-    }
-    currentDir = path.dirname(currentDir);
-  }
-
-  if (!fs.existsSync(packageJsonPath)) {
-    log.error("❌ package.json not found in current directory or any parent directories");
-    process.exit(1);
-  }
+  const packageJsonPath = findConfigPath("package.json");
 
   // read package.json and extract the "zshy" exports config
   const pkgJsonRaw = fs.readFileSync(packageJsonPath, "utf-8");
@@ -186,13 +173,7 @@ Examples:
   const pkgJson = JSON.parse(pkgJsonRaw);
 
   // Detect indentation from package.json to preserve it.
-  let indent: string | number = 2; // Default to 2 spaces
-  const indentMatch = pkgJsonRaw.match(/^([ \t]+)/m);
-  if (indentMatch?.[1]) {
-    indent = indentMatch[1];
-  } else if (!pkgJsonRaw.includes("\n")) {
-    indent = 0; // minified
-  }
+  const pkgJsonIndent = detectConfigIndention(pkgJsonRaw);
 
   const pkgJsonDir = path.dirname(packageJsonPath);
   const pkgJsonRelPath = relativePosix(pkgJsonDir, packageJsonPath);
@@ -1045,7 +1026,7 @@ Examples:
       ///////////////////////////////
       log.info("[dryrun] Skipping package.json modification");
     } else {
-      fs.writeFileSync(packageJsonPath, JSON.stringify(pkgJson, null, indent) + "\n");
+      fs.writeFileSync(packageJsonPath, JSON.stringify(pkgJson, null, pkgJsonIndent) + "\n");
     }
   }
 
