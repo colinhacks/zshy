@@ -26,6 +26,7 @@ interface RawConfig {
   conditions?: Record<string, "esm" | "cjs" | "src">;
   tsconfig?: string; // optional path to tsconfig.json file
   noEdit?: boolean;
+  jsr?: boolean;
 }
 
 interface NormalizedConfig {
@@ -35,6 +36,7 @@ interface NormalizedConfig {
   cjs: boolean;
   tsconfig: string;
   noEdit: boolean;
+  jsr: boolean;
 }
 
 export async function main(): Promise<void> {
@@ -266,11 +268,14 @@ Examples:
 
   const config = { ...rawConfig } as NormalizedConfig;
 
+  // Normalize boolean options
+  config.noEdit ??= false;
+  config.jsr ??= false;
+
   // Normalize cjs property
   if (config.cjs === undefined) {
     config.cjs = true; // Default to true if not specified
   }
-  config.noEdit ??= false;
 
   // Validate that if cjs is disabled, no conditions are set to "cjs"
   if (config.cjs === false && config.conditions) {
@@ -1027,6 +1032,47 @@ Examples:
       log.info("[dryrun] Skipping package.json modification");
     } else {
       fs.writeFileSync(packageJsonPath, JSON.stringify(pkgJson, null, pkgJsonIndent) + "\n");
+    }
+  }
+
+  //////////////////////////////////
+  ///     write jsr exports      ///
+  //////////////////////////////////
+
+  if (config.jsr) {
+    if (!isSilent) {
+      log.info(`${prefix}Updating jsr.json...`);
+    }
+
+    // Find jsr.json by scanning up the file system
+    const jsrJsonPath = findConfigPath("jsr.json");
+
+    // read jsr.json
+    const jsrJsonRaw = fs.readFileSync(jsrJsonPath, "utf-8");
+    const jsrJson = JSON.parse(jsrJsonRaw);
+
+    // Detect indentation from jsr.json to preserve it.
+    const jsrJsonIndent = detectConfigIndention(jsrJsonRaw);
+
+    const jsrJsonDir = path.dirname(jsrJsonPath);
+    const jsrJsonRelPath = relativePosix(jsrJsonDir, jsrJsonPath);
+
+    if (!isSilent) {
+      log.info(`Reading jsr.json from ./${jsrJsonRelPath}`);
+    }
+
+    // Copy exports from zshy config to jsr.json exports
+    const jsrExports = config.exports;
+    jsrJson.exports = jsrExports;
+    if (isVerbose) {
+      log.info(`Setting "exports": ${formatForLog(jsrExports)}`);
+    }
+
+    // Write jsr json
+    if (isDryRun) {
+      log.info("[dryrun] Skipping jsr.json modification");
+    } else {
+      fs.writeFileSync(jsrJsonPath, JSON.stringify(jsrJson, null, jsrJsonIndent) + "\n");
     }
   }
 
