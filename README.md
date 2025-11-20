@@ -461,6 +461,21 @@ With this addition, `zshy` will add the `"my-source"` condition to the generated
 }
 ```
 
+### JSR
+
+For packages that also publish to [JSR](https://jsr.io/), you can have `zshy` copy your configured exports to `jsr.json`, making your `zshy` configuration the single source of truth for exports:
+
+```jsonc
+{
+  "zshy": {
+    "exports": { ... },
+    "jsr": true
+  }
+}
+```
+
+This will copy over the paths of the source code entrypoints, not the paths to the transpiled code, since JSR supports and encourages publishing TypeScript source code rather than pairs of `.js` + `.d.ts` files.
+
 <br/>
 <br/>
 <br/>
@@ -686,7 +701,7 @@ To learn more, read the ["Masquerading as CJS"](https://github.com/arethetypeswr
 
 ```ts
 function hello() {
-  console.log('hello');
+  console.log("hello");
 }
 
 export default hello;
@@ -696,7 +711,7 @@ export default hello;
 
 ```ts
 function hello() {
-  console.log('hello');
+  console.log("hello");
 }
 exports.default = hello;
 module.exports = exports.default;
