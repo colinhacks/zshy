@@ -247,7 +247,10 @@ exports[`zshy with different tsconfig configurations > should skip CJS build whe
      "exports": {
        ".": "./src/index.ts"
      },
-     "cjs": false
+     "cjs": false,
+     "conditions": {
+       "custom-cjs": "esm"
+     }
    }
 »  Reading tsconfig from ./tsconfig.json
 »  Determining entrypoints...
@@ -315,6 +318,7 @@ exports[`zshy with different tsconfig configurations > should skip CJS build whe
 »  Setting "types": "./dist/index.d.ts"
 »  Setting "exports": {
      ".": {
+       "custom-cjs": "./dist/index.js",
        "types": "./dist/index.d.ts",
        "default": "./dist/index.js"
      }
