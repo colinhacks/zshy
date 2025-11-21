@@ -1,3 +1,4 @@
+import * as fs from "node:fs";
 import * as path from "node:path";
 import * as ts from "typescript";
 
@@ -131,4 +132,38 @@ export function isTestFile(filePath: string): boolean {
   }
 
   return false;
+}
+
+export function findConfigPath(fileName: string): string {
+  let resultPath = `./${fileName}`;
+  let currentDir = process.cwd();
+
+  while (currentDir !== path.dirname(currentDir)) {
+    const candidatePath = path.join(currentDir, fileName);
+    if (fs.existsSync(candidatePath)) {
+      resultPath = candidatePath;
+      break;
+    }
+    currentDir = path.dirname(currentDir);
+  }
+
+  if (!fs.existsSync(resultPath)) {
+    log.error(`❌ ${fileName} not found in current directory or any parent directories`);
+    process.exit(1);
+  }
+
+  return resultPath;
+}
+
+export function detectConfigIndention(fileContents: string): string | number {
+  let indent: string | number = 2; // Default to 2 spaces
+  const indentMatch = fileContents.match(/^([ \t]+)/m);
+
+  if (indentMatch?.[1]) {
+    indent = indentMatch[1];
+  } else if (!fileContents.includes("\n")) {
+    indent = 0; // minified
+  }
+
+  return indent;
 }
