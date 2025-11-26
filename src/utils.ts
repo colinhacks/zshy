@@ -155,7 +155,7 @@ export function findConfigPath(fileName: string): string {
   return resultPath;
 }
 
-export function detectConfigIndention(fileContents: string): string | number {
+export function detectConfigIndentation(fileContents: string): string | number {
   let indent: string | number = 2; // Default to 2 spaces
   const indentMatch = fileContents.match(/^([ \t]+)/m);
 

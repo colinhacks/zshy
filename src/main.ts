@@ -6,7 +6,7 @@ import { table } from "table";
 import * as ts from "typescript";
 import { type BuildContext, compileProject } from "./compile.js";
 import {
-  detectConfigIndention,
+  detectConfigIndentation,
   findConfigPath,
   formatForLog,
   isSourceFile,
@@ -175,7 +175,7 @@ Examples:
   const pkgJson = JSON.parse(pkgJsonRaw);
 
   // Detect indentation from package.json to preserve it.
-  const pkgJsonIndent = detectConfigIndention(pkgJsonRaw);
+  const pkgJsonIndent = detectConfigIndentation(pkgJsonRaw);
 
   const pkgJsonDir = path.dirname(packageJsonPath);
   const pkgJsonRelPath = relativePosix(pkgJsonDir, packageJsonPath);
@@ -1040,39 +1040,45 @@ Examples:
   //////////////////////////////////
 
   if (config.jsr) {
-    if (!isSilent) {
-      log.info(`${prefix}Updating jsr.json...`);
-    }
-
-    // Find jsr.json by scanning up the file system
-    const jsrJsonPath = findConfigPath("jsr.json");
-
-    // read jsr.json
-    const jsrJsonRaw = fs.readFileSync(jsrJsonPath, "utf-8");
-    const jsrJson = JSON.parse(jsrJsonRaw);
-
-    // Detect indentation from jsr.json to preserve it.
-    const jsrJsonIndent = detectConfigIndention(jsrJsonRaw);
-
-    const jsrJsonDir = path.dirname(jsrJsonPath);
-    const jsrJsonRelPath = relativePosix(jsrJsonDir, jsrJsonPath);
-
-    if (!isSilent) {
-      log.info(`Reading jsr.json from ./${jsrJsonRelPath}`);
-    }
-
-    // Copy exports from zshy config to jsr.json exports
-    const jsrExports = config.exports;
-    jsrJson.exports = jsrExports;
-    if (isVerbose) {
-      log.info(`Setting "exports": ${formatForLog(jsrExports)}`);
-    }
-
-    // Write jsr json
-    if (isDryRun) {
-      log.info("[dryrun] Skipping jsr.json modification");
+    if (config.noEdit) {
+      if (!isSilent) {
+        log.info("[noedit] Skipping modification of jsr.json");
+      }
     } else {
-      fs.writeFileSync(jsrJsonPath, JSON.stringify(jsrJson, null, jsrJsonIndent) + "\n");
+      if (!isSilent) {
+        log.info(`${prefix}Updating jsr.json...`);
+      }
+
+      // Find jsr.json by scanning up the file system
+      const jsrJsonPath = findConfigPath("jsr.json");
+
+      // read jsr.json
+      const jsrJsonRaw = fs.readFileSync(jsrJsonPath, "utf-8");
+      const jsrJson = JSON.parse(jsrJsonRaw);
+
+      // Detect indentation from jsr.json to preserve it.
+      const jsrJsonIndent = detectConfigIndentation(jsrJsonRaw);
+
+      const jsrJsonDir = path.dirname(jsrJsonPath);
+      const jsrJsonRelPath = relativePosix(jsrJsonDir, jsrJsonPath);
+
+      if (!isSilent) {
+        log.info(`Reading jsr.json from ./${jsrJsonRelPath}`);
+      }
+
+      // Copy exports from zshy config to jsr.json exports
+      const jsrExports = config.exports;
+      jsrJson.exports = jsrExports;
+      if (isVerbose) {
+        log.info(`Setting "exports": ${formatForLog(jsrExports)}`);
+      }
+
+      // Write jsr json
+      if (isDryRun) {
+        log.info("[dryrun] Skipping jsr.json modification");
+      } else {
+        fs.writeFileSync(jsrJsonPath, JSON.stringify(jsrJson, null, jsrJsonIndent) + "\n");
+      }
     }
   }
 
