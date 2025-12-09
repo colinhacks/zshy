@@ -169,7 +169,7 @@ Examples:
   const packageJsonPath = findConfigPath("package.json");
 
   if (!packageJsonPath) {
-    log.error(`❌ package.json not found in current directory or any parent directories`);
+    log.error("❌ package.json not found in current directory or any parent directories");
     process.exit(1);
   }
 

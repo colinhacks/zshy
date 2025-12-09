@@ -173,7 +173,7 @@ describe("zshy with different tsconfig configurations", () => {
     expect(snapshot).toMatchSnapshot();
   });
 
-  it("should copy exports to jsr.json when jsr is true", () => {
+  it("should copy exports to jsr.json when jsr.json exists", () => {
     const snapshot = runZshyWithTsconfig("tsconfig.json", {
       dryRun: false,
       cwd: process.cwd() + "/test/jsr",

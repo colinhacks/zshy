@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`zshy with different tsconfig configurations > should copy exports to jsr.json when jsr is true 1`] = `
+exports[`zshy with different tsconfig configurations > should copy exports to jsr.json when jsr.json exists 1`] = `
 {
   "exitCode": 0,
   "stderr": "",
