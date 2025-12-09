@@ -26,7 +26,6 @@ interface RawConfig {
   conditions?: Record<string, "esm" | "cjs" | "src">;
   tsconfig?: string; // optional path to tsconfig.json file
   noEdit?: boolean;
-  jsr?: boolean;
 }
 
 interface NormalizedConfig {
@@ -36,7 +35,6 @@ interface NormalizedConfig {
   cjs: boolean;
   tsconfig: string;
   noEdit: boolean;
-  jsr: boolean;
 }
 
 export async function main(): Promise<void> {
@@ -270,7 +268,6 @@ Examples:
 
   // Normalize boolean options
   config.noEdit ??= false;
-  config.jsr ??= false;
 
   // Normalize cjs property
   if (config.cjs === undefined) {
@@ -1039,7 +1036,15 @@ Examples:
   ///     write jsr exports      ///
   //////////////////////////////////
 
-  if (config.jsr) {
+  // Check if jsr.json exists in the project
+  let jsrJsonPath: string | null = null;
+  try {
+    jsrJsonPath = findConfigPath("jsr.json");
+  } catch {
+    // jsr.json doesn't exist, skip jsr export writing
+  }
+
+  if (jsrJsonPath) {
     if (config.noEdit) {
       if (!isSilent) {
         log.info("[noedit] Skipping modification of jsr.json");
@@ -1048,9 +1053,6 @@ Examples:
       if (!isSilent) {
         log.info(`${prefix}Updating jsr.json...`);
       }
-
-      // Find jsr.json by scanning up the file system
-      const jsrJsonPath = findConfigPath("jsr.json");
 
       // read jsr.json
       const jsrJsonRaw = fs.readFileSync(jsrJsonPath, "utf-8");
