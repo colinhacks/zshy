@@ -181,6 +181,29 @@ describe("zshy with different tsconfig configurations", () => {
     expect(snapshot).toMatchSnapshot();
   });
 
+  it("should support bin without exports (should not overwrite existing exports)", () => {
+    const cwd = process.cwd() + "/test/bin";
+    const packageJsonPath = cwd + "/package.json";
+    
+    // Read original exports field
+    const originalPackageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
+    const originalExports = originalPackageJson.exports;
+
+    const snapshot = runZshyWithTsconfig("tsconfig.json", {
+      dryRun: false,
+      cwd,
+    });
+
+    // Verify exports were not modified
+    const newPackageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
+    expect(newPackageJson.exports).toEqual(originalExports);
+    
+    // Verify bin was updated
+    expect(newPackageJson.bin).toBe("./dist/cli.cjs");
+    
+    expect(snapshot).toMatchSnapshot();
+  });
+
   it("should support tsconfig paths aliases with at-sign", () => {
     const snapshot = runZshyWithTsconfig("tsconfig.json", {
       dryRun: false,

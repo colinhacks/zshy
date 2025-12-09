@@ -1,0 +1,22 @@
+{
+  "name": "bin-only-pkg",
+  "version": "1.0.0",
+  "description": "Test fixture for zshy - bin only (no exports in zshy config)",
+  "type": "module",
+  "scripts": {
+    "build": "tsx ../../src/index.ts --project tsconfig.json"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  },
+  "zshy": {
+    "bin": "./src/cli.ts"
+  },
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    "./some-existing-export": "./some-path.js"
+  },
+  "bin": "./dist/cli.cjs"
+}
