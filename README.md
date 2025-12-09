@@ -28,7 +28,7 @@
 - 📦 **Bundler-free** — No bundler or bundler configs involved
 - 🟦 **No config file** — Reads from your `package.json` and `tsconfig.json`
 - 📝 **Declarative entrypoint map** — Specify your TypeScript entrypoints in `package.json#/zshy`
-- 🤖 **Auto-generated `"exports"`** — Writes `"exports"` map directly into your `package.json`
+- 🤖 **Auto-generated `"exports"`** — Writes `"exports"` map directly into your `package.json` and `jsr.json`
 - 🧱 **Dual-module builds** — Builds ESM and CJS outputs from a single TypeScript source file
 - 📂 **Unopinionated** — Use any file structure or import extension syntax you like
 - 📦 **Asset handling** — Non-JS assets are copied to the output directory
@@ -463,16 +463,7 @@ With this addition, `zshy` will add the `"my-source"` condition to the generated
 
 ### JSR
 
-For packages that also publish to [JSR](https://jsr.io/), you can have `zshy` copy your configured exports to `jsr.json`, making your `zshy` configuration the single source of truth for exports:
-
-```jsonc
-{
-  "zshy": {
-    "exports": { ... },
-    "jsr": true
-  }
-}
-```
+For packages that also have a `jsr.json` file for publishing to [JSR](https://jsr.io/), `zshy` will copy your configured exports to `jsr.json/#exports`, making your `zshy` configuration the single source of truth for exports.
 
 This will copy over the paths of the source code entrypoints, not the paths to the transpiled code, since JSR supports and encourages publishing TypeScript source code rather than pairs of `.js` + `.d.ts` files.
 

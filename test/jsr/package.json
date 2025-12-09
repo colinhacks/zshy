@@ -12,8 +12,7 @@
   "zshy": {
     "exports": {
       ".": "./src/index.ts"
-    },
-    "jsr": true
+    }
   },
   "files": [
     "dist"
