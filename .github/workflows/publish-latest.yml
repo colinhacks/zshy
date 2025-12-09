@@ -1,14 +1,12 @@
 name: Publish --latest
 
 on:
+  workflow_dispatch: # allow manual trigger for testing
   push:
     paths:
       - 'VERSION.txt'
     branches:
       - main
-
-  # Allow manual trigger for testing
-  workflow_dispatch:
 
 jobs:
   publish:

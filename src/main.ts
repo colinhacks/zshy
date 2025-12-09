@@ -227,8 +227,11 @@ Examples:
     if (typeof rawConfig.exports === "string") {
       rawConfig.exports = { ".": rawConfig.exports };
     } else if (typeof rawConfig.exports === "undefined") {
-      log.error(`❌ Missing "exports" key in package.json#/${CONFIG_KEY}`);
-      process.exit(1);
+      // exports is optional if bin is specified
+      if (!rawConfig.bin) {
+        log.error(`❌ Missing "exports" key in package.json#/${CONFIG_KEY}`);
+        process.exit(1);
+      }
     } else if (typeof rawConfig.exports !== "object") {
       log.error(`❌ Invalid "exports" key in package.json#/${CONFIG_KEY}`);
       process.exit(1);
