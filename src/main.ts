@@ -6,6 +6,8 @@ import { table } from "table";
 import * as ts from "typescript";
 import { type BuildContext, compileProject } from "./compile.js";
 import {
+  detectConfigIndentation,
+  findConfigPath,
   formatForLog,
   isSourceFile,
   isTestFile,
@@ -158,24 +160,15 @@ Examples:
       log.info("Build will fail only on errors (default)");
     }
   }
+
   ///////////////////////////////////
   ///    find and read pkg json   ///
   ///////////////////////////////////
 
   // Find package.json by scanning up the file system
-  let packageJsonPath = "./package.json";
-  let currentDir = process.cwd();
+  const packageJsonPath = findConfigPath("package.json");
 
-  while (currentDir !== path.dirname(currentDir)) {
-    const candidatePath = path.join(currentDir, "package.json");
-    if (fs.existsSync(candidatePath)) {
-      packageJsonPath = candidatePath;
-      break;
-    }
-    currentDir = path.dirname(currentDir);
-  }
-
-  if (!fs.existsSync(packageJsonPath)) {
+  if (!packageJsonPath) {
     log.error("❌ package.json not found in current directory or any parent directories");
     process.exit(1);
   }
@@ -186,13 +179,7 @@ Examples:
   const pkgJson = JSON.parse(pkgJsonRaw);
 
   // Detect indentation from package.json to preserve it.
-  let indent: string | number = 2; // Default to 2 spaces
-  const indentMatch = pkgJsonRaw.match(/^([ \t]+)/m);
-  if (indentMatch?.[1]) {
-    indent = indentMatch[1];
-  } else if (!pkgJsonRaw.includes("\n")) {
-    indent = 0; // minified
-  }
+  const pkgJsonIndent = detectConfigIndentation(pkgJsonRaw);
 
   const pkgJsonDir = path.dirname(packageJsonPath);
   const pkgJsonRelPath = relativePosix(pkgJsonDir, packageJsonPath);
@@ -288,11 +275,13 @@ Examples:
 
   const config = { ...rawConfig } as NormalizedConfig;
 
+  // Normalize boolean options
+  config.noEdit ??= false;
+
   // Normalize cjs property
   if (config.cjs === undefined) {
     config.cjs = true; // Default to true if not specified
   }
-  config.noEdit ??= false;
 
   // Validate that if cjs is disabled, no conditions are set to "cjs"
   if (config.cjs === false && config.conditions) {
@@ -1048,7 +1037,54 @@ Examples:
       ///////////////////////////////
       log.info("[dryrun] Skipping package.json modification");
     } else {
-      fs.writeFileSync(packageJsonPath, JSON.stringify(pkgJson, null, indent) + "\n");
+      fs.writeFileSync(packageJsonPath, JSON.stringify(pkgJson, null, pkgJsonIndent) + "\n");
+    }
+  }
+
+  //////////////////////////////////
+  ///     write jsr exports      ///
+  //////////////////////////////////
+
+  // Check if jsr.json exists in the project
+  const jsrJsonPath = findConfigPath("jsr.json");
+
+  if (jsrJsonPath) {
+    if (config.noEdit) {
+      if (!isSilent) {
+        log.info("[noedit] Skipping modification of jsr.json");
+      }
+    } else {
+      if (!isSilent) {
+        log.info(`${prefix}Updating jsr.json...`);
+      }
+
+      // read jsr.json
+      const jsrJsonRaw = fs.readFileSync(jsrJsonPath, "utf-8");
+      const jsrJson = JSON.parse(jsrJsonRaw);
+
+      // Detect indentation from jsr.json to preserve it.
+      const jsrJsonIndent = detectConfigIndentation(jsrJsonRaw);
+
+      const jsrJsonDir = path.dirname(jsrJsonPath);
+      const jsrJsonRelPath = relativePosix(jsrJsonDir, jsrJsonPath);
+
+      if (!isSilent) {
+        log.info(`Reading jsr.json from ./${jsrJsonRelPath}`);
+      }
+
+      // Copy exports from zshy config to jsr.json exports
+      const jsrExports = config.exports;
+      jsrJson.exports = jsrExports;
+      if (isVerbose) {
+        log.info(`Setting "exports": ${formatForLog(jsrExports)}`);
+      }
+
+      // Write jsr json
+      if (isDryRun) {
+        log.info("[dryrun] Skipping jsr.json modification");
+      } else {
+        fs.writeFileSync(jsrJsonPath, JSON.stringify(jsrJson, null, jsrJsonIndent) + "\n");
+      }
     }
   }
 

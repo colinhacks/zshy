@@ -28,7 +28,7 @@
 - 📦 **Bundler-free** — No bundler or bundler configs involved
 - 🟦 **No config file** — Reads from your `package.json` and `tsconfig.json`
 - 📝 **Declarative entrypoint map** — Specify your TypeScript entrypoints in `package.json#/zshy`
-- 🤖 **Auto-generated `"exports"`** — Writes `"exports"` map directly into your `package.json`
+- 🤖 **Auto-generated `"exports"`** — Writes `"exports"` map directly into your `package.json` and `jsr.json`
 - 🧱 **Dual-module builds** — Builds ESM and CJS outputs from a single TypeScript source file
 - 📂 **Unopinionated** — Use any file structure or import extension syntax you like
 - 📦 **Asset handling** — Non-JS assets are copied to the output directory
@@ -461,6 +461,12 @@ With this addition, `zshy` will add the `"my-source"` condition to the generated
 }
 ```
 
+### JSR
+
+For packages that also have a `jsr.json` file for publishing to [JSR](https://jsr.io/), `zshy` will copy your configured exports to `jsr.json/#exports`, making your `zshy` configuration the single source of truth for exports.
+
+This will copy over the paths of the source code entrypoints, not the paths to the transpiled code, since JSR supports and encourages publishing TypeScript source code rather than pairs of `.js` + `.d.ts` files.
+
 <br/>
 <br/>
 <br/>
@@ -686,7 +692,7 @@ To learn more, read the ["Masquerading as CJS"](https://github.com/arethetypeswr
 
 ```ts
 function hello() {
-  console.log('hello');
+  console.log("hello");
 }
 
 export default hello;
@@ -696,7 +702,7 @@ export default hello;
 
 ```ts
 function hello() {
-  console.log('hello');
+  console.log("hello");
 }
 exports.default = hello;
 module.exports = exports.default;
@@ -750,9 +756,9 @@ With this setup, your build outputs (`index.js`, etc) will be written to the pac
 
 <br />
 
-### Can I prevent `zshy` from modifying my `package.json`?
+### Can I prevent `zshy` from modifying my `package.json`/`jsr.json`?
 
-Yes. If you prefer to manage your `package.json` fields manually, you can prevent `zshy` from making any changes by setting the `noEdit` option to `true` in your `package.json#/zshy` config.
+Yes. If you prefer to manage your export fields manually, you can prevent `zshy` from making any changes by setting the `noEdit` option to `true` in your `package.json#/zshy` config.
 
 ```jsonc
 {
@@ -763,7 +769,7 @@ Yes. If you prefer to manage your `package.json` fields manually, you can preven
 }
 ```
 
-When `noEdit` is enabled, `zshy` will build your files but will not write to `package.json`. You will be responsible for populating the `"exports"`, `"bin"`, `"main"`, `"module"`, and `"types"` fields yourself.
+When `noEdit` is enabled, `zshy` will build your files but will not write to `package.json` or `jsr.json`. You will be responsible for populating the `"exports"`, `"bin"`, `"main"`, `"module"`, and `"types"` fields yourself.
 
 <br />
 
