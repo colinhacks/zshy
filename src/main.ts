@@ -160,12 +160,18 @@ Examples:
       log.info("Build will fail only on errors (default)");
     }
   }
+
   ///////////////////////////////////
   ///    find and read pkg json   ///
   ///////////////////////////////////
 
   // Find package.json by scanning up the file system
   const packageJsonPath = findConfigPath("package.json");
+
+  if (!packageJsonPath) {
+    log.error(`❌ package.json not found in current directory or any parent directories`);
+    process.exit(1);
+  }
 
   // read package.json and extract the "zshy" exports config
   const pkgJsonRaw = fs.readFileSync(packageJsonPath, "utf-8");
@@ -1037,12 +1043,7 @@ Examples:
   //////////////////////////////////
 
   // Check if jsr.json exists in the project
-  let jsrJsonPath: string | null = null;
-  try {
-    jsrJsonPath = findConfigPath("jsr.json");
-  } catch {
-    // jsr.json doesn't exist, skip jsr export writing
-  }
+  const jsrJsonPath = findConfigPath("jsr.json");
 
   if (jsrJsonPath) {
     if (config.noEdit) {

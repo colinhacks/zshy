@@ -756,9 +756,9 @@ With this setup, your build outputs (`index.js`, etc) will be written to the pac
 
 <br />
 
-### Can I prevent `zshy` from modifying my `package.json`?
+### Can I prevent `zshy` from modifying my `package.json`/`jsr.json`?
 
-Yes. If you prefer to manage your `package.json` fields manually, you can prevent `zshy` from making any changes by setting the `noEdit` option to `true` in your `package.json#/zshy` config.
+Yes. If you prefer to manage your export fields manually, you can prevent `zshy` from making any changes by setting the `noEdit` option to `true` in your `package.json#/zshy` config.
 
 ```jsonc
 {
@@ -769,7 +769,7 @@ Yes. If you prefer to manage your `package.json` fields manually, you can preven
 }
 ```
 
-When `noEdit` is enabled, `zshy` will build your files but will not write to `package.json`. You will be responsible for populating the `"exports"`, `"bin"`, `"main"`, `"module"`, and `"types"` fields yourself.
+When `noEdit` is enabled, `zshy` will build your files but will not write to `package.json` or `jsr.json`. You will be responsible for populating the `"exports"`, `"bin"`, `"main"`, `"module"`, and `"types"` fields yourself.
 
 <br />
 

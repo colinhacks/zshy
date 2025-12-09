@@ -16,8 +16,7 @@ exports[`zshy with different tsconfig configurations > should copy exports to js
 »  Parsed zshy config: {
      "exports": {
        ".": "./src/index.ts"
-     },
-     "jsr": true
+     }
    }
 »  Reading tsconfig from ./tsconfig.json
 »  Determining entrypoints...

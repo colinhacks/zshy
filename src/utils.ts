@@ -134,7 +134,7 @@ export function isTestFile(filePath: string): boolean {
   return false;
 }
 
-export function findConfigPath(fileName: string): string {
+export function findConfigPath(fileName: string): string | null {
   let resultPath = `./${fileName}`;
   let currentDir = process.cwd();
 
@@ -147,12 +147,7 @@ export function findConfigPath(fileName: string): string {
     currentDir = path.dirname(currentDir);
   }
 
-  if (!fs.existsSync(resultPath)) {
-    log.error(`❌ ${fileName} not found in current directory or any parent directories`);
-    process.exit(1);
-  }
-
-  return resultPath;
+  return fs.existsSync(resultPath) ? resultPath : null;
 }
 
 export function detectConfigIndentation(fileContents: string): string | number {
