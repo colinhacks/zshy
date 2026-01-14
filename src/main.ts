@@ -749,6 +749,7 @@ Examples:
       pkgJsonDir,
       rootDir,
       cjsInterop: isCjsInterop,
+      skipDiagnostics: !skipCjs,
       compilerOptions: {
         ...tsconfigJson,
         module: ts.ModuleKind.ESNext,

@@ -1,0 +1,30 @@
+{
+  "name": "my-pkg",
+  "version": "1.0.0",
+  "description": "Test fixture for zshy - represents a typical TypeScript library",
+  "type": "module",
+  "scripts": {
+    "build": "tsx ../../src/index.ts --project tsconfig.json"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  },
+  "zshy": {
+    "exports": {
+      ".": "./src/index.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.cts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.cts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  }
+}
