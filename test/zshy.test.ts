@@ -227,6 +227,34 @@ describe("zshy with different tsconfig configurations", () => {
     });
     expect(snapshot).toMatchSnapshot();
   });
+
+  it("should report type errors only once when building both CJS and ESM", () => {
+    const snapshot = runZshyWithTsconfig("tsconfig.json", {
+      dryRun: false,
+      cwd: process.cwd() + "/test/type-error",
+    });
+
+    // Count occurrences of the error message - should appear only once
+    const errorPattern = /Found 1 error\(s\)/g;
+    const matches = snapshot.stdout.match(errorPattern) || [];
+    expect(matches.length).toBe(1);
+
+    // Build should fail with exit code 1
+    expect(snapshot.exitCode).toBe(1);
+  });
+
+  it("should report type errors when building ESM-only (cjs: false)", () => {
+    const snapshot = runZshyWithTsconfig("tsconfig.json", {
+      dryRun: false,
+      cwd: process.cwd() + "/test/type-error-esm-only",
+    });
+
+    // Verify error is reported
+    expect(snapshot.stdout).toMatch(/Found 1 error\(s\)/);
+
+    // Build should fail with exit code 1
+    expect(snapshot.exitCode).toBe(1);
+  });
 });
 
 function normalizeOutput(output: string): string {
