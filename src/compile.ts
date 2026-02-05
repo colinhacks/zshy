@@ -28,6 +28,7 @@ export interface ProjectOptions {
   cjsInterop?: boolean; // Enable CJS interop for single default exports
   paths?: Record<string, string[]>; // TypeScript paths configuration
   baseUrl?: string; // TypeScript baseUrl configuration
+  skipDiagnostics?: boolean; // Skip diagnostics when running multiple builds
 }
 
 export async function compileProject(config: ProjectOptions, entryPoints: string[], ctx: BuildContext): Promise<void> {
@@ -44,7 +45,8 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
   const dtsExt = config.ext === "mjs" ? ".d.mts" : config.ext === "cjs" ? ".d.cts" : ".d.ts";
 
   // Track if we should write files (will be set after diagnostics check)
-  let shouldWriteFiles = true;
+  // If there are already errors from a previous build phase, don't write files
+  let shouldWriteFiles = ctx.errorCount === 0;
 
   host.writeFile = (fileName, data, writeByteOrderMark, onError, sourceFiles) => {
     // Transform output file extensions
@@ -103,47 +105,50 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
     },
   });
 
-  // Check for semantic errors
-  const diagnostics = ts.getPreEmitDiagnostics(program);
+  // Check for semantic errors (skip if already checked in a previous build)
+  if (!config.skipDiagnostics) {
+    const diagnostics = ts.getPreEmitDiagnostics(program);
 
-  if (diagnostics.length > 0) {
-    // Filter out ts1343 errors for CJS builds
-    const filteredDiagnostics = diagnostics.filter((d) => {
-      if (config.format === "cjs") {
-        return d.code !== 1343 && d.code !== 1259;
+    if (diagnostics.length > 0) {
+      // Filter out ts1343 (import.meta not available) and ts1259 errors for CJS builds 
+      const filteredDiagnostics = diagnostics.filter((d) => {
+        if (config.format === "cjs") {
+          return d.code !== 1343 && d.code !== 1259;
+        }
+        return true;
+      });
+
+      const errorCount = filteredDiagnostics.filter((d) => d.category === ts.DiagnosticCategory.Error).length;
+      const warningCount = filteredDiagnostics.filter((d) => d.category === ts.DiagnosticCategory.Warning).length;
+
+      // Update the build context with error and warning counts
+      ctx.errorCount += errorCount;
+      ctx.warningCount += warningCount;
+
+      // Set shouldWriteFiles to false if there are errors (excluding ts1343 for CJS)
+      if (errorCount > 0) {
+        shouldWriteFiles = false;
       }
-    }); // Ignore ts1343 (import.meta not available) for CJS
 
-    const errorCount = filteredDiagnostics.filter((d) => d.category === ts.DiagnosticCategory.Error).length;
-    const warningCount = filteredDiagnostics.filter((d) => d.category === ts.DiagnosticCategory.Warning).length;
+      if (errorCount > 0 || warningCount > 0) {
+        utils.log.warn(`Found ${errorCount} error(s) and ${warningCount} warning(s)`);
+      }
 
-    // Update the build context with error and warning counts
-    ctx.errorCount += errorCount;
-    ctx.warningCount += warningCount;
+      // Format diagnostics with color and context like tsc, keeping original order
+      const formatHost: ts.FormatDiagnosticsHost = {
+        getCurrentDirectory: () => process.cwd(),
+        getCanonicalFileName: (fileName) => fileName,
+        getNewLine: () => ts.sys.newLine,
+      };
 
-    // Set shouldWriteFiles to false if there are errors (excluding ts1343 for CJS)
-    if (errorCount > 0) {
-      shouldWriteFiles = false;
-    }
+      // Keep errors and warnings intermixed in their original order
+      const relevantDiagnostics = filteredDiagnostics.filter(
+        (d) => d.category === ts.DiagnosticCategory.Error || d.category === ts.DiagnosticCategory.Warning
+      );
 
-    if (errorCount > 0 || warningCount > 0) {
-      utils.log.warn(`Found ${errorCount} error(s) and ${warningCount} warning(s)`);
-    }
-
-    // Format diagnostics with color and context like tsc, keeping original order
-    const formatHost: ts.FormatDiagnosticsHost = {
-      getCurrentDirectory: () => process.cwd(),
-      getCanonicalFileName: (fileName) => fileName,
-      getNewLine: () => ts.sys.newLine,
-    };
-
-    // Keep errors and warnings intermixed in their original order
-    const relevantDiagnostics = filteredDiagnostics.filter(
-      (d) => d.category === ts.DiagnosticCategory.Error || d.category === ts.DiagnosticCategory.Warning
-    );
-
-    if (relevantDiagnostics.length > 0) {
-      console.log(ts.formatDiagnosticsWithColorAndContext(relevantDiagnostics, formatHost));
+      if (relevantDiagnostics.length > 0) {
+        console.log(ts.formatDiagnosticsWithColorAndContext(relevantDiagnostics, formatHost));
+      }
     }
   }
 
