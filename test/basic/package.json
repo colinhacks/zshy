@@ -29,6 +29,8 @@
       "./default-export-equals": "./src/default-export-equals.ts",
       "./default-const": "./src/default-const.ts",
       "./default-literal": "./src/default-literal.ts",
+      "./default-with-type-exports": "./src/default-with-type-exports.ts",
+      "./default-with-same-name-type": "./src/default-with-same-name-type.ts",
       "./env.d.ts": "./src/env.d.ts",
       "./config.json": "./src/assets/config.json",
       "./assets/test.txt": "./assets/test.txt"
@@ -110,6 +112,16 @@
       "types": "./dist/default-literal.d.cts",
       "import": "./dist/default-literal.js",
       "require": "./dist/default-literal.cjs"
+    },
+    "./default-with-type-exports": {
+      "types": "./dist/default-with-type-exports.d.cts",
+      "import": "./dist/default-with-type-exports.js",
+      "require": "./dist/default-with-type-exports.cjs"
+    },
+    "./default-with-same-name-type": {
+      "types": "./dist/default-with-same-name-type.d.cts",
+      "import": "./dist/default-with-same-name-type.js",
+      "require": "./dist/default-with-same-name-type.cjs"
     },
     "./env.d.ts": "./dist/env.d.ts",
     "./config.json": "./dist/assets/config.json",
