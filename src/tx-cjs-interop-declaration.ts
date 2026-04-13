@@ -20,9 +20,12 @@ export const createCjsInteropDeclarationTransformer =
         if (stmt === defaultExportNode) {
           // case A: `export default <expr>;`
           if (ts.isExportAssignment(stmt)) {
+            // export default <expr>
+            // If it's an identifier, use as is; otherwise, declare const _default: ...
             if (ts.isIdentifier(stmt.expression)) {
               outStmts.push(factory.createExportAssignment(undefined, true, stmt.expression));
             } else {
+              // declare const _default: typeof <expr>;
               outStmts.push(
                 factory.createVariableStatement(
                   undefined,
@@ -37,6 +40,7 @@ export const createCjsInteropDeclarationTransformer =
           }
           // case B: `export default function|class|interface|type|enum …`
           else {
+            // pull the declared name or use _default
             let name: ts.Identifier | undefined =
               ts.isFunctionDeclaration(stmt) ||
               ts.isClassDeclaration(stmt) ||
@@ -48,11 +52,14 @@ export const createCjsInteropDeclarationTransformer =
             if (!name) {
               name = factory.createIdentifier("_default");
             }
+            // strip off `export` & `default`
             const modifiers = (ts.canHaveModifiers(stmt) ? ts.getModifiers(stmt) : undefined)?.filter(
               (m) => m.kind !== ts.SyntaxKind.ExportKeyword && m.kind !== ts.SyntaxKind.DefaultKeyword
             );
+            // Add declare modifier for declaration files
             const declareModifiers = [factory.createModifier(ts.SyntaxKind.DeclareKeyword), ...(modifiers || [])];
 
+            // rebuild the declaration without export/default
             let decl: ts.Statement;
             if (ts.isFunctionDeclaration(stmt)) {
               decl = factory.createFunctionDeclaration(
@@ -85,11 +92,13 @@ export const createCjsInteropDeclarationTransformer =
             } else if (ts.isEnumDeclaration(stmt)) {
               decl = factory.createEnumDeclaration(declareModifiers, name, stmt.members);
             } else {
+              // unexpected — just keep original
               outStmts.push(stmt);
               continue;
             }
 
             outStmts.push(decl);
+            // append `export = Name;`
             outStmts.push(factory.createExportAssignment(undefined, true, name));
           }
         } else {
