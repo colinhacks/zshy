@@ -31,6 +31,7 @@
       "./default-literal": "./src/default-literal.ts",
       "./default-with-type-exports": "./src/default-with-type-exports.ts",
       "./default-with-same-name-type": "./src/default-with-same-name-type.ts",
+      "./default-with-enum-exports": "./src/default-with-enum-exports.ts",
       "./env.d.ts": "./src/env.d.ts",
       "./config.json": "./src/assets/config.json",
       "./assets/test.txt": "./assets/test.txt"
@@ -122,6 +123,11 @@
       "types": "./dist/default-with-same-name-type.d.cts",
       "import": "./dist/default-with-same-name-type.js",
       "require": "./dist/default-with-same-name-type.cjs"
+    },
+    "./default-with-enum-exports": {
+      "types": "./dist/default-with-enum-exports.d.cts",
+      "import": "./dist/default-with-enum-exports.js",
+      "require": "./dist/default-with-enum-exports.cjs"
     },
     "./env.d.ts": "./dist/env.d.ts",
     "./config.json": "./dist/assets/config.json",

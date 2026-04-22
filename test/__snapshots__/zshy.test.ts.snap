@@ -795,6 +795,7 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
        "./default-literal": "./src/default-literal.ts",
        "./default-with-type-exports": "./src/default-with-type-exports.ts",
        "./default-with-same-name-type": "./src/default-with-same-name-type.ts",
+       "./default-with-enum-exports": "./src/default-with-enum-exports.ts",
        "./env.d.ts": "./src/env.d.ts",
        "./config.json": "./src/assets/config.json",
        "./assets/test.txt": "./assets/test.txt"
@@ -823,6 +824,7 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
    ║ "my-pkg/default-literal"             │ ./src/default-literal.ts             ║
    ║ "my-pkg/default-with-type-exports"   │ ./src/default-with-type-exports.ts   ║
    ║ "my-pkg/default-with-same-name-type" │ ./src/default-with-same-name-type.ts ║
+   ║ "my-pkg/default-with-enum-exports"   │ ./src/default-with-enum-exports.ts   ║
    ║ "my-pkg/env.d.ts"                    │ ./src/env.d.ts                       ║
    ║ "my-pkg/config.json"                 │ ./src/assets/config.json             ║
    ║ "my-pkg/assets/test.txt"             │ ./assets/test.txt                    ║
@@ -857,7 +859,8 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
      "./src/default-const.ts",
      "./src/default-literal.ts",
      "./src/default-with-type-exports.ts",
-     "./src/default-with-same-name-type.ts"
+     "./src/default-with-same-name-type.ts",
+     "./src/default-with-enum-exports.ts"
    ]
 »  Resolved compilerOptions: {
      "lib": [
@@ -906,7 +909,7 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
 »  Copied asset: ./src/env.d.ts → ./dist/env.d.ts
 »  Copied asset: ./src/assets/config.json → ./dist/assets/config.json
 »  Copied asset: ./assets/test.txt → ./assets/test.txt
-»  Writing files (149 total)...
+»  Writing files (157 total)...
      ./dist/assets/README.md
      ./dist/assets/config.json
      ./dist/assets/styles.css
@@ -966,6 +969,14 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
      ./dist/default-object.d.ts.map
      ./dist/default-object.js
      ./dist/default-object.js.map
+     ./dist/default-with-enum-exports.cjs
+     ./dist/default-with-enum-exports.cjs.map
+     ./dist/default-with-enum-exports.d.cts
+     ./dist/default-with-enum-exports.d.cts.map
+     ./dist/default-with-enum-exports.d.ts
+     ./dist/default-with-enum-exports.d.ts.map
+     ./dist/default-with-enum-exports.js
+     ./dist/default-with-enum-exports.js.map
      ./dist/default-with-export-star.cjs
      ./dist/default-with-export-star.cjs.map
      ./dist/default-with-export-star.d.cts
@@ -1141,6 +1152,11 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
        "types": "./dist/default-with-same-name-type.d.cts",
        "import": "./dist/default-with-same-name-type.js",
        "require": "./dist/default-with-same-name-type.cjs"
+     },
+     "./default-with-enum-exports": {
+       "types": "./dist/default-with-enum-exports.d.cts",
+       "import": "./dist/default-with-enum-exports.js",
+       "require": "./dist/default-with-enum-exports.cjs"
      },
      "./env.d.ts": "./dist/env.d.ts",
      "./config.json": "./dist/assets/config.json",

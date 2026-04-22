@@ -1,14 +1,33 @@
 import * as ts from "typescript";
 import { analyzeExports } from "./tx-analyze-exports.js";
 
+function isTypeOnlyDefault(node: ts.Statement, sourceFile: ts.SourceFile): boolean {
+  if (ts.isInterfaceDeclaration(node) || ts.isTypeAliasDeclaration(node)) {
+    return true;
+  }
+  // `export default Foo` where Foo is an identifier — check if it resolves to a type/interface
+  if (ts.isExportAssignment(node) && !node.isExportEquals && ts.isIdentifier(node.expression)) {
+    const name = node.expression.text;
+    for (const stmt of sourceFile.statements) {
+      if (
+        (ts.isTypeAliasDeclaration(stmt) || ts.isInterfaceDeclaration(stmt)) &&
+        stmt.name.text === name
+      ) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 export const createCjsInteropTransformer = (): ts.TransformerFactory<ts.SourceFile> => (context) => {
   return (sourceFile) => {
     if (!ts.isSourceFile(sourceFile)) return sourceFile;
 
     const { defaultExportNode, hasNamedExports } = analyzeExports(sourceFile);
 
-    // Only apply transformation if we have exactly one default export and no named exports
-    const shouldApplyInterop = defaultExportNode && !hasNamedExports;
+    const isDefaultTypeOnly = defaultExportNode != null && isTypeOnlyDefault(defaultExportNode, sourceFile);
+    const shouldApplyInterop = defaultExportNode && !hasNamedExports && !isDefaultTypeOnly;
 
     if (!shouldApplyInterop) {
       return sourceFile;
