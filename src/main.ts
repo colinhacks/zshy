@@ -378,6 +378,14 @@ Examples:
   const declarationDir = path.resolve(pkgJsonDir, _parsedConfig?.declarationDir || relOutDir);
   const relDeclarationDir = relativePosix(pkgJsonDir, declarationDir);
 
+  // zshy forces `moduleResolution: Node10` for the CJS build, which TypeScript
+  // 6 flagged as deprecated (TS5107). Silence the deprecation diagnostic when
+  // running under TS 6+ so users don't see an error from our internally-forced
+  // setting. Respect the user's own value if they've already set one.
+  const tsMajor = Number.parseInt(ts.version, 10);
+  const ignoreDeprecations =
+    _parsedConfig.ignoreDeprecations ?? (tsMajor >= 6 ? "6.0" : undefined);
+
   const tsconfigJson: ts.CompilerOptions = {
     ..._parsedConfig,
     outDir,
@@ -390,6 +398,7 @@ Examples:
     rewriteRelativeImportExtensions: true,
     verbatimModuleSyntax: false,
     composite: false,
+    ...(ignoreDeprecations ? { ignoreDeprecations } : {}),
   };
 
   if (relOutDir === "") {

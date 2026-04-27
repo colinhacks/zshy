@@ -16,19 +16,19 @@ jobs:
     strategy:
       matrix:
         node-version: [24]
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      
+
       - name: Install Dependencies
         uses: ./.github/actions/install-dependencies
         with:
           node-version: ${{ matrix.node-version }}
-      
+
       - name: Run tests
         run: pnpm test
-      
+
       - name: Check for untracked changes
         run: |
           if [ -n "$(git status --porcelain)" ]; then
@@ -36,6 +36,47 @@ jobs:
             git status --porcelain
             exit 1
           fi
-      
+
       - name: Build
         run: pnpm build
+
+  # Verifies that zshy itself compiles cleanly across the supported TypeScript
+  # range, including the latest stable and the next/dev tag. Snapshot tests are
+  # intentionally skipped here because some snapshots include the resolved TS
+  # CompilerOptions (which legitimately differ across versions, e.g. when zshy
+  # injects `ignoreDeprecations: "6.0"` under TS 6+). Instead we run the two
+  # version-agnostic smoke tests:
+  #   1. `pnpm build`        — zshy builds zshy from source
+  #   2. `pnpm test:basic`   — zshy dry-run-builds the basic test fixture
+  typescript-compat:
+    name: TypeScript ${{ matrix.typescript-version }} compat
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 5.7 is the lower bound because zshy hard-codes
+        # `rewriteRelativeImportExtensions`, which TS added in 5.7. The
+        # `peerDependencies.typescript` field still claims `>5.5.0`; that's a
+        # pre-existing inconsistency tracked separately.
+        typescript-version: ["5.7", "5.8", "latest", "next"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        uses: ./.github/actions/install-dependencies
+        with:
+          node-version: 24
+
+      - name: Override TypeScript version
+        run: pnpm add -D typescript@${{ matrix.typescript-version }} --ignore-scripts
+
+      - name: Print TypeScript version
+        run: pnpm exec tsc --version
+
+      - name: Smoke test — build zshy with zshy
+        run: pnpm build
+
+      - name: Smoke test — basic fixture (dry run)
+        run: pnpm test:basic
