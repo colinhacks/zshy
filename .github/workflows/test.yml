@@ -57,8 +57,12 @@ jobs:
         # 5.7 is the lower bound because zshy hard-codes
         # `rewriteRelativeImportExtensions`, which TS added in 5.7. The
         # `peerDependencies.typescript` field still claims `>5.5.0`; that's a
-        # pre-existing inconsistency tracked separately.
-        typescript-version: ["5.7", "5.8", "latest", "next"]
+        # pre-existing inconsistency tracked separately. `latest` covers the
+        # current TS major (6.x). 5.8 is intentionally omitted because the
+        # main `Test with Node 24` job already runs the full suite against the
+        # ^5.8.3 dev dependency. `next` is omitted because it currently
+        # resolves to a stale dev build of the same major as `latest`.
+        typescript-version: ["5.7", "latest"]
 
     steps:
       - name: Checkout
