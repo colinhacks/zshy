@@ -107,12 +107,14 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
   const diagnostics = ts.getPreEmitDiagnostics(program);
 
   if (diagnostics.length > 0) {
-    // Filter out ts1343 errors for CJS builds
+    // Filter out diagnostics that are expected from CJS-only transforms.
     const filteredDiagnostics = diagnostics.filter((d) => {
       if (config.format === "cjs") {
         return d.code !== 1343 && d.code !== 1259;
       }
-    }); // Ignore ts1343 (import.meta not available) for CJS
+
+      return true;
+    });
 
     const errorCount = filteredDiagnostics.filter((d) => d.category === ts.DiagnosticCategory.Error).length;
     const warningCount = filteredDiagnostics.filter((d) => d.category === ts.DiagnosticCategory.Warning).length;

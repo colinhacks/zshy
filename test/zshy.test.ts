@@ -173,6 +173,18 @@ describe("zshy with different tsconfig configurations", () => {
     expect(snapshot).toMatchSnapshot();
   });
 
+  it("should report type errors when commonjs is false", () => {
+    const result = runZshyWithTsconfig("tsconfig.json", {
+      dryRun: true,
+      cwd: process.cwd() + "/test/esm-only-error",
+    });
+
+    expect(result.exitCode).toBe(1);
+    expect(result.stdout).toContain("Skipping CJS build (cjs: false)");
+    expect(result.stdout).toContain("TS2322");
+    expect(result.stdout).toContain("Type 'number' is not assignable to type 'string'.");
+  });
+
   it("should copy exports to jsr.json when jsr.json exists", () => {
     const snapshot = runZshyWithTsconfig("tsconfig.json", {
       dryRun: false,
