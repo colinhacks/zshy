@@ -15,16 +15,19 @@ exports[`zshy with different tsconfig configurations > should copy exports to js
 »  Reading package.json from ./package.json
 »  Parsed zshy config: {
      "exports": {
-       ".": "./src/index.ts"
+       ".": "./src/index.ts",
+       "./features/*": "./src/*"
      }
    }
 »  Reading tsconfig from ./tsconfig.json
 »  Determining entrypoints...
-   ╔══════════╤════════════════╗
-   ║ Subpath  │ Entrypoint     ║
-   ╟──────────┼────────────────╢
-   ║ "my-pkg" │ ./src/index.ts ║
-   ╚══════════╧════════════════╝
+»  Matching glob: ./src/*.{ts,tsx,mts,cts}
+   ╔═════════════════════╤═════════════════════╗
+   ║ Subpath             │ Entrypoint          ║
+   ╟─────────────────────┼─────────────────────╢
+   ║ "my-pkg"            │ ./src/index.ts      ║
+   ║ "my-pkg/features/*" │ ./src/* (1 matches) ║
+   ╚═════════════════════╧═════════════════════╝
 »  Resolved build paths:
    ╔══════════╤═══════════════╗
    ║ Location │ Resolved path ║
@@ -92,12 +95,18 @@ exports[`zshy with different tsconfig configurations > should copy exports to js
        "types": "./dist/index.d.cts",
        "import": "./dist/index.js",
        "require": "./dist/index.cjs"
+     },
+     "./features/*": {
+       "types": "./dist/*",
+       "import": "./dist/*",
+       "require": "./dist/*"
      }
    }
 »  Updating jsr.json...
 »  Reading jsr.json from ./jsr.json
 »  Setting "exports": {
-     ".": "./src/index.ts"
+     ".": "./src/index.ts",
+     "./features/index": "./src/index.ts"
    }
 »  Build complete!",
 }
@@ -328,6 +337,14 @@ exports[`zshy with different tsconfig configurations > should reproduce issue #5
        "import": "./dist/components/*",
        "require": "./dist/components/*"
      }
+   }
+»  Updating jsr.json...
+»  Reading jsr.json from ./jsr.json
+»  Setting "exports": {
+     ".": "./src/index.ts",
+     "./utils/math": "./src/utils/math.ts",
+     "./utils/string": "./src/utils/string.ts",
+     "./components/button": "./src/components/button.ts"
    }
 »  Build complete!",
 }

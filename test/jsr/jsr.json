@@ -3,6 +3,7 @@
 	"name": "@jsr/my-pkg",
 	"version": "1.0.0",
 	"exports": {
-		".": "./src/index.ts"
+		".": "./src/index.ts",
+		"./features/index": "./src/index.ts"
 	}
 }
