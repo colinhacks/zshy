@@ -3,9 +3,10 @@ import * as ts from "typescript";
 // Shared function to analyze exports in a source file
 export const analyzeExports = (
   sourceFile: ts.SourceFile
-): { defaultExportNode: ts.Statement | null; hasNamedExports: boolean } => {
+): { defaultExportNode: ts.Statement | null; hasNamedExports: boolean; hasTypeOnlyExports: boolean } => {
   let defaultExportNode: ts.Statement | null = null;
   let hasNamedExports = false;
+  let hasTypeOnlyExports = false;
 
   const visitor = (node: ts.Node): void => {
     // 1) export default <expr>;
@@ -52,10 +53,35 @@ export const analyzeExports = (
     ) {
       hasNamedExports = true;
     }
+    // 7) named `export enum …` (but _not_ default)
+    // Regular enums emit runtime JS; const enums are erased (type-only).
+    else if (
+      ts.isEnumDeclaration(node) &&
+      node.modifiers?.some((m) => m.kind === ts.SyntaxKind.ExportKeyword) &&
+      !node.modifiers.some((m) => m.kind === ts.SyntaxKind.DefaultKeyword)
+    ) {
+      if (node.modifiers.some((m) => m.kind === ts.SyntaxKind.ConstKeyword)) {
+        hasTypeOnlyExports = true;
+      } else {
+        hasNamedExports = true;
+      }
+    }
+    // 8) type-only exports: `export type`, `export interface` (not default)
+    else if (
+      (ts.isTypeAliasDeclaration(node) || ts.isInterfaceDeclaration(node)) &&
+      node.modifiers?.some((m) => m.kind === ts.SyntaxKind.ExportKeyword) &&
+      !node.modifiers.some((m) => m.kind === ts.SyntaxKind.DefaultKeyword)
+    ) {
+      hasTypeOnlyExports = true;
+    }
+    // 8a) type-only re-exports: `export type { X } from '...'`
+    else if (ts.isExportDeclaration(node) && node.isTypeOnly) {
+      hasTypeOnlyExports = true;
+    }
 
     ts.forEachChild(node, visitor);
   };
 
   ts.forEachChild(sourceFile, visitor);
-  return { defaultExportNode, hasNamedExports };
+  return { defaultExportNode, hasNamedExports, hasTypeOnlyExports };
 };

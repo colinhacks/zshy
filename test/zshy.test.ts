@@ -1,6 +1,58 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync, rmSync } from "node:fs";
+import * as ts from "typescript";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { createCjsInteropTransformer } from "../src/tx-cjs-interop.js";
+
+describe("CJS interop transformer", () => {
+  it("applies interop when a default identifier also has a type-only declaration", () => {
+    const result = ts.transpileModule(
+      `
+type Foo = { value: string };
+const Foo = () => "value";
+export default Foo;
+`,
+      {
+        compilerOptions: {
+          module: ts.ModuleKind.CommonJS,
+          target: ts.ScriptTarget.ES2020,
+        },
+        transformers: {
+          before: [createCjsInteropTransformer()],
+        },
+      }
+    );
+
+    expect(result.outputText).toContain("exports.default = Foo;");
+    expect(result.outputText).toContain("module.exports = exports.default;");
+  });
+
+  it("does not overwrite preserved const enum named exports", () => {
+    const result = ts.transpileModule(
+      `
+export const enum Status {
+  Ready = "ready",
+}
+const run = () => Status.Ready;
+export default run;
+`,
+      {
+        compilerOptions: {
+          module: ts.ModuleKind.CommonJS,
+          preserveConstEnums: true,
+          target: ts.ScriptTarget.ES2020,
+        },
+        transformers: {
+          before: [createCjsInteropTransformer({ preserveConstEnums: true })],
+        },
+      }
+    );
+
+    expect(result.outputText).toContain("exports.Status");
+    expect(result.outputText).toContain("exports.default = run;");
+    expect(result.outputText).not.toContain("module.exports = exports.default;");
+  });
+});
 
 describe("zshy with different tsconfig configurations", () => {
   beforeEach(() => {
@@ -212,7 +264,7 @@ describe("zshy with different tsconfig configurations", () => {
   it("should support bin without exports (should not overwrite existing exports)", () => {
     const cwd = process.cwd() + "/test/bin";
     const packageJsonPath = cwd + "/package.json";
-    
+
     // Read original exports field
     const originalPackageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
     const originalExports = originalPackageJson.exports;
@@ -225,10 +277,10 @@ describe("zshy with different tsconfig configurations", () => {
     // Verify exports were not modified
     const newPackageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
     expect(newPackageJson.exports).toEqual(originalExports);
-    
+
     // Verify bin was updated
     expect(newPackageJson.bin).toBe("./dist/cli.cjs");
-    
+
     expect(snapshot).toMatchSnapshot();
   });
 
