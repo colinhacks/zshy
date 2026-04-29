@@ -1,0 +1,11 @@
+{
+  "$schema": "https://jsr.io/schema/config-file.v1.json",
+  "name": "@jsr/test-ignore-tests",
+  "version": "1.0.0",
+  "exports": {
+    ".": "./src/index.ts",
+    "./utils/math": "./src/utils/math.ts",
+    "./utils/string": "./src/utils/string.ts",
+    "./components/button": "./src/components/button.ts"
+  }
+}

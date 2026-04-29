@@ -229,10 +229,20 @@ describe("zshy with different tsconfig configurations", () => {
   });
 
   it("should reproduce issue #53 - test files in __tests__ directories are included in build", () => {
+    const cwd = process.cwd() + "/test/ignore-tests";
     const snapshot = runZshyWithTsconfig("tsconfig.json", {
       dryRun: false,
-      cwd: process.cwd() + "/test/ignore-tests",
+      cwd,
     });
+
+    const jsrJson = JSON.parse(readFileSync(`${cwd}/jsr.json`, "utf-8"));
+    expect(jsrJson.exports).toEqual({
+      ".": "./src/index.ts",
+      "./utils/math": "./src/utils/math.ts",
+      "./utils/string": "./src/utils/string.ts",
+      "./components/button": "./src/components/button.ts",
+    });
+
     expect(snapshot).toMatchSnapshot();
   });
 });

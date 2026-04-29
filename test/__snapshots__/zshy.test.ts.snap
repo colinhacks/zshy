@@ -338,6 +338,14 @@ exports[`zshy with different tsconfig configurations > should reproduce issue #5
        "require": "./dist/components/*"
      }
    }
+»  Updating jsr.json...
+»  Reading jsr.json from ./jsr.json
+»  Setting "exports": {
+     ".": "./src/index.ts",
+     "./utils/math": "./src/utils/math.ts",
+     "./utils/string": "./src/utils/string.ts",
+     "./components/button": "./src/components/button.ts"
+   }
 »  Build complete!",
 }
 `;
