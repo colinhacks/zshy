@@ -11,7 +11,8 @@
   },
   "zshy": {
     "exports": {
-      ".": "./src/index.ts"
+      ".": "./src/index.ts",
+      "./features/*": "./src/*"
     }
   },
   "files": [
@@ -25,6 +26,11 @@
       "types": "./dist/index.d.cts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./features/*": {
+      "types": "./dist/*",
+      "import": "./dist/*",
+      "require": "./dist/*"
     }
   }
 }

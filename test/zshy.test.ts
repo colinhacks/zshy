@@ -174,10 +174,18 @@ describe("zshy with different tsconfig configurations", () => {
   });
 
   it("should copy exports to jsr.json when jsr.json exists", () => {
+    const cwd = process.cwd() + "/test/jsr";
     const snapshot = runZshyWithTsconfig("tsconfig.json", {
       dryRun: false,
-      cwd: process.cwd() + "/test/jsr",
+      cwd,
     });
+
+    const jsrJson = JSON.parse(readFileSync(`${cwd}/jsr.json`, "utf-8"));
+    expect(jsrJson.exports).toEqual({
+      ".": "./src/index.ts",
+      "./features/index": "./src/index.ts",
+    });
+
     expect(snapshot).toMatchSnapshot();
   });
 

@@ -37,6 +37,49 @@ interface NormalizedConfig {
   noEdit: boolean;
 }
 
+type JsrExportEntry = {
+  exportPath: string;
+  sourcePath: string;
+};
+
+function getWildcardExportKey(exportPath: string, sourcePath: string): string {
+  return `${exportPath}\0${sourcePath}`;
+}
+
+function expandWildcardExportPath(exportPath: string, sourcePattern: string, sourceFile: string): string {
+  const posixSourcePattern = toPosix(sourcePattern);
+  const posixSourceFile = toPosix(sourceFile);
+  const sourceBase = posixSourcePattern.endsWith("/**/*")
+    ? posixSourcePattern.slice(0, -5)
+    : posixSourcePattern.slice(0, -2);
+  const sourceSubpath = posixSourceFile.startsWith(`${sourceBase}/`)
+    ? posixSourceFile.slice(sourceBase.length + 1)
+    : posixSourceFile;
+
+  return exportPath.replace("*", removeExtension(sourceSubpath));
+}
+
+function createJsrExports(
+  configExports: Record<string, string>,
+  expandedWildcardExports: Map<string, JsrExportEntry[]>
+): Record<string, string> {
+  const jsrExports: Record<string, string> = {};
+
+  for (const [exportPath, sourcePath] of Object.entries(configExports)) {
+    if (exportPath.includes("*") || sourcePath.includes("*")) {
+      const entries = expandedWildcardExports.get(getWildcardExportKey(exportPath, sourcePath)) ?? [];
+      for (const entry of entries) {
+        jsrExports[entry.exportPath] = entry.sourcePath;
+      }
+      continue;
+    }
+
+    jsrExports[exportPath] = sourcePath;
+  }
+
+  return jsrExports;
+}
+
 export async function main(): Promise<void> {
   log.prefix = "»  ";
 
@@ -432,6 +475,7 @@ Examples:
   }
   const entryPoints: string[] = [];
   const assetEntrypoints: Array<{ exportPath: string; sourcePath: string }> = [];
+  const expandedWildcardExports = new Map<string, JsrExportEntry[]>();
 
   const rows: string[][] = [["Subpath", "Entrypoint"]];
 
@@ -473,6 +517,13 @@ Examples:
         // Filter out test files (__tests__ directories, .test.*, .spec.*)
         const filteredFiles = wildcardFiles.filter((file) => !isTestFile(file));
         entryPoints.push(...filteredFiles);
+        expandedWildcardExports.set(
+          getWildcardExportKey(exportPath, sourcePath),
+          filteredFiles.map((file) => ({
+            exportPath: expandWildcardExportPath(exportPath, sourcePath, file),
+            sourcePath: file,
+          }))
+        );
 
         rows.push([`"${cleanExportPath}"`, `${sourcePath} (${filteredFiles.length} matches)`]);
       } else if (isSourceFile(sourcePath)) {
@@ -1081,8 +1132,8 @@ Examples:
         log.info(`Reading jsr.json from ./${jsrJsonRelPath}`);
       }
 
-      // Copy exports from zshy config to jsr.json exports
-      const jsrExports = config.exports;
+      // JSR does not accept wildcard exports, so expand them to explicit source entrypoints.
+      const jsrExports = createJsrExports(config.exports, expandedWildcardExports);
       jsrJson.exports = jsrExports;
       if (isVerbose) {
         log.info(`Setting "exports": ${formatForLog(jsrExports)}`);
