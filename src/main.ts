@@ -947,26 +947,30 @@ Examples:
             }
 
             // Add standard conditions
-            exportObj.types = relDtsPath;
             if (skipCjs) {
-              // ESM-only: use default condition instead of import
+              // ESM-only: use flat types + default
+              exportObj.types = relDtsPath;
               exportObj.default = relJsPath;
             } else {
-              // Dual CJS/ESM: use import and require
-              exportObj.import = relJsPath;
-              exportObj.require = relJsPath;
+              // Dual CJS/ESM: nest types under import/require for correct resolution
+              exportObj.import = { types: relDtsPath, default: relJsPath };
+              exportObj.require = { types: relDtsPath, default: relJsPath };
             }
 
             newExports[finalExportPath] = exportObj;
           } else if (isSourceFile(sourcePath)) {
             const esmPath = removeExtension(relJsPath) + (isTypeModule ? `.js` : `.mjs`);
             const cjsPath = removeExtension(relJsPath) + (isTypeModule ? `.cjs` : `.js`);
-            // Use ESM type declarations when CJS is skipped, otherwise use CJS declarations
-            const dtsExt = skipCjs ? (isTypeModule ? ".d.ts" : ".d.mts") : isTypeModule ? ".d.cts" : ".d.ts";
-            const dtsPath = removeExtension(relDtsPath) + dtsExt;
+            // Generate separate type declaration paths for ESM and CJS
+            const esmDtsExt = isTypeModule ? ".d.ts" : ".d.mts";
+            const cjsDtsExt = isTypeModule ? ".d.cts" : ".d.ts";
+            const esmDtsPath = removeExtension(relDtsPath) + esmDtsExt;
+            const cjsDtsPath = removeExtension(relDtsPath) + cjsDtsExt;
+            // For flat types field (ESM-only or top-level fallback)
+            const dtsPath = skipCjs ? esmDtsPath : cjsDtsPath;
 
             // Build exports object with proper condition ordering
-            const exportObj: Record<string, string> = {};
+            const exportObj: Record<string, any> = {};
 
             // Add custom conditions first in their original order
             if (config.conditions) {
@@ -982,14 +986,14 @@ Examples:
             }
 
             // Add standard conditions
-            exportObj.types = dtsPath;
             if (skipCjs) {
-              // ESM-only: use default condition instead of import
+              // ESM-only: use flat types + default
+              exportObj.types = esmDtsPath;
               exportObj.default = esmPath;
             } else {
-              // Dual CJS/ESM: use import and require
-              exportObj.import = esmPath;
-              exportObj.require = cjsPath;
+              // Dual CJS/ESM: nest types under import/require for correct resolution
+              exportObj.import = { types: esmDtsPath, default: esmPath };
+              exportObj.require = { types: cjsDtsPath, default: cjsPath };
             }
 
             newExports[exportPath] = exportObj;
