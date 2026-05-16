@@ -8,10 +8,9 @@ export const createCjsInteropDeclarationTransformer =
     return (sourceFile) => {
       if (!ts.isSourceFile(sourceFile)) return sourceFile;
 
-      const { defaultExportNode, hasNamedExports } = analyzeExports(sourceFile);
+      const { defaultExportNode, hasNamedExports, hasTypeOnlyExports } = analyzeExports(sourceFile);
 
-      // only proceed in the single-default, no-named case
-      if (!defaultExportNode || hasNamedExports) {
+      if (!defaultExportNode || hasNamedExports || hasTypeOnlyExports) {
         return sourceFile;
       }
 
@@ -57,7 +56,6 @@ export const createCjsInteropDeclarationTransformer =
             const modifiers = (ts.canHaveModifiers(stmt) ? ts.getModifiers(stmt) : undefined)?.filter(
               (m) => m.kind !== ts.SyntaxKind.ExportKeyword && m.kind !== ts.SyntaxKind.DefaultKeyword
             );
-
             // Add declare modifier for declaration files
             const declareModifiers = [factory.createModifier(ts.SyntaxKind.DeclareKeyword), ...(modifiers || [])];
 

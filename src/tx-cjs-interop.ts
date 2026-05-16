@@ -1,14 +1,113 @@
 import * as ts from "typescript";
 import { analyzeExports } from "./tx-analyze-exports.js";
 
+function hasModifier(node: ts.Node, kind: ts.SyntaxKind): boolean {
+  return ts.canHaveModifiers(node) && (ts.getModifiers(node)?.some((modifier) => modifier.kind === kind) ?? false);
+}
+
+function bindingNameContains(name: ts.BindingName, text: string): boolean {
+  if (ts.isIdentifier(name)) {
+    return name.text === text;
+  }
+  return name.elements.some((element) => !ts.isOmittedExpression(element) && bindingNameContains(element.name, text));
+}
+
+function importClauseContainsRuntimeName(importClause: ts.ImportClause | undefined, text: string): boolean {
+  if (!importClause || importClause.isTypeOnly) {
+    return false;
+  }
+  if (importClause.name?.text === text) {
+    return true;
+  }
+
+  const namedBindings = importClause.namedBindings;
+  if (!namedBindings) {
+    return false;
+  }
+  if (ts.isNamespaceImport(namedBindings)) {
+    return namedBindings.name.text === text;
+  }
+  return namedBindings.elements.some((element) => !element.isTypeOnly && element.name.text === text);
+}
+
+function importClauseContainsTypeOnlyName(importClause: ts.ImportClause | undefined, text: string): boolean {
+  if (!importClause) {
+    return false;
+  }
+  if (importClause.isTypeOnly) {
+    if (importClause.name?.text === text) {
+      return true;
+    }
+    const namedBindings = importClause.namedBindings;
+    if (namedBindings && ts.isNamespaceImport(namedBindings)) {
+      return namedBindings.name.text === text;
+    }
+    if (namedBindings && ts.isNamedImports(namedBindings)) {
+      return namedBindings.elements.some((element) => element.name.text === text);
+    }
+    return false;
+  }
+
+  const namedBindings = importClause.namedBindings;
+  return (
+    namedBindings != null &&
+    ts.isNamedImports(namedBindings) &&
+    namedBindings.elements.some((element) => element.isTypeOnly && element.name.text === text)
+  );
+}
+
+function declaresRuntimeValue(stmt: ts.Statement, text: string): boolean {
+  if (hasModifier(stmt, ts.SyntaxKind.DeclareKeyword)) {
+    return false;
+  }
+  if (ts.isFunctionDeclaration(stmt) || ts.isClassDeclaration(stmt)) {
+    return stmt.name?.text === text;
+  }
+  if (ts.isEnumDeclaration(stmt)) {
+    const isConstEnum = hasModifier(stmt, ts.SyntaxKind.ConstKeyword);
+    return stmt.name.text === text && !isConstEnum;
+  }
+  if (ts.isVariableStatement(stmt)) {
+    return stmt.declarationList.declarations.some((declaration) => bindingNameContains(declaration.name, text));
+  }
+  if (ts.isImportDeclaration(stmt)) {
+    return importClauseContainsRuntimeName(stmt.importClause, text);
+  }
+  return false;
+}
+
+function declaresTypeOnlyName(stmt: ts.Statement, text: string): boolean {
+  if (ts.isTypeAliasDeclaration(stmt) || ts.isInterfaceDeclaration(stmt)) {
+    return stmt.name.text === text;
+  }
+  if (ts.isImportDeclaration(stmt)) {
+    return importClauseContainsTypeOnlyName(stmt.importClause, text);
+  }
+  return false;
+}
+
+function isTypeOnlyDefault(node: ts.Statement, sourceFile: ts.SourceFile): boolean {
+  if (ts.isInterfaceDeclaration(node) || ts.isTypeAliasDeclaration(node)) {
+    return true;
+  }
+  // `export default Foo` where Foo is an identifier: skip interop only if Foo has no runtime declaration.
+  if (ts.isExportAssignment(node) && !node.isExportEquals && ts.isIdentifier(node.expression)) {
+    const name = node.expression.text;
+    const hasRuntimeDeclaration = sourceFile.statements.some((stmt) => declaresRuntimeValue(stmt, name));
+    const hasTypeOnlyDeclaration = sourceFile.statements.some((stmt) => declaresTypeOnlyName(stmt, name));
+    return hasTypeOnlyDeclaration && !hasRuntimeDeclaration;
+  }
+  return false;
+}
+
 export const createCjsInteropTransformer = (): ts.TransformerFactory<ts.SourceFile> => (context) => {
   return (sourceFile) => {
     if (!ts.isSourceFile(sourceFile)) return sourceFile;
 
-    const { defaultExportNode, hasNamedExports } = analyzeExports(sourceFile);
+    const { defaultExportNode, hasNamedExports, hasTypeOnlyExports } = analyzeExports(sourceFile);
 
-    // Only apply transformation if we have exactly one default export and no named exports
-    const shouldApplyInterop = defaultExportNode && !hasNamedExports;
+    const isDefaultTypeOnly = defaultExportNode != null && isTypeOnlyDefault(defaultExportNode, sourceFile);
+    const shouldApplyInterop = defaultExportNode && !hasNamedExports && !hasTypeOnlyExports && !isDefaultTypeOnly;
 
     if (!shouldApplyInterop) {
       return sourceFile;

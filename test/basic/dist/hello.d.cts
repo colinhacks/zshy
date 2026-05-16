@@ -1,5 +1,5 @@
 declare function hello(): void;
-export = hello;
+export default hello;
 export interface Hello {
     asdf: string;
 }

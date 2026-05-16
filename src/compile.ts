@@ -223,9 +223,7 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
     ctx.errorCount += emitErrors.length;
     ctx.warningCount += emitWarnings.length;
 
-    utils.log.error(
-      `Found ${emitErrors.length} error(s) and ${emitWarnings.length} warning(s) during emit:`
-    );
+    utils.log.error(`Found ${emitErrors.length} error(s) and ${emitWarnings.length} warning(s) during emit:`);
     console.log();
 
     const formatHost: ts.FormatDiagnosticsHost = {
@@ -291,9 +289,7 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
         if (config.verbose) {
           const relativeSource = config.pkgJsonDir ? utils.relativePosix(config.pkgJsonDir, sourceFile) : sourceFile;
           const relativeDest = config.pkgJsonDir ? utils.relativePosix(config.pkgJsonDir, destFile) : destFile;
-          utils.log.info(
-            `${config.dryRun ? "[dryrun] " : ""}Copied asset: ./${relativeSource} → ./${relativeDest}`
-          );
+          utils.log.info(`${config.dryRun ? "[dryrun] " : ""}Copied asset: ./${relativeSource} → ./${relativeDest}`);
         }
       } catch (error) {
         utils.log.error(`Failed to copy asset ${assetPath}: ${error}`);
