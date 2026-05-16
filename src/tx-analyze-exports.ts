@@ -1,5 +1,26 @@
 import * as ts from "typescript";
 
+function analyzeExportDeclaration(node: ts.ExportDeclaration): {
+  hasNamedExports: boolean;
+  hasTypeOnlyExports: boolean;
+} {
+  if (!node.exportClause && !node.moduleSpecifier) {
+    return { hasNamedExports: false, hasTypeOnlyExports: false };
+  }
+
+  if (node.isTypeOnly) {
+    return { hasNamedExports: false, hasTypeOnlyExports: true };
+  }
+
+  if (node.exportClause && ts.isNamedExports(node.exportClause)) {
+    const hasNamedExports = node.exportClause.elements.some((element) => !element.isTypeOnly);
+    const hasTypeOnlyExports = node.exportClause.elements.some((element) => element.isTypeOnly);
+    return { hasNamedExports, hasTypeOnlyExports };
+  }
+
+  return { hasNamedExports: true, hasTypeOnlyExports: false };
+}
+
 // Shared function to analyze exports in a source file
 export const analyzeExports = (
   sourceFile: ts.SourceFile
@@ -25,13 +46,11 @@ export const analyzeExports = (
     ) {
       defaultExportNode = node;
     }
-    // 3) named re-exports (`export { a, b } from …` or `export { x }`)
-    else if (ts.isExportDeclaration(node) && node.exportClause && !node.isTypeOnly) {
-      hasNamedExports = true;
-    }
-    // 3a) export * from "module" - also counts as named exports
-    else if (ts.isExportDeclaration(node) && !node.exportClause && node.moduleSpecifier && !node.isTypeOnly) {
-      hasNamedExports = true;
+    // 3) named exports/re-exports (`export { a, type T }`, `export type { T }`, `export *`)
+    else if (ts.isExportDeclaration(node)) {
+      const exportInfo = analyzeExportDeclaration(node);
+      hasNamedExports ||= exportInfo.hasNamedExports;
+      hasTypeOnlyExports ||= exportInfo.hasTypeOnlyExports;
     }
     // 4) named `export const/let/var …`
     else if (ts.isVariableStatement(node) && node.modifiers?.some((m) => m.kind === ts.SyntaxKind.ExportKeyword)) {
@@ -74,11 +93,6 @@ export const analyzeExports = (
     ) {
       hasTypeOnlyExports = true;
     }
-    // 8a) type-only re-exports: `export type { X } from '...'`
-    else if (ts.isExportDeclaration(node) && node.isTypeOnly) {
-      hasTypeOnlyExports = true;
-    }
-
     ts.forEachChild(node, visitor);
   };
 

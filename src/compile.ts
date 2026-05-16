@@ -184,9 +184,7 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
     if (config.verbose) {
       utils.log.info(`Enabling CJS interop transform...`);
     }
-    before.push(
-      createCjsInteropTransformer({ preserveConstEnums: config.compilerOptions.preserveConstEnums === true })
-    );
+    before.push(createCjsInteropTransformer());
   }
 
   // Add CJS interop transformer for declaration files (export = transformation)

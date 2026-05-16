@@ -27,28 +27,25 @@ export default Foo;
     expect(result.outputText).toContain("module.exports = exports.default;");
   });
 
-  it("does not overwrite preserved const enum named exports", () => {
+  it("does not apply interop when a file has type-only named exports", () => {
     const result = ts.transpileModule(
       `
-export const enum Status {
-  Ready = "ready",
-}
-const run = () => Status.Ready;
+type Foo = { value: string };
+export { type Foo };
+const run = () => "value";
 export default run;
 `,
       {
         compilerOptions: {
           module: ts.ModuleKind.CommonJS,
-          preserveConstEnums: true,
           target: ts.ScriptTarget.ES2020,
         },
         transformers: {
-          before: [createCjsInteropTransformer({ preserveConstEnums: true })],
+          before: [createCjsInteropTransformer()],
         },
       }
     );
 
-    expect(result.outputText).toContain("exports.Status");
     expect(result.outputText).toContain("exports.default = run;");
     expect(result.outputText).not.toContain("module.exports = exports.default;");
   });
