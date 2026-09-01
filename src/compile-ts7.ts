@@ -233,6 +233,35 @@ function discoverAtTypes(startDir: string): string[] {
   return names;
 }
 
+/**
+ * TypeScript 7 removed `baseUrl` (and with it, non-relative `paths` targets,
+ * which are rejected with "Non-relative paths are not allowed"). A tsconfig
+ * that still uses them cannot produce a program at all.
+ *
+ * Rather than fail the build, rewrite the pair into the form TS 7 accepts:
+ * every `paths` target is resolved against the old `baseUrl` and re-expressed
+ * relative to the tsconfig directory, which is what `paths` is resolved
+ * against once `baseUrl` is gone. Resolution is unchanged, and emit is
+ * unaffected either way — zshy does not rewrite alias specifiers.
+ */
+function migrateRemovedPathOptions(options: Record<string, any>, configDir: string): Record<string, any> {
+  const { baseUrl, paths, ...rest } = options;
+  if (!baseUrl && !paths) return options;
+
+  const resolveBase = baseUrl ? path.resolve(configDir, baseUrl) : configDir;
+  const migrated: Record<string, string[]> = {};
+
+  for (const [pattern, targets] of Object.entries((paths ?? {}) as Record<string, string[]>)) {
+    migrated[pattern] = targets.map((target) => {
+      if (target.startsWith("./") || target.startsWith("../")) return target;
+      const relative = utils.toPosix(path.relative(configDir, path.resolve(resolveBase, target)));
+      return relative.startsWith(".") ? relative : `./${relative}`;
+    });
+  }
+
+  return paths ? { ...rest, paths: migrated } : rest;
+}
+
 export async function compileProjectTs7(
   config: ProjectOptions,
   entryPoints: string[],
@@ -252,7 +281,8 @@ export async function compileProjectTs7(
     // TypeScript 7 removed `moduleResolution: node10` (TS5108). Leaving it unset
     // lets the CommonJS pass fall back to the classic resolver, which is what
     // node10 selected; Node16/NodeNext reject this program outright.
-    const { moduleResolution, ...rest } = config.compilerOptions as any;
+    const { moduleResolution, ...withoutModuleResolution } = config.compilerOptions as any;
+    const rest = migrateRemovedPathOptions(withoutModuleResolution, path.dirname(config.configPath));
     const compilerOptions = {
       ...rest,
       module: config.format === "cjs" ? ModuleKind.CommonJS : ModuleKind.ESNext,
