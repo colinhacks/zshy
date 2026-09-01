@@ -84,3 +84,32 @@ jobs:
 
       - name: Smoke test — basic fixture (dry run)
         run: pnpm test:basic
+
+  # The TS 7.1 engine (src/compile-ts7.ts) is a prototype and is not yet on the
+  # default build path. The main `test` job gates it against a pinned nightly,
+  # which is what keeps it reproducible. This job re-runs the same fidelity
+  # check against whatever `typescript@next` currently is, so upstream emit
+  # drift shows up on its own rather than as a surprise at adoption time. It is
+  # advisory: nightly churn must not block unrelated work.
+  ts7-nightly-drift:
+    name: TypeScript 7.1 prototype vs latest nightly
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        uses: ./.github/actions/install-dependencies
+        with:
+          node-version: 24
+
+      - name: Move to the latest TypeScript nightly
+        run: pnpm add -D "typescript-next@npm:typescript@next" --ignore-scripts
+
+      - name: Print the nightly under test
+        run: node -p "require('typescript-next/package.json').version"
+
+      - name: Emit-fidelity check
+        run: pnpm vitest run test/ts7-fidelity.test.ts
