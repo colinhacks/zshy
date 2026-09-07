@@ -1,2 +1,2 @@
 #!/usr/bin/env node
-//# sourceMappingURL=cli.d.ts.map
+//# sourceMappingURL=cli.d.cts.map

@@ -41,4 +41,4 @@ exports.pluginA = __importStar(require("./a.cjs"));
 exports.pluginB = __importStar(require("./b.cjs"));
 exports.pluginC = __importStar(require("./c.mjs"));
 exports.pluginD = __importStar(require("./d/index.cjs")); // extensionless import to test d/index.ts resolution
-//# sourceMappingURL=index.js.map
+//# sourceMappingURL=index.cjs.map

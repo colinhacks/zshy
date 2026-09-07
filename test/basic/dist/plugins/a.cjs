@@ -13,4 +13,4 @@ exports.pluginA = {
     },
 };
 exports.default = exports.pluginA;
-//# sourceMappingURL=a.js.map
+//# sourceMappingURL=a.cjs.map

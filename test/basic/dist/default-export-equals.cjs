@@ -5,4 +5,4 @@ function exportEquals() {
 }
 exports.default = exportEquals;
 module.exports = exports.default;
-//# sourceMappingURL=default-export-equals.js.map
+//# sourceMappingURL=default-export-equals.cjs.map

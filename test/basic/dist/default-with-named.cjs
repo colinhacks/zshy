@@ -7,4 +7,4 @@ function defaultWithNamed() {
 }
 exports.namedExport1 = "named1";
 exports.namedExport2 = "named2";
-//# sourceMappingURL=default-with-named.js.map
+//# sourceMappingURL=default-with-named.cjs.map

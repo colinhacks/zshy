@@ -5,4 +5,4 @@ function defaultFunction() {
     console.log("default function export");
 }
 module.exports = exports.default;
-//# sourceMappingURL=default-function.js.map
+//# sourceMappingURL=default-function.cjs.map

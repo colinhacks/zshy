@@ -3,4 +3,4 @@ declare const _default: {
     value: number;
 };
 export = _default;
-//# sourceMappingURL=default-object.d.ts.map
+//# sourceMappingURL=default-object.d.cts.map

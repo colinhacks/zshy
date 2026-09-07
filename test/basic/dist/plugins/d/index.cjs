@@ -9,4 +9,4 @@ exports.pluginD = {
     },
 };
 exports.default = exports.pluginD;
-//# sourceMappingURL=index.js.map
+//# sourceMappingURL=index.cjs.map

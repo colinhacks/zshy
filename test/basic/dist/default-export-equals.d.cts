@@ -1,3 +1,3 @@
 declare function exportEquals(): void;
 export = exportEquals;
-//# sourceMappingURL=default-export-equals.d.ts.map
+//# sourceMappingURL=default-export-equals.d.cts.map

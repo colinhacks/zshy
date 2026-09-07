@@ -178,6 +178,27 @@ describe("zshy with different tsconfig configurations", () => {
     expect(snapshot).toMatchSnapshot();
   });
 
+  it("CJS/dts output references its own source map, not the ESM map (#71)", () => {
+    const cwd = process.cwd() + "/test/basic";
+    runZshyWithTsconfig("tsconfig.json", { dryRun: false, cwd });
+
+    // CJS build must reference .cjs.map / .d.cts.map, never the ESM .js.map / .d.ts.map.
+    const cjs = readFileSync(`${cwd}/dist/default-arrow.cjs`, "utf-8");
+    expect(cjs).toContain("//# sourceMappingURL=default-arrow.cjs.map");
+    expect(cjs).not.toContain("//# sourceMappingURL=default-arrow.js.map");
+    expect(JSON.parse(readFileSync(`${cwd}/dist/default-arrow.cjs.map`, "utf-8")).file).toBe("default-arrow.cjs");
+
+    const dcts = readFileSync(`${cwd}/dist/default-arrow.d.cts`, "utf-8");
+    expect(dcts).toContain("//# sourceMappingURL=default-arrow.d.cts.map");
+    expect(dcts).not.toContain("//# sourceMappingURL=default-arrow.d.ts.map");
+    expect(JSON.parse(readFileSync(`${cwd}/dist/default-arrow.d.cts.map`, "utf-8")).file).toBe("default-arrow.d.cts");
+
+    // ESM build is unaffected.
+    const js = readFileSync(`${cwd}/dist/default-arrow.js`, "utf-8");
+    expect(js).toContain("//# sourceMappingURL=default-arrow.js.map");
+    expect(JSON.parse(readFileSync(`${cwd}/dist/default-arrow.js.map`, "utf-8")).file).toBe("default-arrow.js");
+  });
+
   it("should work with custom outDir and declarationDir", () => {
     const snapshot = runZshyWithTsconfig("tsconfig.json", {
       dryRun: false,

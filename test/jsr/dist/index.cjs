@@ -7,4 +7,4 @@ exports.hi = hi;
 function hi() {
     console.log("hi");
 }
-//# sourceMappingURL=index.js.map
+//# sourceMappingURL=index.cjs.map

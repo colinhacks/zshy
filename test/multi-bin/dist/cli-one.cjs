@@ -1,4 +1,4 @@
 #!/usr/bin/env node
 "use strict";
 console.log('cli-one');
-//# sourceMappingURL=cli-one.js.map
+//# sourceMappingURL=cli-one.cjs.map

@@ -4,4 +4,4 @@ exports.default = () => {
     console.log("default arrow function export");
 };
 module.exports = exports.default;
-//# sourceMappingURL=default-arrow.js.map
+//# sourceMappingURL=default-arrow.cjs.map

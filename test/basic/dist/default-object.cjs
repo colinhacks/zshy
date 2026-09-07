@@ -5,4 +5,4 @@ exports.default = {
     value: 42,
 };
 module.exports = exports.default;
-//# sourceMappingURL=default-object.js.map
+//# sourceMappingURL=default-object.cjs.map

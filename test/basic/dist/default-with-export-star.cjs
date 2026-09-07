@@ -19,4 +19,4 @@ __exportStar(require("./plugins/index.cjs"), exports);
 function defaultWithNamed() {
     console.log("default with named exports");
 }
-//# sourceMappingURL=default-with-export-star.js.map
+//# sourceMappingURL=default-with-export-star.cjs.map
