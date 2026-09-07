@@ -31,9 +31,7 @@ export interface ProjectOptions {
   baseUrl?: string; // TypeScript baseUrl configuration
 }
 
-// TypeScript emits every re-export as a `__createBinding` accessor, so a consumer reading `lib.thing(...)` goes through `return m[k]` on every call and the engine never sees a constant callee. `__createBinding` copies a source descriptor instead of wrapping it whenever that descriptor is a non-writable, non-configurable data property, so a module that seals its own exports on the way out settles the whole re-export chain above it. `Object.freeze` handles the data properties in one step; the loop handles the configurable accessors that `export { a } from "..."` leaves behind.
-//
-// Appending text rather than reassigning `module.exports`: a `module.exports = <expression>` assignment blinds `cjs-module-lexer`, and named imports from ESM stop resolving.
+// TypeScript emits re-exports as `__createBinding` accessors, so callers read every API off the namespace through a getter. `__createBinding` copies a source descriptor instead of wrapping it when that descriptor is a non-writable, non-configurable data property, so a module has to be sealed before its re-exporters load. Reassigning `module.exports` would settle the same exports but blind `cjs-module-lexer`, and named imports from ESM would stop resolving.
 const SEAL_CJS_EXPORTS_EPILOGUE = `
 for (const key of Object.getOwnPropertyNames(exports)) {
   const desc = Object.getOwnPropertyDescriptor(exports, key);
@@ -51,7 +49,7 @@ for (const key of Object.getOwnPropertyNames(exports)) {
 Object.freeze(exports);
 `;
 
-// goes above the sourceMappingURL comment so it stays the last line, and below every emitted statement so the exports are settled. Every existing line keeps its position either way, so the source map stays valid.
+// above the sourceMappingURL comment so it stays last; either way every existing line keeps its position, so the source map holds
 function appendSealEpilogue(data: string): string {
   const sourceMapComment = data.match(/\n\/\/# sourceMappingURL=.*\s*$/);
   if (!sourceMapComment) {
