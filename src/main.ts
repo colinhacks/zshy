@@ -26,6 +26,7 @@ interface RawConfig {
   conditions?: Record<string, "esm" | "cjs" | "src">;
   tsconfig?: string; // optional path to tsconfig.json file
   noEdit?: boolean;
+  sealCjsExports?: boolean;
 }
 
 interface NormalizedConfig {
@@ -35,6 +36,7 @@ interface NormalizedConfig {
   cjs: boolean;
   tsconfig: string;
   noEdit: boolean;
+  sealCjsExports: boolean;
 }
 
 type JsrExportEntry = {
@@ -320,6 +322,7 @@ Examples:
 
   // Normalize boolean options
   config.noEdit ??= false;
+  config.sealCjsExports ??= false;
 
   // Normalize cjs property
   if (config.cjs === undefined) {
@@ -426,8 +429,7 @@ Examples:
   // running under TS 6+ so users don't see an error from our internally-forced
   // setting. Respect the user's own value if they've already set one.
   const tsMajor = Number.parseInt(ts.version, 10);
-  const ignoreDeprecations =
-    _parsedConfig.ignoreDeprecations ?? (tsMajor >= 6 ? "6.0" : undefined);
+  const ignoreDeprecations = _parsedConfig.ignoreDeprecations ?? (tsMajor >= 6 ? "6.0" : undefined);
 
   const tsconfigJson: ts.CompilerOptions = {
     ..._parsedConfig,
@@ -779,6 +781,7 @@ Examples:
         pkgJsonDir,
         rootDir,
         cjsInterop: isCjsInterop,
+        sealCjsExports: config.sealCjsExports,
         compilerOptions: {
           ...tsconfigJson,
           module: ts.ModuleKind.CommonJS,
@@ -809,6 +812,8 @@ Examples:
       pkgJsonDir,
       rootDir,
       cjsInterop: isCjsInterop,
+      // the ESM pass still emits `.cjs` for a `.cts` source, and it writes last
+      sealCjsExports: config.sealCjsExports,
       compilerOptions: {
         ...tsconfigJson,
         module: ts.ModuleKind.ESNext,

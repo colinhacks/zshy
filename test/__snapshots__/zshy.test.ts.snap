@@ -112,6 +112,113 @@ exports[`zshy with different tsconfig configurations > should copy exports to js
 }
 `;
 
+exports[`zshy with different tsconfig configurations > should keep live bindings live when sealCjsExports is set 1`] = `
+{
+  "exitCode": 0,
+  "stderr": "",
+  "stdout": "╔═══════════════════════════════════════════════╗
+   ║ zshy » the bundler-free TypeScript build tool ║
+   ╚═══════════════════════════════════════════════╝
+»  Starting build...
+»  Verbose mode enabled
+»  Detected package manager: <pm>
+»  Build will fail only on errors (default)
+»  Detected project root: <root>/test/seal-cjs-exports-live
+»  Reading package.json from ./package.json
+»  Parsed zshy config: {
+     "exports": {
+       ".": "./src/index.ts"
+     },
+     "sealCjsExports": true
+   }
+»  Reading tsconfig from ./tsconfig.json
+»  Determining entrypoints...
+   ╔══════════════════════════════╤════════════════╗
+   ║ Subpath                      │ Entrypoint     ║
+   ╟──────────────────────────────┼────────────────╢
+   ║ "seal-cjs-exports-live-test" │ ./src/index.ts ║
+   ╚══════════════════════════════╧════════════════╝
+»  Resolved build paths:
+   ╔══════════╤═══════════════╗
+   ║ Location │ Resolved path ║
+   ╟──────────┼───────────────╢
+   ║ rootDir  │ ./src         ║
+   ║ outDir   │ ./dist        ║
+   ╚══════════╧═══════════════╝
+»  Package is an ES module (package.json#/type is "module")
+»  Cleaning up outDir...
+»  Cleaning up declarationDir...
+»  Resolved entrypoints: [
+     "./src/index.ts"
+   ]
+»  Resolved compilerOptions: {
+     "lib": [
+       "lib.esnext.d.ts"
+     ],
+     "target": "ES2020",
+     "module": "ESNext",
+     "moduleResolution": "Bundler",
+     "moduleDetection": 2,
+     "allowJs": true,
+     "declaration": true,
+     "jsx": 4,
+     "allowImportingTsExtensions": true,
+     "rewriteRelativeImportExtensions": true,
+     "verbatimModuleSyntax": false,
+     "noEmit": false,
+     "strict": true,
+     "skipLibCheck": true,
+     "noFallthroughCasesInSwitch": true,
+     "noUncheckedIndexedAccess": true,
+     "esModuleInterop": true,
+     "forceConsistentCasingInFileNames": true,
+     "noUnusedLocals": true,
+     "noUnusedParameters": false,
+     "noPropertyAccessFromIndexSignature": false,
+     "sourceMap": true,
+     "declarationMap": true,
+     "resolveJsonModule": true,
+     "noImplicitOverride": true,
+     "noImplicitThis": true,
+     "outDir": "<root>/test/seal-cjs-exports-live/dist",
+     "emitDeclarationOnly": false,
+     "composite": false
+   }
+»  Building CJS... (rewriting .ts -> .cjs/.d.cts)
+»  Enabling CJS interop transform...
+»  Building ESM...
+»  Writing files (16 total)...
+     ./dist/index.cjs
+     ./dist/index.cjs.map
+     ./dist/index.d.cts
+     ./dist/index.d.cts.map
+     ./dist/index.d.ts
+     ./dist/index.d.ts.map
+     ./dist/index.js
+     ./dist/index.js.map
+     ./dist/mutable.cjs
+     ./dist/mutable.cjs.map
+     ./dist/mutable.d.cts
+     ./dist/mutable.d.cts.map
+     ./dist/mutable.d.ts
+     ./dist/mutable.d.ts.map
+     ./dist/mutable.js
+     ./dist/mutable.js.map
+»  Updating package.json...
+»  Setting "main": "./dist/index.cjs"
+»  Setting "module": "./dist/index.js"
+»  Setting "types": "./dist/index.d.cts"
+»  Setting "exports": {
+     ".": {
+       "types": "./dist/index.d.cts",
+       "import": "./dist/index.js",
+       "require": "./dist/index.cjs"
+     }
+   }
+»  Build complete!",
+}
+`;
+
 exports[`zshy with different tsconfig configurations > should not edit package.json when noEdit is true 1`] = `
 {
   "exitCode": 0,
@@ -345,6 +452,133 @@ exports[`zshy with different tsconfig configurations > should reproduce issue #5
      "./utils/math": "./src/utils/math.ts",
      "./utils/string": "./src/utils/string.ts",
      "./components/button": "./src/components/button.ts"
+   }
+»  Build complete!",
+}
+`;
+
+exports[`zshy with different tsconfig configurations > should seal the CommonJS exports when sealCjsExports is set 1`] = `
+{
+  "exitCode": 0,
+  "stderr": "",
+  "stdout": "╔═══════════════════════════════════════════════╗
+   ║ zshy » the bundler-free TypeScript build tool ║
+   ╚═══════════════════════════════════════════════╝
+»  Starting build...
+»  Verbose mode enabled
+»  Detected package manager: <pm>
+»  Build will fail only on errors (default)
+»  Detected project root: <root>/test/seal-cjs-exports
+»  Reading package.json from ./package.json
+»  Parsed zshy config: {
+     "exports": {
+       ".": "./src/index.ts",
+       "./default": "./src/default.ts"
+     },
+     "sealCjsExports": true
+   }
+»  Reading tsconfig from ./tsconfig.json
+»  Determining entrypoints...
+   ╔═════════════════════════════════╤══════════════════╗
+   ║ Subpath                         │ Entrypoint       ║
+   ╟─────────────────────────────────┼──────────────────╢
+   ║ "seal-cjs-exports-test"         │ ./src/index.ts   ║
+   ║ "seal-cjs-exports-test/default" │ ./src/default.ts ║
+   ╚═════════════════════════════════╧══════════════════╝
+»  Resolved build paths:
+   ╔══════════╤═══════════════╗
+   ║ Location │ Resolved path ║
+   ╟──────────┼───────────────╢
+   ║ rootDir  │ ./src         ║
+   ║ outDir   │ ./dist        ║
+   ╚══════════╧═══════════════╝
+»  Package is an ES module (package.json#/type is "module")
+»  Cleaning up outDir...
+»  Cleaning up declarationDir...
+»  Resolved entrypoints: [
+     "./src/index.ts",
+     "./src/default.ts"
+   ]
+»  Resolved compilerOptions: {
+     "lib": [
+       "lib.esnext.d.ts"
+     ],
+     "target": "ES2020",
+     "module": "ESNext",
+     "moduleResolution": "Bundler",
+     "moduleDetection": 2,
+     "allowJs": true,
+     "declaration": true,
+     "jsx": 4,
+     "allowImportingTsExtensions": true,
+     "rewriteRelativeImportExtensions": true,
+     "verbatimModuleSyntax": false,
+     "noEmit": false,
+     "strict": true,
+     "skipLibCheck": true,
+     "noFallthroughCasesInSwitch": true,
+     "noUncheckedIndexedAccess": true,
+     "esModuleInterop": true,
+     "forceConsistentCasingInFileNames": true,
+     "noUnusedLocals": true,
+     "noUnusedParameters": false,
+     "noPropertyAccessFromIndexSignature": false,
+     "sourceMap": true,
+     "declarationMap": true,
+     "resolveJsonModule": true,
+     "noImplicitOverride": true,
+     "noImplicitThis": true,
+     "outDir": "<root>/test/seal-cjs-exports/dist",
+     "emitDeclarationOnly": false,
+     "composite": false
+   }
+»  Building CJS... (rewriting .ts -> .cjs/.d.cts)
+»  Enabling CJS interop transform...
+»  Building ESM...
+»  Writing files (28 total)...
+     ./dist/default.cjs
+     ./dist/default.cjs.map
+     ./dist/default.d.cts
+     ./dist/default.d.cts.map
+     ./dist/default.d.ts
+     ./dist/default.d.ts.map
+     ./dist/default.js
+     ./dist/default.js.map
+     ./dist/index.cjs
+     ./dist/index.cjs.map
+     ./dist/index.d.cts
+     ./dist/index.d.cts.map
+     ./dist/index.d.ts
+     ./dist/index.d.ts.map
+     ./dist/index.js
+     ./dist/index.js.map
+     ./dist/leaf.cjs
+     ./dist/leaf.cjs.map
+     ./dist/leaf.d.cts
+     ./dist/leaf.d.cts.map
+     ./dist/leaf.d.ts
+     ./dist/leaf.d.ts.map
+     ./dist/leaf.js
+     ./dist/leaf.js.map
+     ./dist/legacy.cjs
+     ./dist/legacy.cjs.map
+     ./dist/legacy.d.cts
+     ./dist/legacy.d.cts.map
+»  Updating package.json...
+»  Setting "main": "./dist/index.cjs"
+»  Setting "module": "./dist/index.js"
+»  Setting "types": "./dist/index.d.cts"
+»  Setting "exports": {
+     ".": {
+       "types": "./dist/index.d.cts",
+       "import": "./dist/index.js",
+       "require": "./dist/index.cjs"
+     },
+     "./default": {
+       "types": "./dist/default.d.cts",
+       "import": "./dist/default.js",
+       "require": "./dist/default.cjs"
+     }
    }
 »  Build complete!",
 }

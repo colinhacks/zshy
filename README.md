@@ -461,6 +461,34 @@ With this addition, `zshy` will add the `"my-source"` condition to the generated
 }
 ```
 
+### Sealed CommonJS exports
+
+TypeScript emits every re-export as a `__createBinding` accessor, so a consumer that calls an API off the namespace — `lib.thing(...)` — reads the function through a getter on every call. The engine never sees a constant callee and cannot inline the call. On [zod](https://github.com/colinhacks/zod), 252 of the 255 exports on `index.cjs` were accessors, and one hot entrypoint ran at 35.9M ops/s under `require` against 115.5M under `import`.
+
+Set `"sealCjsExports"` to have each emitted CommonJS module seal its own exports on the way out:
+
+```diff
+{
+  "zshy": {
+    "exports": {
+      ".": "./src/index.ts"
+    },
++   "sealCjsExports": true
+  }
+}
+```
+
+`__createBinding` copies a source descriptor instead of wrapping it whenever that descriptor is a non-writable, non-configurable data property, so sealing one module settles the re-exports of every other module in the same build that pulls from it. Re-exports from outside the build — a dependency, a hand-written `.cjs` — stay accessors: `export *` defines those non-configurable, and nothing can redefine them afterwards. The ESM build is untouched.
+
+This is observable, which is why it is off by default. Every CommonJS export becomes non-writable and non-configurable and each namespace is frozen, so stubbing an export at runtime stops working. Loading the package also costs a few milliseconds more.
+
+Two module shapes opt out on their own:
+
+- A module that writes its own exports after load — `export let count` plus a function that increments it — keeps its namespace unfrozen, since freezing would make that write throw.
+- A module whose only export is a `default` is skipped, because the CJS interop transform rebinds `module.exports` to that value and callers never see the namespace an epilogue would seal.
+
+A mutable exported binding anywhere in the package turns off accessor settling for the whole build. TypeScript compiles a named re-export to an unconditional getter onto the source binding, and nothing in the emitted output tells apart one that forwards to a live `export let` from one that forwards to a constant. Settling it would pin `require(pkg).count` at its load-time value while `import { count }` kept reporting the current one, so a package with any live binding keeps its getters and takes only the freeze.
+
 ### JSR
 
 For packages that also have a `jsr.json` file for publishing to [JSR](https://jsr.io/), `zshy` will copy your configured exports to `jsr.json/#exports`, making your `zshy` configuration the single source of truth for exports.

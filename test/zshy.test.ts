@@ -1,5 +1,7 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync, rmSync } from "node:fs";
+import { createRequire } from "node:module";
+import { pathToFileURL } from "node:url";
 import * as ts from "typescript";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createCjsInteropTransformer } from "../src/tx-cjs-interop.js";
@@ -202,6 +204,78 @@ describe("zshy with different tsconfig configurations", () => {
     const newPackageJson = readFileSync(packageJsonPath, "utf-8");
     expect(newPackageJson).toEqual(originalPackageJson);
     expect(snapshot).toMatchSnapshot();
+  });
+
+  it("should seal the CommonJS exports when sealCjsExports is set", () => {
+    const cwd = process.cwd() + "/test/seal-cjs-exports";
+    const snapshot = runZshyWithTsconfig("tsconfig.json", { dryRun: false, cwd });
+    expect(snapshot).toMatchSnapshot();
+
+    const require_ = createRequire(import.meta.url);
+    const built = cwd + "/dist/index.cjs";
+    const mod = require_(built);
+    const accessors = Object.getOwnPropertyNames(mod).filter(
+      (key) => Object.getOwnPropertyDescriptor(mod, key)?.get !== undefined
+    );
+    expect(accessors).toEqual([]);
+    expect(mod.starred()).toBe("starred");
+    expect(mod.renamed()).toBe("named");
+    expect(mod.local()).toBe("local");
+    expect(Object.isFrozen(mod)).toBe(true);
+
+    // a `.cts` source emits `.cjs` from both passes and the ESM pass writes last, so it only seals if the ESM pass also carries the flag
+    expect(readFileSync(cwd + "/dist/legacy.cjs", "utf-8")).toContain("seal-cjs-exports");
+    expect(mod.fromCts()).toBe("cts");
+    // the real ESM output must stay untouched
+    expect(readFileSync(cwd + "/dist/index.js", "utf-8")).not.toContain("seal-cjs-exports");
+
+    // the cjs interop transform rebinds `module.exports` for a lone default export, so callers never see the object an epilogue would seal
+    expect(readFileSync(cwd + "/dist/default.cjs", "utf-8")).not.toContain("seal-cjs-exports");
+    expect(require_(cwd + "/dist/default.cjs")()).toBe("only");
+
+    // a `module.exports = ...` assignment would settle the same exports but blind cjs-module-lexer, and these named imports would stop resolving
+    const namedImport = spawnSync(
+      process.execPath,
+      [
+        "--input-type=module",
+        "-e",
+        `import { starred, renamed, local } from ${JSON.stringify(pathToFileURL(built).href)}; console.log(starred(), renamed(), local());`,
+      ],
+      { encoding: "utf8" }
+    );
+    expect(namedImport.stderr).toBe("");
+    expect(namedImport.stdout.trim()).toBe("starred named local");
+  });
+
+  it("should keep live bindings live when sealCjsExports is set", () => {
+    const cwd = process.cwd() + "/test/seal-cjs-exports-live";
+    const snapshot = runZshyWithTsconfig("tsconfig.json", { dryRun: false, cwd });
+    expect(snapshot).toMatchSnapshot();
+
+    const require_ = createRequire(import.meta.url);
+    // freezing a module that assigns to its own exports after load would make that assignment throw
+    const mutable = require_(cwd + "/dist/mutable.cjs");
+    expect(Object.isFrozen(mutable)).toBe(false);
+    mutable.increment();
+    expect(mutable.counter).toBe(1);
+
+    // a named re-export is an unconditional getter onto the source binding, so settling it would pin `counter` at its load-time value while the ESM build kept counting
+    const mod = require_(cwd + "/dist/index.cjs");
+    mod.increment();
+    mod.increment();
+    expect(mod.counter).toBe(3);
+
+    const esm = spawnSync(
+      process.execPath,
+      [
+        "--input-type=module",
+        "-e",
+        `const m = await import(${JSON.stringify(pathToFileURL(cwd + "/dist/index.js").href)}); m.increment(); m.increment(); console.log(m.counter);`,
+      ],
+      { encoding: "utf8" }
+    );
+    expect(esm.stderr).toBe("");
+    expect(esm.stdout.trim()).toBe("2");
   });
 
   it("should work with custom conditions", () => {
