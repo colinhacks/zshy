@@ -32,9 +32,7 @@ export interface ProjectOptions {
 }
 
 // TypeScript emits re-exports as `__createBinding` accessors, so callers read every API off the namespace through a getter. `__createBinding` copies a source descriptor instead of wrapping it when that descriptor is a non-writable, non-configurable data property, so a module has to be sealed before its re-exporters load. Reassigning `module.exports` would settle the same exports but blind `cjs-module-lexer`, and named imports from ESM would stop resolving.
-const SEAL_CJS_EXPORTS_BODY = [
-  "// seal-cjs-exports",
-  "(function () {",
+const SEAL_CJS_EXPORTS_SETTLE = [
   "  var keys = Object.getOwnPropertyNames(exports);",
   "  for (var i = 0; i < keys.length; i++) {",
   "    var desc = Object.getOwnPropertyDescriptor(exports, keys[i]);",
@@ -125,13 +123,18 @@ function analyzeCjsEmit(data: string): CjsEmitFacts {
 }
 
 // above the sourceMappingURL comment so it stays last; either way every existing line keeps its position, so the source map holds
-function appendSealEpilogue(data: string): string {
+function appendSealEpilogue(data: string, settleAccessors: boolean): string {
   const facts = analyzeCjsEmit(data);
   if (facts.rebindsModuleExports) return data;
 
+  const lines = [
+    ...(settleAccessors ? SEAL_CJS_EXPORTS_SETTLE : []),
+    ...(facts.writesExportsLate ? [] : [SEAL_CJS_EXPORTS_FREEZE]),
+  ];
+  if (lines.length === 0) return data;
+
   const newline = data.includes("\r\n") ? "\r\n" : "\n";
-  const lines = facts.writesExportsLate ? SEAL_CJS_EXPORTS_BODY : [...SEAL_CJS_EXPORTS_BODY, SEAL_CJS_EXPORTS_FREEZE];
-  const epilogue = newline + [...lines, "})();"].join(newline) + newline;
+  const epilogue = newline + ["// seal-cjs-exports", "(function () {", ...lines, "})();"].join(newline) + newline;
 
   const sourceMapComment = data.match(/\r?\n\/\/# sourceMappingURL=.*\s*$/);
   if (!sourceMapComment) {
@@ -139,6 +142,31 @@ function appendSealEpilogue(data: string): string {
   }
   const cut = data.length - sourceMapComment[0].length;
   return data.slice(0, cut) + epilogue.replace(/\r?\n$/, "") + sourceMapComment[0];
+}
+
+// TypeScript emits a named re-export as an unconditional getter onto the source binding, and the settle loop cannot tell one that forwards to a live `export let` from one that forwards to a constant. Snapshotting a live one makes `require` report the load-time value forever while `import` reports the current one, so a build containing any mutable exported binding gives up settling everywhere.
+function hasMutableExportedBinding(source: ts.SourceFile): boolean {
+  const mutableLocals = new Set<string>();
+  for (const statement of source.statements) {
+    if (!ts.isVariableStatement(statement)) continue;
+    const isConst = (statement.declarationList.flags & ts.NodeFlags.Const) !== 0;
+    if (isConst) continue;
+    const exported = ts.getModifiers(statement)?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword);
+    for (const declaration of statement.declarationList.declarations) {
+      if (!ts.isIdentifier(declaration.name)) continue;
+      if (exported) return true;
+      mutableLocals.add(declaration.name.text);
+    }
+  }
+
+  return source.statements.some(
+    (statement) =>
+      ts.isExportDeclaration(statement) &&
+      statement.exportClause !== undefined &&
+      ts.isNamedExports(statement.exportClause) &&
+      statement.moduleSpecifier === undefined &&
+      statement.exportClause.elements.some((element) => mutableLocals.has((element.propertyName ?? element.name).text))
+  );
 }
 
 export async function compileProject(config: ProjectOptions, entryPoints: string[], ctx: BuildContext): Promise<void> {
@@ -157,15 +185,21 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
   // Track if we should write files (will be set after diagnostics check)
   let shouldWriteFiles = true;
 
+  // cleared below if any source file exports a mutable binding
+  let settleAccessors = true;
+
   host.writeFile = (fileName, data, writeByteOrderMark, onError, sourceFiles) => {
     // Transform output file extensions
     let outputFileName = fileName;
     let processedData = data;
     if (fileName.endsWith(".js")) {
       outputFileName = fileName.replace(/\.js$/, jsExt);
-      if (config.sealCjsExports && config.format === "cjs") {
-        processedData = appendSealEpilogue(processedData);
-      }
+    }
+
+    // a `.cts` source emits `.cjs` from BOTH passes and the ESM pass writes last, so seal any `.cjs` output whichever pass produced it; a `.js` output is CommonJS only in the CJS pass, and `.mjs` is real ESM with no `exports`
+    const emitsCommonJs = fileName.endsWith(".cjs") || (config.format === "cjs" && fileName.endsWith(".js"));
+    if (config.sealCjsExports && emitsCommonJs) {
+      processedData = appendSealEpilogue(processedData, settleAccessors);
     }
 
     if (fileName.endsWith(".d.ts")) {
@@ -197,6 +231,12 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
     options: programOptions,
     host,
   });
+
+  if (config.sealCjsExports) {
+    settleAccessors = !program
+      .getSourceFiles()
+      .some((source) => !source.isDeclarationFile && hasMutableExportedBinding(source));
+  }
 
   // Create a transformer factory to resolve tsconfig paths
   const pathsResolverTransformer = config.paths

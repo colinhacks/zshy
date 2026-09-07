@@ -223,13 +223,11 @@ describe("zshy with different tsconfig configurations", () => {
     expect(mod.local()).toBe("local");
     expect(Object.isFrozen(mod)).toBe(true);
 
-    // freezing a module that assigns to its own exports after load would make that assignment throw, so those modules settle their accessors without the freeze
-    const mutable = cwd + "/dist/mutable.cjs";
-    expect(readFileSync(mutable, "utf-8")).not.toContain("Object.freeze");
-    const mutableMod = require_(mutable);
-    expect(Object.isFrozen(mutableMod)).toBe(false);
-    mutableMod.increment();
-    expect(mutableMod.counter).toBe(1);
+    // a `.cts` source emits `.cjs` from both passes and the ESM pass writes last, so it only seals if the ESM pass also carries the flag
+    expect(readFileSync(cwd + "/dist/legacy.cjs", "utf-8")).toContain("seal-cjs-exports");
+    expect(mod.fromCts()).toBe("cts");
+    // the real ESM output must stay untouched
+    expect(readFileSync(cwd + "/dist/index.js", "utf-8")).not.toContain("seal-cjs-exports");
 
     // the cjs interop transform rebinds `module.exports` for a lone default export, so callers never see the object an epilogue would seal
     expect(readFileSync(cwd + "/dist/default.cjs", "utf-8")).not.toContain("seal-cjs-exports");
@@ -247,6 +245,37 @@ describe("zshy with different tsconfig configurations", () => {
     );
     expect(namedImport.stderr).toBe("");
     expect(namedImport.stdout.trim()).toBe("starred named local");
+  });
+
+  it("should keep live bindings live when sealCjsExports is set", () => {
+    const cwd = process.cwd() + "/test/seal-cjs-exports-live";
+    const snapshot = runZshyWithTsconfig("tsconfig.json", { dryRun: false, cwd });
+    expect(snapshot).toMatchSnapshot();
+
+    const require_ = createRequire(import.meta.url);
+    // freezing a module that assigns to its own exports after load would make that assignment throw
+    const mutable = require_(cwd + "/dist/mutable.cjs");
+    expect(Object.isFrozen(mutable)).toBe(false);
+    mutable.increment();
+    expect(mutable.counter).toBe(1);
+
+    // a named re-export is an unconditional getter onto the source binding, so settling it would pin `counter` at its load-time value while the ESM build kept counting
+    const mod = require_(cwd + "/dist/index.cjs");
+    mod.increment();
+    mod.increment();
+    expect(mod.counter).toBe(3);
+
+    const esm = spawnSync(
+      process.execPath,
+      [
+        "--input-type=module",
+        "-e",
+        `const m = await import(${JSON.stringify(pathToFileURL(cwd + "/dist/index.js").href)}); m.increment(); m.increment(); console.log(m.counter);`,
+      ],
+      { encoding: "utf8" }
+    );
+    expect(esm.stderr).toBe("");
+    expect(esm.stdout.trim()).toBe("2");
   });
 
   it("should work with custom conditions", () => {

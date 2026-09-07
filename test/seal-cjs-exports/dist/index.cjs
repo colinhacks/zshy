@@ -16,6 +16,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.local = exports.renamed = void 0;
 __exportStar(require("./leaf.cjs"), exports);
+__exportStar(require("./legacy.cjs"), exports);
 var leaf_js_1 = require("./leaf.cjs");
 Object.defineProperty(exports, "renamed", { enumerable: true, get: function () { return leaf_js_1.named; } });
 const local = () => "local";

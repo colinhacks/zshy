@@ -1,13 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.bumped = exports.counter = void 0;
-exports.increment = increment;
-exports.counter = 0;
-const bumped = () => "bumped";
-exports.bumped = bumped;
-function increment() {
-    exports.counter++;
-}
+exports.fromCts = void 0;
+const fromCts = () => "cts";
+exports.fromCts = fromCts;
 // seal-cjs-exports
 (function () {
   var keys = Object.getOwnPropertyNames(exports);
@@ -24,5 +19,6 @@ function increment() {
     if (value === undefined) continue;
     Object.defineProperty(exports, keys[i], { value: value, writable: false, enumerable: desc.enumerable, configurable: false });
   }
+  Object.freeze(exports);
 })();
-//# sourceMappingURL=mutable.js.map
+//# sourceMappingURL=legacy.cjs.map

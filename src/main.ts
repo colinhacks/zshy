@@ -812,6 +812,8 @@ Examples:
       pkgJsonDir,
       rootDir,
       cjsInterop: isCjsInterop,
+      // the ESM pass still emits `.cjs` for a `.cts` source, and it writes last
+      sealCjsExports: config.sealCjsExports,
       compilerOptions: {
         ...tsconfigJson,
         module: ts.ModuleKind.ESNext,

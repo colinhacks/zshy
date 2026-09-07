@@ -484,8 +484,10 @@ This is observable, which is why it is off by default. Every CommonJS export bec
 
 Two module shapes opt out on their own:
 
-- A module that writes its own exports after load — `export let count` plus a function that increments it — keeps its namespace unfrozen, since freezing would make that write throw. Its re-export accessors still settle; its own exports stay writable, so anything re-exporting them wraps them in getters.
+- A module that writes its own exports after load — `export let count` plus a function that increments it — keeps its namespace unfrozen, since freezing would make that write throw.
 - A module whose only export is a `default` is skipped, because the CJS interop transform rebinds `module.exports` to that value and callers never see the namespace an epilogue would seal.
+
+A mutable exported binding anywhere in the package turns off accessor settling for the whole build. TypeScript compiles a named re-export to an unconditional getter onto the source binding, and nothing in the emitted output tells apart one that forwards to a live `export let` from one that forwards to a constant. Settling it would pin `require(pkg).count` at its load-time value while `import { count }` kept reporting the current one, so a package with any live binding keeps its getters and takes only the freeze.
 
 ### JSR
 
