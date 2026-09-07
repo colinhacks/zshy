@@ -1,10 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.named = exports.starred = void 0;
-const starred = () => "starred";
-exports.starred = starred;
-const named = () => "named";
-exports.named = named;
+exports.bumped = exports.counter = void 0;
+exports.increment = increment;
+exports.counter = 0;
+const bumped = () => "bumped";
+exports.bumped = bumped;
+function increment() {
+    exports.counter++;
+}
 // seal-cjs-exports
 (function () {
   var keys = Object.getOwnPropertyNames(exports);
@@ -21,6 +24,5 @@ exports.named = named;
     if (value === undefined) continue;
     Object.defineProperty(exports, keys[i], { value: value, writable: false, enumerable: desc.enumerable, configurable: false });
   }
-  Object.freeze(exports);
 })();
-//# sourceMappingURL=leaf.js.map
+//# sourceMappingURL=mutable.js.map

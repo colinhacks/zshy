@@ -1,6 +1,7 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync, rmSync } from "node:fs";
 import { createRequire } from "node:module";
+import { pathToFileURL } from "node:url";
 import * as ts from "typescript";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createCjsInteropTransformer } from "../src/tx-cjs-interop.js";
@@ -210,8 +211,9 @@ describe("zshy with different tsconfig configurations", () => {
     const snapshot = runZshyWithTsconfig("tsconfig.json", { dryRun: false, cwd });
     expect(snapshot.exitCode).toBe(0);
 
+    const require_ = createRequire(import.meta.url);
     const built = cwd + "/dist/index.cjs";
-    const mod = createRequire(import.meta.url)(built);
+    const mod = require_(built);
     const accessors = Object.getOwnPropertyNames(mod).filter(
       (key) => Object.getOwnPropertyDescriptor(mod, key)?.get !== undefined
     );
@@ -221,13 +223,25 @@ describe("zshy with different tsconfig configurations", () => {
     expect(mod.local()).toBe("local");
     expect(Object.isFrozen(mod)).toBe(true);
 
+    // freezing a module that assigns to its own exports after load would make that assignment throw, so those modules settle their accessors without the freeze
+    const mutable = cwd + "/dist/mutable.cjs";
+    expect(readFileSync(mutable, "utf-8")).not.toContain("Object.freeze");
+    const mutableMod = require_(mutable);
+    expect(Object.isFrozen(mutableMod)).toBe(false);
+    mutableMod.increment();
+    expect(mutableMod.counter).toBe(1);
+
+    // the cjs interop transform rebinds `module.exports` for a lone default export, so callers never see the object an epilogue would seal
+    expect(readFileSync(cwd + "/dist/default.cjs", "utf-8")).not.toContain("seal-cjs-exports");
+    expect(require_(cwd + "/dist/default.cjs")()).toBe("only");
+
     // a `module.exports = ...` assignment would settle the same exports but blind cjs-module-lexer, and these named imports would stop resolving
     const namedImport = spawnSync(
       process.execPath,
       [
         "--input-type=module",
         "-e",
-        `import { starred, renamed, local } from ${JSON.stringify(built)}; console.log(starred(), renamed(), local());`,
+        `import { starred, renamed, local } from ${JSON.stringify(pathToFileURL(built).href)}; console.log(starred(), renamed(), local());`,
       ],
       { encoding: "utf8" }
     );

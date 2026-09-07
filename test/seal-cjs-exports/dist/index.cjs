@@ -20,18 +20,22 @@ var leaf_js_1 = require("./leaf.cjs");
 Object.defineProperty(exports, "renamed", { enumerable: true, get: function () { return leaf_js_1.named; } });
 const local = () => "local";
 exports.local = local;
-for (const key of Object.getOwnPropertyNames(exports)) {
-  const desc = Object.getOwnPropertyDescriptor(exports, key);
-  if (!desc || !desc.get || !desc.configurable) continue;
-  let value;
-  try {
-    value = desc.get();
-  } catch {
-    continue;
+// seal-cjs-exports
+(function () {
+  var keys = Object.getOwnPropertyNames(exports);
+  for (var i = 0; i < keys.length; i++) {
+    var desc = Object.getOwnPropertyDescriptor(exports, keys[i]);
+    if (!desc || !desc.get || !desc.configurable) continue;
+    var value;
+    try {
+      value = desc.get();
+    } catch (e) {
+      continue;
+    }
+    // a circular require may not have settled this one yet, so leave it live
+    if (value === undefined) continue;
+    Object.defineProperty(exports, keys[i], { value: value, writable: false, enumerable: desc.enumerable, configurable: false });
   }
-  // a circular require may not have settled this one yet, so leave it live
-  if (value === undefined) continue;
-  Object.defineProperty(exports, key, { value, writable: false, enumerable: desc.enumerable, configurable: false });
-}
-Object.freeze(exports);
+  Object.freeze(exports);
+})();
 //# sourceMappingURL=index.js.map

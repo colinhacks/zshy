@@ -32,31 +32,113 @@ export interface ProjectOptions {
 }
 
 // TypeScript emits re-exports as `__createBinding` accessors, so callers read every API off the namespace through a getter. `__createBinding` copies a source descriptor instead of wrapping it when that descriptor is a non-writable, non-configurable data property, so a module has to be sealed before its re-exporters load. Reassigning `module.exports` would settle the same exports but blind `cjs-module-lexer`, and named imports from ESM would stop resolving.
-const SEAL_CJS_EXPORTS_EPILOGUE = `
-for (const key of Object.getOwnPropertyNames(exports)) {
-  const desc = Object.getOwnPropertyDescriptor(exports, key);
-  if (!desc || !desc.get || !desc.configurable) continue;
-  let value;
-  try {
-    value = desc.get();
-  } catch {
-    continue;
-  }
-  // a circular require may not have settled this one yet, so leave it live
-  if (value === undefined) continue;
-  Object.defineProperty(exports, key, { value, writable: false, enumerable: desc.enumerable, configurable: false });
+const SEAL_CJS_EXPORTS_BODY = [
+  "// seal-cjs-exports",
+  "(function () {",
+  "  var keys = Object.getOwnPropertyNames(exports);",
+  "  for (var i = 0; i < keys.length; i++) {",
+  "    var desc = Object.getOwnPropertyDescriptor(exports, keys[i]);",
+  "    if (!desc || !desc.get || !desc.configurable) continue;",
+  "    var value;",
+  "    try {",
+  "      value = desc.get();",
+  "    } catch (e) {",
+  "      continue;",
+  "    }",
+  "    // a circular require may not have settled this one yet, so leave it live",
+  "    if (value === undefined) continue;",
+  "    Object.defineProperty(exports, keys[i], { value: value, writable: false, enumerable: desc.enumerable, configurable: false });",
+  "  }",
+];
+
+// only the freeze settles a module's own local exports, which is what lets a star re-exporter copy them instead of wrapping them
+const SEAL_CJS_EXPORTS_FREEZE = "  Object.freeze(exports);";
+
+function isExportsNamespace(node: ts.Expression): boolean {
+  if (ts.isIdentifier(node)) return node.text === "exports";
+  return (
+    ts.isPropertyAccessExpression(node) &&
+    ts.isIdentifier(node.expression) &&
+    node.expression.text === "module" &&
+    node.name.text === "exports"
+  );
 }
-Object.freeze(exports);
-`;
+
+function writesExportsProperty(node: ts.Node): boolean {
+  let target: ts.Expression | undefined;
+  if (
+    ts.isBinaryExpression(node) &&
+    node.operatorToken.kind >= ts.SyntaxKind.FirstAssignment &&
+    node.operatorToken.kind <= ts.SyntaxKind.LastAssignment
+  ) {
+    target = node.left;
+  } else if (
+    (ts.isPrefixUnaryExpression(node) || ts.isPostfixUnaryExpression(node)) &&
+    (node.operator === ts.SyntaxKind.PlusPlusToken || node.operator === ts.SyntaxKind.MinusMinusToken)
+  ) {
+    target = node.operand;
+  }
+
+  if (!target) return false;
+  return (
+    (ts.isPropertyAccessExpression(target) || ts.isElementAccessExpression(target)) &&
+    isExportsNamespace(target.expression)
+  );
+}
+
+interface CjsEmitFacts {
+  // `exports.x` written from inside a function runs after the epilogue, so freezing would make it throw
+  writesExportsLate: boolean;
+  // `module.exports = ...` hands callers something other than the object the epilogue seals, so sealing it achieves nothing
+  rebindsModuleExports: boolean;
+}
+
+function analyzeCjsEmit(data: string): CjsEmitFacts {
+  const source = ts.createSourceFile("emit.cjs", data, ts.ScriptTarget.Latest, false, ts.ScriptKind.JS);
+  const facts: CjsEmitFacts = {
+    writesExportsLate: false,
+    rebindsModuleExports: false,
+  };
+
+  const visit = (node: ts.Node, insideFunction: boolean): void => {
+    if (
+      !facts.rebindsModuleExports &&
+      !insideFunction &&
+      ts.isBinaryExpression(node) &&
+      node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+      ts.isPropertyAccessExpression(node.left) &&
+      ts.isIdentifier(node.left.expression) &&
+      node.left.expression.text === "module" &&
+      node.left.name.text === "exports"
+    ) {
+      facts.rebindsModuleExports = true;
+    }
+    if (!facts.writesExportsLate && insideFunction && writesExportsProperty(node)) {
+      facts.writesExportsLate = true;
+    }
+    const nested = insideFunction || ts.isFunctionLike(node);
+    ts.forEachChild(node, (child) => visit(child, nested));
+  };
+
+  visit(source, false);
+  return facts;
+}
 
 // above the sourceMappingURL comment so it stays last; either way every existing line keeps its position, so the source map holds
 function appendSealEpilogue(data: string): string {
-  const sourceMapComment = data.match(/\n\/\/# sourceMappingURL=.*\s*$/);
+  const facts = analyzeCjsEmit(data);
+  if (facts.rebindsModuleExports) return data;
+
+  const newline = data.includes("\r\n") ? "\r\n" : "\n";
+  const lines = facts.writesExportsLate ? SEAL_CJS_EXPORTS_BODY : [...SEAL_CJS_EXPORTS_BODY, SEAL_CJS_EXPORTS_FREEZE];
+  const epilogue = newline + [...lines, "})();"].join(newline) + newline;
+
+  const sourceMapComment = data.match(/\r?\n\/\/# sourceMappingURL=.*\s*$/);
   if (!sourceMapComment) {
-    return data + SEAL_CJS_EXPORTS_EPILOGUE;
+    return data + epilogue;
   }
   const cut = data.length - sourceMapComment[0].length;
-  return data.slice(0, cut) + SEAL_CJS_EXPORTS_EPILOGUE.replace(/\n$/, "") + sourceMapComment[0];
+  return data.slice(0, cut) + epilogue.replace(/\r?\n$/, "") + sourceMapComment[0];
 }
 
 export async function compileProject(config: ProjectOptions, entryPoints: string[], ctx: BuildContext): Promise<void> {

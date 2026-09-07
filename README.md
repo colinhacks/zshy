@@ -478,9 +478,14 @@ Set `"sealCjsExports"` to have each emitted CommonJS module seal its own exports
 }
 ```
 
-`__createBinding` copies a source descriptor instead of wrapping it whenever that descriptor is a non-writable, non-configurable data property, so sealing the leaves settles the whole re-export chain up to your entrypoints. The ESM build is untouched.
+`__createBinding` copies a source descriptor instead of wrapping it whenever that descriptor is a non-writable, non-configurable data property, so sealing one module settles the re-exports of every other module in the same build that pulls from it. Re-exports from outside the build — a dependency, a hand-written `.cjs` — stay accessors: `export *` defines those non-configurable, and nothing can redefine them afterwards. The ESM build is untouched.
 
 This is observable, which is why it is off by default. Every CommonJS export becomes non-writable and non-configurable and each namespace is frozen, so stubbing an export at runtime stops working. Loading the package also costs a few milliseconds more.
+
+Two module shapes opt out on their own:
+
+- A module that writes its own exports after load — `export let count` plus a function that increments it — keeps its namespace unfrozen, since freezing would make that write throw. Its re-export accessors still settle; its own exports stay writable, so anything re-exporting them wraps them in getters.
+- A module whose only export is a `default` is skipped, because the CJS interop transform rebinds `module.exports` to that value and callers never see the namespace an epilogue would seal.
 
 ### JSR
 

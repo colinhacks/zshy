@@ -13,7 +13,9 @@
   },
   "zshy": {
     "exports": {
-      ".": "./src/index.ts"
+      ".": "./src/index.ts",
+      "./mutable": "./src/mutable.ts",
+      "./default": "./src/default.ts"
     },
     "sealCjsExports": true
   },
@@ -26,6 +28,16 @@
       "types": "./dist/index.d.cts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./mutable": {
+      "types": "./dist/mutable.d.cts",
+      "import": "./dist/mutable.js",
+      "require": "./dist/mutable.cjs"
+    },
+    "./default": {
+      "types": "./dist/default.d.cts",
+      "import": "./dist/default.js",
+      "require": "./dist/default.cjs"
     }
   }
 }
