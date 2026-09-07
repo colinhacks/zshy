@@ -1,5 +1,6 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync, rmSync } from "node:fs";
+import { createRequire } from "node:module";
 import * as ts from "typescript";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createCjsInteropTransformer } from "../src/tx-cjs-interop.js";
@@ -202,6 +203,36 @@ describe("zshy with different tsconfig configurations", () => {
     const newPackageJson = readFileSync(packageJsonPath, "utf-8");
     expect(newPackageJson).toEqual(originalPackageJson);
     expect(snapshot).toMatchSnapshot();
+  });
+
+  it("should seal the CommonJS exports when sealCjsExports is set", () => {
+    const cwd = process.cwd() + "/test/seal-cjs-exports";
+    const snapshot = runZshyWithTsconfig("tsconfig.json", { dryRun: false, cwd });
+    expect(snapshot.exitCode).toBe(0);
+
+    const built = cwd + "/dist/index.cjs";
+    const mod = createRequire(import.meta.url)(built);
+    const accessors = Object.getOwnPropertyNames(mod).filter(
+      (key) => Object.getOwnPropertyDescriptor(mod, key)?.get !== undefined
+    );
+    expect(accessors).toEqual([]);
+    expect(mod.starred()).toBe("starred");
+    expect(mod.renamed()).toBe("named");
+    expect(mod.local()).toBe("local");
+    expect(Object.isFrozen(mod)).toBe(true);
+
+    // a `module.exports = ...` assignment would settle the same exports but blind cjs-module-lexer, and these named imports would stop resolving
+    const namedImport = spawnSync(
+      process.execPath,
+      [
+        "--input-type=module",
+        "-e",
+        `import { starred, renamed, local } from ${JSON.stringify(built)}; console.log(starred(), renamed(), local());`,
+      ],
+      { encoding: "utf8" }
+    );
+    expect(namedImport.stderr).toBe("");
+    expect(namedImport.stdout.trim()).toBe("starred named local");
   });
 
   it("should work with custom conditions", () => {

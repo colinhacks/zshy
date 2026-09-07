@@ -26,8 +26,39 @@ export interface ProjectOptions {
   verbose: boolean;
   dryRun: boolean;
   cjsInterop?: boolean; // Enable CJS interop for single default exports
+  sealCjsExports?: boolean; // Freeze each CommonJS module's exports so re-exports settle into data properties
   paths?: Record<string, string[]>; // TypeScript paths configuration
   baseUrl?: string; // TypeScript baseUrl configuration
+}
+
+// TypeScript emits every re-export as a `__createBinding` accessor, so a consumer reading `lib.thing(...)` goes through `return m[k]` on every call and the engine never sees a constant callee. `__createBinding` copies a source descriptor instead of wrapping it whenever that descriptor is a non-writable, non-configurable data property, so a module that seals its own exports on the way out settles the whole re-export chain above it. `Object.freeze` handles the data properties in one step; the loop handles the configurable accessors that `export { a } from "..."` leaves behind.
+//
+// Appending text rather than reassigning `module.exports`: a `module.exports = <expression>` assignment blinds `cjs-module-lexer`, and named imports from ESM stop resolving.
+const SEAL_CJS_EXPORTS_EPILOGUE = `
+for (const key of Object.getOwnPropertyNames(exports)) {
+  const desc = Object.getOwnPropertyDescriptor(exports, key);
+  if (!desc || !desc.get || !desc.configurable) continue;
+  let value;
+  try {
+    value = desc.get();
+  } catch {
+    continue;
+  }
+  // a circular require may not have settled this one yet, so leave it live
+  if (value === undefined) continue;
+  Object.defineProperty(exports, key, { value, writable: false, enumerable: desc.enumerable, configurable: false });
+}
+Object.freeze(exports);
+`;
+
+// goes above the sourceMappingURL comment so it stays the last line, and below every emitted statement so the exports are settled. Every existing line keeps its position either way, so the source map stays valid.
+function appendSealEpilogue(data: string): string {
+  const sourceMapComment = data.match(/\n\/\/# sourceMappingURL=.*\s*$/);
+  if (!sourceMapComment) {
+    return data + SEAL_CJS_EXPORTS_EPILOGUE;
+  }
+  const cut = data.length - sourceMapComment[0].length;
+  return data.slice(0, cut) + SEAL_CJS_EXPORTS_EPILOGUE.replace(/\n$/, "") + sourceMapComment[0];
 }
 
 export async function compileProject(config: ProjectOptions, entryPoints: string[], ctx: BuildContext): Promise<void> {
@@ -49,9 +80,12 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
   host.writeFile = (fileName, data, writeByteOrderMark, onError, sourceFiles) => {
     // Transform output file extensions
     let outputFileName = fileName;
-    const processedData = data;
+    let processedData = data;
     if (fileName.endsWith(".js")) {
       outputFileName = fileName.replace(/\.js$/, jsExt);
+      if (config.sealCjsExports && config.format === "cjs") {
+        processedData = appendSealEpilogue(processedData);
+      }
     }
 
     if (fileName.endsWith(".d.ts")) {

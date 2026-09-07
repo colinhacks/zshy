@@ -461,6 +461,27 @@ With this addition, `zshy` will add the `"my-source"` condition to the generated
 }
 ```
 
+### Sealed CommonJS exports
+
+TypeScript emits every re-export as a `__createBinding` accessor, so a consumer that calls an API off the namespace — `lib.thing(...)` — reads the function through a getter on every call. The engine never sees a constant callee and cannot inline the call. On [zod](https://github.com/colinhacks/zod), 252 of the 255 exports on `index.cjs` were accessors, and one hot entrypoint ran at 35.9M ops/s under `require` against 115.5M under `import`.
+
+Set `"sealCjsExports"` to have each emitted CommonJS module seal its own exports on the way out:
+
+```diff
+{
+  "zshy": {
+    "exports": {
+      ".": "./src/index.ts"
+    },
++   "sealCjsExports": true
+  }
+}
+```
+
+`__createBinding` copies a source descriptor instead of wrapping it whenever that descriptor is a non-writable, non-configurable data property, so sealing the leaves settles the whole re-export chain up to your entrypoints. The ESM build is untouched.
+
+This is observable, which is why it is off by default. Every CommonJS export becomes non-writable and non-configurable and each namespace is frozen, so stubbing an export at runtime stops working. Loading the package also costs a few milliseconds more.
+
 ### JSR
 
 For packages that also have a `jsr.json` file for publishing to [JSR](https://jsr.io/), `zshy` will copy your configured exports to `jsr.json/#exports`, making your `zshy` configuration the single source of truth for exports.
