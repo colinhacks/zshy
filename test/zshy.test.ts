@@ -209,7 +209,7 @@ describe("zshy with different tsconfig configurations", () => {
   it("should seal the CommonJS exports when sealCjsExports is set", () => {
     const cwd = process.cwd() + "/test/seal-cjs-exports";
     const snapshot = runZshyWithTsconfig("tsconfig.json", { dryRun: false, cwd });
-    expect(snapshot.exitCode).toBe(0);
+    expect(snapshot).toMatchSnapshot();
 
     const require_ = createRequire(import.meta.url);
     const built = cwd + "/dist/index.cjs";
