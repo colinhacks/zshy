@@ -72,6 +72,7 @@ const FIXTURES: Fixture[] = [
   { name: "flat", knownDivergences: {} },
   { name: "bin", knownDivergences: {} },
   { name: "esm-only", knownDivergences: {} },
+  { name: "seal-cjs-exports", knownDivergences: {}, knownMappingDivergences: 8 },
 ];
 
 function walk(dir: string, out: string[] = []): string[] {
@@ -203,6 +204,7 @@ for (const fixture of FIXTURES) {
         verbose: false,
         dryRun: false,
         cjsInterop: true,
+        sealCjsExports: zshy.sealCjsExports === true,
       };
       const isTypeModule = pkg.type === "module";
 

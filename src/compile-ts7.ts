@@ -1,17 +1,25 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { SyntaxKind } from "typescript-next/unstable/ast";
+import { NodeFlags, ScriptTarget, SyntaxKind } from "typescript-next/unstable/ast";
 import {
+  isBinaryExpression,
   isClassDeclaration,
+  isElementAccessExpression,
   isEnumDeclaration,
   isExportAssignment,
   isExportDeclaration,
   isFunctionDeclaration,
+  isFunctionLikeDeclaration,
+  isIdentifier,
   isInterfaceDeclaration,
   isNamedExports,
+  isPostfixUnaryExpression,
+  isPrefixUnaryExpression,
+  isPropertyAccessExpression,
   isTypeAliasDeclaration,
   isVariableStatement,
 } from "typescript-next/unstable/ast/is";
+import { visitEachChild } from "typescript-next/unstable/ast/visitor";
 import { API, fileNameToDocumentURI, ModuleKind } from "typescript-next/unstable/sync";
 import type { BuildContext, ProjectOptions } from "./compile.js";
 import * as utils from "./utils.js";
@@ -201,6 +209,207 @@ function applyDeclarationInterop(text: string): string {
   return `${body.replace(/\n?$/, "\n")}export = ${name};\n`;
 }
 
+// ---------------------------------------------------------------------------
+// sealCjsExports — port of the epilogue in compile.ts. The epilogue text is
+// identical; only the two analyses change substrate. The classic engine parses
+// the emitted CommonJS with `ts.createSourceFile`, which the TS 7 API does not
+// expose, so the emitted files are parsed through a second, VFS-backed program
+// instead (one program for all of them, not one per file).
+// ---------------------------------------------------------------------------
+
+const SEAL_CJS_EXPORTS_SETTLE = [
+  "  var keys = Object.getOwnPropertyNames(exports);",
+  "  for (var i = 0; i < keys.length; i++) {",
+  "    var desc = Object.getOwnPropertyDescriptor(exports, keys[i]);",
+  "    if (!desc || !desc.get || !desc.configurable) continue;",
+  "    var value;",
+  "    try {",
+  "      value = desc.get();",
+  "    } catch (e) {",
+  "      continue;",
+  "    }",
+  "    // a circular require may not have settled this one yet, so leave it live",
+  "    if (value === undefined) continue;",
+  "    Object.defineProperty(exports, keys[i], { value: value, writable: false, enumerable: desc.enumerable, configurable: false });",
+  "  }",
+];
+
+const SEAL_CJS_EXPORTS_FREEZE = "  Object.freeze(exports);";
+
+interface CjsEmitFacts {
+  // `exports.x` written from inside a function runs after the epilogue, so freezing would make it throw
+  writesExportsLate: boolean;
+  // `module.exports = ...` hands callers something other than the object the epilogue seals, so sealing it achieves nothing
+  rebindsModuleExports: boolean;
+}
+
+function isExportsNamespace(node: any): boolean {
+  if (isIdentifier(node)) return node.text === "exports";
+  return (
+    isPropertyAccessExpression(node) &&
+    isIdentifier((node as any).expression) &&
+    (node as any).expression.text === "module" &&
+    (node as any).name.text === "exports"
+  );
+}
+
+function writesExportsProperty(node: any): boolean {
+  let target: any;
+  if (
+    isBinaryExpression(node) &&
+    (node as any).operatorToken.kind >= SyntaxKind.FirstAssignment &&
+    (node as any).operatorToken.kind <= SyntaxKind.LastAssignment
+  ) {
+    target = (node as any).left;
+  } else if (
+    (isPrefixUnaryExpression(node) || isPostfixUnaryExpression(node)) &&
+    ((node as any).operator === SyntaxKind.PlusPlusToken || (node as any).operator === SyntaxKind.MinusMinusToken)
+  ) {
+    target = (node as any).operand;
+  }
+
+  if (!target) return false;
+  return (
+    (isPropertyAccessExpression(target) || isElementAccessExpression(target)) && isExportsNamespace(target.expression)
+  );
+}
+
+/** Walks a parsed emitted-CommonJS file for the two facts the seal depends on. */
+function analyzeCjsEmit(source: any): CjsEmitFacts {
+  const facts: CjsEmitFacts = { writesExportsLate: false, rebindsModuleExports: false };
+
+  const visit = (node: any, insideFunction: boolean): void => {
+    if (
+      !facts.rebindsModuleExports &&
+      !insideFunction &&
+      isBinaryExpression(node) &&
+      node.operatorToken.kind === SyntaxKind.EqualsToken &&
+      isPropertyAccessExpression(node.left) &&
+      isIdentifier(node.left.expression) &&
+      node.left.expression.text === "module" &&
+      node.left.name.text === "exports"
+    ) {
+      facts.rebindsModuleExports = true;
+    }
+    if (!facts.writesExportsLate && insideFunction && writesExportsProperty(node)) {
+      facts.writesExportsLate = true;
+    }
+    // The classic engine asks `isFunctionLike`, which the TS 7 guards do not
+    // export; on emitted JavaScript the only function-like nodes are
+    // declarations, so the narrower guard covers the same set.
+    const nested = insideFunction || isFunctionLikeDeclaration(node);
+    // visitEachChild is the traversal primitive the TS 7 AST exposes; the
+    // visitor returns each node unchanged, so this is a read-only walk.
+    visitEachChild(node, (child: any) => {
+      visit(child, nested);
+      return child;
+    });
+  };
+
+  visit(source, false);
+  return facts;
+}
+
+/** Above the sourceMappingURL comment so it stays last; every existing line keeps its position. */
+function appendSealEpilogue(data: string, facts: CjsEmitFacts, settleAccessors: boolean): string {
+  if (facts.rebindsModuleExports) return data;
+
+  const lines = [
+    ...(settleAccessors ? SEAL_CJS_EXPORTS_SETTLE : []),
+    ...(facts.writesExportsLate ? [] : [SEAL_CJS_EXPORTS_FREEZE]),
+  ];
+  if (lines.length === 0) return data;
+
+  const newline = data.includes("\r\n") ? "\r\n" : "\n";
+  const epilogue = newline + ["// seal-cjs-exports", "(function () {", ...lines, "})();"].join(newline) + newline;
+
+  const sourceMapComment = data.match(/\r?\n\/\/# sourceMappingURL=.*\s*$/);
+  if (!sourceMapComment) {
+    return data + epilogue;
+  }
+  const cut = data.length - sourceMapComment[0].length;
+  return data.slice(0, cut) + epilogue.replace(/\r?\n$/, "") + sourceMapComment[0];
+}
+
+/**
+ * A named re-export of a live `export let` cannot be told apart from one of a
+ * constant once emitted, so any mutable exported binding anywhere in the build
+ * disables settling everywhere. Mirrors the classic implementation exactly.
+ */
+function hasMutableExportedBinding(source: any): boolean {
+  const mutableLocals = new Set<string>();
+  for (const statement of source.statements) {
+    if (!isVariableStatement(statement)) continue;
+    const isConst = ((statement as any).declarationList.flags & NodeFlags.Const) !== 0;
+    if (isConst) continue;
+    const exported = hasModifier(statement, SyntaxKind.ExportKeyword);
+    for (const declaration of (statement as any).declarationList.declarations) {
+      if (!isIdentifier(declaration.name)) continue;
+      if (exported) return true;
+      mutableLocals.add(declaration.name.text);
+    }
+  }
+
+  return source.statements.some(
+    (statement: any) =>
+      isExportDeclaration(statement) &&
+      statement.exportClause !== undefined &&
+      isNamedExports(statement.exportClause) &&
+      statement.moduleSpecifier === undefined &&
+      statement.exportClause.elements.some((element: any) =>
+        mutableLocals.has((element.propertyName ?? element.name).text)
+      )
+  );
+}
+
+/**
+ * Parses a batch of emitted CommonJS files through one VFS-backed program and
+ * returns the seal facts for each, keyed by the caller's path.
+ */
+function analyzeEmittedCommonJs(files: Map<string, string>): Map<string, CjsEmitFacts> {
+  const results = new Map<string, CjsEmitFacts>();
+  if (files.size === 0) return results;
+
+  const virtualRoot = "/zshy-seal-analysis";
+  const virtualPaths = new Map<string, string>();
+  let i = 0;
+  for (const key of files.keys()) virtualPaths.set(key, `${virtualRoot}/${i++}.cjs`);
+  const byVirtual = new Map([...virtualPaths].map(([key, v]) => [v, files.get(key)!]));
+
+  const api = new API({
+    cwd: virtualRoot,
+    fs: {
+      readFile: (p) => (byVirtual.has(p) ? byVirtual.get(p) : undefined),
+      fileExists: (p) => (byVirtual.has(p) ? true : undefined),
+      directoryExists: (p) => (p === virtualRoot ? true : undefined),
+    },
+  });
+  try {
+    const program = api.createProgram(
+      [...byVirtual.keys()].map((p) => ({ uri: fileNameToDocumentURI(p) })),
+      {
+        compilerOptions: {
+          allowJs: true,
+          checkJs: false,
+          noEmit: true,
+          noLib: true,
+          types: [],
+          skipLibCheck: true,
+          module: ModuleKind.CommonJS,
+          target: ScriptTarget.Latest,
+        } as any,
+      }
+    );
+    for (const [key, vpath] of virtualPaths) {
+      const source = program.getSourceFile({ uri: fileNameToDocumentURI(vpath) });
+      results.set(key, source ? analyzeCjsEmit(source) : { writesExportsLate: false, rebindsModuleExports: false });
+    }
+  } finally {
+    api.close();
+  }
+  return results;
+}
+
 /**
  * TypeScript 7's `createProgram` does not perform the automatic `@types`
  * inclusion that `tsc` and the classic `createProgram` do: with `types` unset,
@@ -332,6 +541,11 @@ export async function compileProjectTs7(
     const shouldWriteFiles = errors.length === 0;
     const output = program.emitToString();
 
+    // Outputs are computed first and written last, because the seal epilogue
+    // needs every CommonJS file's final text (interop line included) in hand
+    // before it can parse them as one batch.
+    const pending: Array<{ finalPath: string; text: string; emitsCommonJs: boolean }> = [];
+
     for (const [outputPath, file] of output.outputFiles) {
       const sourceFileName = file.sourceFileName;
       let text = file.text;
@@ -385,8 +599,32 @@ export async function compileProjectTs7(
       else if (outputPath.endsWith(".js.map")) finalPath = outputPath.replace(/\.js\.map$/, `${jsExt}.map`);
       else if (outputPath.endsWith(".d.ts.map")) finalPath = outputPath.replace(/\.d\.ts\.map$/, `${dtsExt}.map`);
 
-      ctx.writtenFiles.add(finalPath);
+      // A .cts source emits .cjs from BOTH passes and the ESM pass writes last,
+      // so seal any .cjs output whichever pass produced it; a .js output is
+      // CommonJS only in the CJS pass, and .mjs is real ESM with no `exports`.
+      const emitsCommonJs = outputPath.endsWith(".cjs") || (config.format === "cjs" && outputPath.endsWith(".js"));
+      pending.push({ finalPath, text, emitsCommonJs });
+    }
 
+    if (config.sealCjsExports) {
+      const toAnalyze = new Map(pending.filter((p) => p.emitsCommonJs).map((p) => [p.finalPath, p.text]));
+      const facts = analyzeEmittedCommonJs(toAnalyze);
+
+      // Cleared if any source file in the build exports a mutable binding.
+      const settleAccessors = !program.getSourceFileNames().some((name) => {
+        const source = program.getSourceFile({ uri: fileNameToDocumentURI(name) });
+        return source !== undefined && !source.isDeclarationFile && hasMutableExportedBinding(source);
+      });
+
+      for (const entry of pending) {
+        if (!entry.emitsCommonJs) continue;
+        const f = facts.get(entry.finalPath);
+        if (f) entry.text = appendSealEpilogue(entry.text, f, settleAccessors);
+      }
+    }
+
+    for (const { finalPath, text } of pending) {
+      ctx.writtenFiles.add(finalPath);
       if (!config.dryRun && shouldWriteFiles) {
         fs.mkdirSync(path.dirname(finalPath), { recursive: true });
         fs.writeFileSync(finalPath, text);
