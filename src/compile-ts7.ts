@@ -724,10 +724,19 @@ export async function compileProjectTs7(
       const sealed = pending.filter((p) => p.isJs && p.isCommonJs);
 
       // Cleared if any source file in the build exports a mutable binding.
-      const settleAccessors = !program.getSourceFileNames().some((name) => {
-        const source = program.getSourceFile({ uri: fileNameToDocumentURI(name) });
-        return source !== undefined && !source.isDeclarationFile && hasMutableExportedBinding(source);
-      });
+      // The classic engine reads `program.getSourceFiles()` in process; here
+      // every source file costs a round trip, and the program includes the
+      // whole lib and every `@types` package — 90 files and 2.4 MB on a
+      // three-file fixture. A `.d.ts` name is always a declaration file, so
+      // rejecting those by name is the same filter without the fetch; the
+      // survivors are still checked on `isDeclarationFile` as before.
+      const settleAccessors = !program
+        .getSourceFileNames()
+        .filter((name) => !/\.d\.(ts|cts|mts)$/.test(name))
+        .some((name) => {
+          const source = program.getSourceFile({ uri: fileNameToDocumentURI(name) });
+          return source !== undefined && !source.isDeclarationFile && hasMutableExportedBinding(source);
+        });
 
       withParsedOutputs(new Map(sealed.map((p) => [p.finalPath, p.text])), (parsed) => {
         for (const entry of sealed) {
