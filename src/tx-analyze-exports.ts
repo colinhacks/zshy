@@ -1,5 +1,6 @@
 import * as ts from "typescript";
 
+// Mirrored on the TypeScript 7 AST in compile-ts7.ts (`analyzeExportShape`); a rule changed here needs changing there.
 function analyzeExportDeclaration(node: ts.ExportDeclaration): {
   hasNamedExports: boolean;
   hasTypeOnlyExports: boolean;

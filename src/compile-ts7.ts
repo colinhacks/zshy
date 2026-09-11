@@ -3,6 +3,7 @@ import * as path from "node:path";
 import { NodeFlags, ScriptTarget, SyntaxKind } from "typescript-next/unstable/ast";
 import {
   isBinaryExpression,
+  isCallExpression,
   isClassDeclaration,
   isElementAccessExpression,
   isEnumDeclaration,
@@ -11,17 +12,26 @@ import {
   isFunctionDeclaration,
   isFunctionLikeDeclaration,
   isIdentifier,
+  isImportDeclaration,
   isInterfaceDeclaration,
+  isMetaProperty,
   isNamedExports,
   isPostfixUnaryExpression,
   isPrefixUnaryExpression,
   isPropertyAccessExpression,
+  isStringLiteral,
   isTypeAliasDeclaration,
   isVariableStatement,
 } from "typescript-next/unstable/ast/is";
 import { visitEachChild } from "typescript-next/unstable/ast/visitor";
-import { API, fileNameToDocumentURI, ModuleKind } from "typescript-next/unstable/sync";
-import type { BuildContext, ProjectOptions } from "./compile.js";
+import {
+  API,
+  fileNameToDocumentURI,
+  formatDiagnosticsWithColorAndContext,
+  ModuleKind,
+  ModuleResolutionKind,
+} from "typescript-next/unstable/sync";
+import { appendSealEpilogue, type BuildContext, type CjsEmitFacts, type ProjectOptions } from "./compile.js";
 import * as utils from "./utils.js";
 
 // The TypeScript 7 API replaces `program.emit(..., customTransformers)` with a
@@ -149,33 +159,186 @@ function mapSpecifier(
   return specifier;
 }
 
-/** Rewrites every quoted relative module specifier in emitted text. */
-function rewriteSpecifiers(
-  text: string,
+/** Walks a TS 7 AST read-only; `visitEachChild` is the traversal primitive it exposes. */
+function walk(node: any, visit: (node: any) => void): void {
+  visit(node);
+  visitEachChild(node, (child: any) => {
+    walk(child, visit);
+    return child;
+  });
+}
+
+/**
+ * The specifiers the classic transformer rewrites, read off the SOURCE file:
+ * `import`/`export ... from`, and dynamic `import()` with a literal argument.
+ * Nothing else is touched — not `import x = require()`, not a hand-written
+ * `require()`, not an `import("./x")` type in a declaration file — so the map
+ * built here is what decides which literals in the emitted output may change.
+ */
+function collectSpecifierRewrites(
+  sourceFile: any,
   sourceFileName: string,
   ext: string,
   rootDir: string,
   onAssetImport: (relPath: string) => void
-): string {
-  return text
-    .split("\n")
-    .map((line) => {
-      // `/// <reference path="./x.ts" />` is a compiler directive, not an import.
-      if (/^\s*\/\/\/\s*</.test(line)) return line;
-      return line.replace(/(["'])(\.\.?\/[^"'\n]*)\1/g, (whole, quote, spec) => {
-        const mapped = mapSpecifier(spec, sourceFileName, ext, rootDir, onAssetImport);
-        return mapped === spec ? whole : `${quote}${mapped}${quote}`;
-      });
-    })
-    .join("\n");
+): Map<string, string> {
+  const rewrites = new Map<string, string>();
+  walk(sourceFile, (node) => {
+    let literal: any;
+    if (isImportDeclaration(node) || isExportDeclaration(node)) {
+      literal = node.moduleSpecifier;
+    } else if (isCallExpression(node) && node.expression.kind === SyntaxKind.ImportKeyword) {
+      literal = node.arguments[0];
+    }
+    if (!literal || !isStringLiteral(literal) || rewrites.has(literal.text)) return;
+    const mapped = mapSpecifier(literal.text, sourceFileName, ext, rootDir, onAssetImport);
+    if (mapped === literal.text) return;
+    // A declaration file carries the source specifier verbatim, but in the
+    // JavaScript TypeScript's own `rewriteRelativeImportExtensions` has already
+    // turned `./a.ts` into `./a.js`, so the rewrite is keyed by both spellings.
+    // A `.tsx`/`.cts`/`.mts` specifier gets no entry at all — the classic
+    // transformer only remaps `.js` and `.ts` — and keeps whatever TypeScript
+    // emitted for it.
+    rewrites.set(literal.text, mapped);
+    rewrites.set(
+      literal.text.replace(/\.([cm]?)tsx?$/, (_, cm) => `.${cm}js`),
+      mapped
+    );
+  });
+  return rewrites;
 }
 
-/** Mirrors createImportMetaShimTransformer. */
-function applyImportMetaShim(text: string): string {
-  return text
-    .replace(/\bimport\.meta\.url\b/g, 'require("url").pathToFileURL(__filename)')
-    .replace(/\bimport\.meta\.dirname\b/g, "__dirname")
-    .replace(/\bimport\.meta\.filename\b/g, "__filename");
+interface TextEdit {
+  start: number;
+  end: number;
+  text: string;
+}
+
+/**
+ * The by-position equivalents of the classic `before` transformers, computed
+ * on the parsed EMITTED file so that a string in any other position — a default
+ * parameter, an object key, a comment — is never mistaken for a specifier.
+ *
+ * Specifier positions: `import`/`export ... from` and dynamic `import()` in an
+ * ES module; the `require()` calls those lower to in a CommonJS one. A literal
+ * is rewritten only if the source-side map says the classic transformer would
+ * have rewritten it, and it is re-emitted double-quoted because the classic
+ * transformer replaces the node with a fresh `createStringLiteral`.
+ *
+ * `import.meta.url` / `.dirname` / `.filename` are replaced as property
+ * accesses on the `import.meta` meta-property, mirroring tx-import-meta-shim.
+ */
+function collectEmitEdits(
+  emitted: any,
+  rewrites: Map<string, string>,
+  isCommonJs: boolean,
+  shimImportMeta: boolean
+): TextEdit[] {
+  const edits: TextEdit[] = [];
+  walk(emitted, (node) => {
+    if (isStringLiteral(node) && rewrites.has(node.text)) {
+      const parent = node.parent;
+      const isSpecifier =
+        ((isImportDeclaration(parent) || isExportDeclaration(parent)) && parent.moduleSpecifier === node) ||
+        (isCallExpression(parent) &&
+          parent.arguments[0] === node &&
+          (parent.expression.kind === SyntaxKind.ImportKeyword ||
+            (isCommonJs && isIdentifier(parent.expression) && parent.expression.text === "require")));
+      if (isSpecifier) {
+        edits.push({ start: node.getStart(emitted), end: node.end, text: `"${rewrites.get(node.text)}"` });
+      }
+      return;
+    }
+
+    if (
+      shimImportMeta &&
+      isPropertyAccessExpression(node) &&
+      isMetaProperty(node.expression) &&
+      node.expression.keywordToken === SyntaxKind.ImportKeyword
+    ) {
+      const replacement =
+        node.name.text === "url"
+          ? 'require("url").pathToFileURL(__filename)'
+          : node.name.text === "dirname"
+            ? "__dirname"
+            : node.name.text === "filename"
+              ? "__filename"
+              : undefined;
+      if (replacement) edits.push({ start: node.getStart(emitted), end: node.end, text: replacement });
+    }
+  });
+  return edits;
+}
+
+function applyEdits(text: string, edits: TextEdit[]): string {
+  let out = text;
+  for (const edit of [...edits].sort((a, b) => b.start - a.start)) {
+    out = out.slice(0, edit.start) + edit.text + out.slice(edit.end);
+  }
+  return out;
+}
+
+/**
+ * Parses a batch of emitted files through one VFS-backed program and hands
+ * their source files to `fn`, keyed by the caller's path. The TS 7 API does not
+ * expose `createSourceFile`, so this is how the engine reads its own output:
+ * each file keeps its real extension so `.d.cts` parses as a declaration file
+ * and `.mjs` as an ES module.
+ */
+function withParsedOutputs<T>(files: Map<string, string>, fn: (get: (key: string) => any) => T): T {
+  if (files.size === 0) return fn(() => undefined);
+
+  const virtualRoot = "/zshy-emit-analysis";
+  const virtualPaths = new Map<string, string>();
+  let i = 0;
+  for (const key of files.keys()) virtualPaths.set(key, `${virtualRoot}/${i++}-${path.basename(key)}`);
+  const byVirtual = new Map([...virtualPaths].map(([key, v]) => [v, files.get(key)!]));
+
+  const api = new API({
+    cwd: virtualRoot,
+    fs: {
+      readFile: (p) => (byVirtual.has(p) ? byVirtual.get(p) : undefined),
+      fileExists: (p) => (byVirtual.has(p) ? true : undefined),
+      directoryExists: (p) => (p === virtualRoot ? true : undefined),
+    },
+  });
+  try {
+    const program = api.createProgram(
+      [...byVirtual.keys()].map((p) => ({ uri: fileNameToDocumentURI(p) })),
+      {
+        compilerOptions: {
+          allowJs: true,
+          checkJs: false,
+          noEmit: true,
+          noLib: true,
+          noResolve: true,
+          types: [],
+          skipLibCheck: true,
+          module: ModuleKind.CommonJS,
+          target: ScriptTarget.Latest,
+        } as any,
+      }
+    );
+    return fn((key) => {
+      const vpath = virtualPaths.get(key);
+      return vpath ? program.getSourceFile({ uri: fileNameToDocumentURI(vpath) }) : undefined;
+    });
+  } finally {
+    api.close();
+  }
+}
+
+/**
+ * Appends a statement the way a trailing statement added by a `before` /
+ * `afterDeclarations` transformer is printed: as the last line of code, ahead
+ * of the `//# sourceMappingURL=` comment the printer writes after everything.
+ */
+function appendStatement(text: string, statement: string): string {
+  const trailingComment = /\n(\/\/# sourceMappingURL=.*)$/.exec(text);
+  if (trailingComment) {
+    return text.replace(trailingComment[0], `\n${statement}\n${trailingComment[1]}`);
+  }
+  return `${text.replace(/\n?$/, "\n")}${statement}\n`;
 }
 
 /**
@@ -200,48 +363,16 @@ function applyDeclarationInterop(text: string): string {
   if (!match) return text;
 
   const name = match[2]!;
-  const body = text.replace(declarationForm, `declare $1 ${name}`);
-  const trailingComment = /\n(\/\/# sourceMappingURL=.*)$/.exec(body);
-
-  if (trailingComment) {
-    return body.replace(trailingComment[0], `\nexport = ${name};\n${trailingComment[1]}`);
-  }
-  return `${body.replace(/\n?$/, "\n")}export = ${name};\n`;
+  return appendStatement(text.replace(declarationForm, `declare $1 ${name}`), `export = ${name};`);
 }
 
 // ---------------------------------------------------------------------------
-// sealCjsExports — port of the epilogue in compile.ts. The epilogue text is
-// identical; only the two analyses change substrate. The classic engine parses
-// the emitted CommonJS with `ts.createSourceFile`, which the TS 7 API does not
-// expose, so the emitted files are parsed through a second, VFS-backed program
-// instead (one program for all of them, not one per file).
+// sealCjsExports — the epilogue text and `appendSealEpilogue` are imported from
+// compile.ts so there is one copy of what gets emitted. Only the two analyses
+// change substrate: the classic engine parses the emitted CommonJS with
+// `ts.createSourceFile`, which the TS 7 API does not expose, so the emitted
+// files go through `withParsedOutputs` instead.
 // ---------------------------------------------------------------------------
-
-const SEAL_CJS_EXPORTS_SETTLE = [
-  "  var keys = Object.getOwnPropertyNames(exports);",
-  "  for (var i = 0; i < keys.length; i++) {",
-  "    var desc = Object.getOwnPropertyDescriptor(exports, keys[i]);",
-  "    if (!desc || !desc.get || !desc.configurable) continue;",
-  "    var value;",
-  "    try {",
-  "      value = desc.get();",
-  "    } catch (e) {",
-  "      continue;",
-  "    }",
-  "    // a circular require may not have settled this one yet, so leave it live",
-  "    if (value === undefined) continue;",
-  "    Object.defineProperty(exports, keys[i], { value: value, writable: false, enumerable: desc.enumerable, configurable: false });",
-  "  }",
-];
-
-const SEAL_CJS_EXPORTS_FREEZE = "  Object.freeze(exports);";
-
-interface CjsEmitFacts {
-  // `exports.x` written from inside a function runs after the epilogue, so freezing would make it throw
-  writesExportsLate: boolean;
-  // `module.exports = ...` hands callers something other than the object the epilogue seals, so sealing it achieves nothing
-  rebindsModuleExports: boolean;
-}
 
 function isExportsNamespace(node: any): boolean {
   if (isIdentifier(node)) return node.text === "exports";
@@ -310,27 +441,6 @@ function analyzeCjsEmit(source: any): CjsEmitFacts {
   return facts;
 }
 
-/** Above the sourceMappingURL comment so it stays last; every existing line keeps its position. */
-function appendSealEpilogue(data: string, facts: CjsEmitFacts, settleAccessors: boolean): string {
-  if (facts.rebindsModuleExports) return data;
-
-  const lines = [
-    ...(settleAccessors ? SEAL_CJS_EXPORTS_SETTLE : []),
-    ...(facts.writesExportsLate ? [] : [SEAL_CJS_EXPORTS_FREEZE]),
-  ];
-  if (lines.length === 0) return data;
-
-  const newline = data.includes("\r\n") ? "\r\n" : "\n";
-  const epilogue = newline + ["// seal-cjs-exports", "(function () {", ...lines, "})();"].join(newline) + newline;
-
-  const sourceMapComment = data.match(/\r?\n\/\/# sourceMappingURL=.*\s*$/);
-  if (!sourceMapComment) {
-    return data + epilogue;
-  }
-  const cut = data.length - sourceMapComment[0].length;
-  return data.slice(0, cut) + epilogue.replace(/\r?\n$/, "") + sourceMapComment[0];
-}
-
 /**
  * A named re-export of a live `export let` cannot be told apart from one of a
  * constant once emitted, so any mutable exported binding anywhere in the build
@@ -360,54 +470,6 @@ function hasMutableExportedBinding(source: any): boolean {
         mutableLocals.has((element.propertyName ?? element.name).text)
       )
   );
-}
-
-/**
- * Parses a batch of emitted CommonJS files through one VFS-backed program and
- * returns the seal facts for each, keyed by the caller's path.
- */
-function analyzeEmittedCommonJs(files: Map<string, string>): Map<string, CjsEmitFacts> {
-  const results = new Map<string, CjsEmitFacts>();
-  if (files.size === 0) return results;
-
-  const virtualRoot = "/zshy-seal-analysis";
-  const virtualPaths = new Map<string, string>();
-  let i = 0;
-  for (const key of files.keys()) virtualPaths.set(key, `${virtualRoot}/${i++}.cjs`);
-  const byVirtual = new Map([...virtualPaths].map(([key, v]) => [v, files.get(key)!]));
-
-  const api = new API({
-    cwd: virtualRoot,
-    fs: {
-      readFile: (p) => (byVirtual.has(p) ? byVirtual.get(p) : undefined),
-      fileExists: (p) => (byVirtual.has(p) ? true : undefined),
-      directoryExists: (p) => (p === virtualRoot ? true : undefined),
-    },
-  });
-  try {
-    const program = api.createProgram(
-      [...byVirtual.keys()].map((p) => ({ uri: fileNameToDocumentURI(p) })),
-      {
-        compilerOptions: {
-          allowJs: true,
-          checkJs: false,
-          noEmit: true,
-          noLib: true,
-          types: [],
-          skipLibCheck: true,
-          module: ModuleKind.CommonJS,
-          target: ScriptTarget.Latest,
-        } as any,
-      }
-    );
-    for (const [key, vpath] of virtualPaths) {
-      const source = program.getSourceFile({ uri: fileNameToDocumentURI(vpath) });
-      results.set(key, source ? analyzeCjsEmit(source) : { writesExportsLate: false, rebindsModuleExports: false });
-    }
-  } finally {
-    api.close();
-  }
-  return results;
 }
 
 /**
@@ -487,13 +549,19 @@ export async function compileProjectTs7(
       uri: fileNameToDocumentURI(path.resolve(config.pkgJsonDir, entry)),
     }));
 
-    // TypeScript 7 removed `moduleResolution: node10` (TS5108). Leaving it unset
-    // lets the CommonJS pass fall back to the classic resolver, which is what
-    // node10 selected; Node16/NodeNext reject this program outright.
+    // TypeScript 7 removed `moduleResolution: node10` (TS5108) and `classic`.
+    // main.ts forces node10 for the CommonJS pass; dropping it there lets TS 7's
+    // default apply, since Node16/NodeNext would change the emit. The ESM pass
+    // keeps the `bundler` it asked for.
     const { moduleResolution, ...withoutModuleResolution } = config.compilerOptions as any;
+    const keepsModuleResolution =
+      moduleResolution === ModuleResolutionKind.Bundler ||
+      moduleResolution === ModuleResolutionKind.Node16 ||
+      moduleResolution === ModuleResolutionKind.NodeNext;
     const rest = migrateRemovedPathOptions(withoutModuleResolution, path.dirname(config.configPath));
     const compilerOptions = {
       ...rest,
+      ...(keepsModuleResolution ? { moduleResolution } : {}),
       module: config.format === "cjs" ? ModuleKind.CommonJS : ModuleKind.ESNext,
       rootDir: config.rootDir,
       types: rest.types ?? discoverAtTypes(config.pkgJsonDir),
@@ -501,10 +569,16 @@ export async function compileProjectTs7(
 
     const program = api.createProgram(rootFiles, { compilerOptions });
 
+    // The same set, in the same order, as the classic `ts.getPreEmitDiagnostics`:
+    // declaration-emit diagnostics are part of it whenever `declaration` is on,
+    // which for zshy is always.
     const diagnostics = [
+      ...program.getConfigFileParsingDiagnostics(),
       ...program.getProgramDiagnostics(),
       ...program.getSyntacticDiagnostics(),
+      ...program.getGlobalDiagnostics(),
       ...program.getSemanticDiagnostics(),
+      ...(rest.declaration || rest.composite ? program.getDeclarationDiagnostics() : []),
     ];
 
     // ts1343 (`import.meta` outside an ESM target) and ts1259 are expected for
@@ -531,20 +605,49 @@ export async function compileProjectTs7(
 
     if (errors.length > 0 || warnings.length > 0) {
       utils.log.warn(`Found ${errors.length} error(s) and ${warnings.length} warning(s)`);
-      for (const d of filtered as any[]) {
-        if (d.category === 1 || d.category === 0) {
-          console.log(`${d.file ?? ""}: ${d.text ?? d.messageText ?? ""}`);
-        }
-      }
+      const relevant = filtered.filter((d: any) => d.category === 1 || d.category === 0);
+      console.log(formatDiagnosticsWithColorAndContext(relevant, program));
     }
 
-    const shouldWriteFiles = errors.length === 0;
     const output = program.emitToString();
 
-    // Outputs are computed first and written last, because the seal epilogue
-    // needs every CommonJS file's final text (interop line included) in hand
-    // before it can parse them as one batch.
-    const pending: Array<{ finalPath: string; text: string; emitsCommonJs: boolean }> = [];
+    if (output.emitSkipped) {
+      utils.log.error("Emit was skipped due to errors");
+    }
+
+    // Emit-time diagnostics count like the classic engine's `emitResult.diagnostics`.
+    if (output.diagnostics.length > 0) {
+      const emitDiagnostics =
+        config.format === "cjs" ? output.diagnostics.filter((d: any) => d.code !== 1343) : output.diagnostics;
+      const emitErrors = emitDiagnostics.filter((d: any) => d.category === 1);
+      const emitWarnings = emitDiagnostics.filter((d: any) => d.category === 0);
+      ctx.errorCount += emitErrors.length;
+      ctx.warningCount += emitWarnings.length;
+      utils.log.error(`Found ${emitErrors.length} error(s) and ${emitWarnings.length} warning(s) during emit:`);
+      console.log(formatDiagnosticsWithColorAndContext([...emitErrors, ...emitWarnings], program));
+    }
+
+    // The classic engine writes nothing once it has seen an error, and the
+    // emitter's own verdict is honoured too: a skipped emit is not output.
+    const shouldWriteFiles = errors.length === 0 && !output.emitSkipped;
+
+    // Outputs are computed first and written last: the specifier rewrite needs
+    // the emitted files parsed, and the seal epilogue needs every CommonJS
+    // file's final text (interop line included) parsed again, both in one
+    // batch per pass rather than one program per file.
+    interface PendingOutput {
+      outputPath: string;
+      finalPath: string;
+      text: string;
+      sourceFileName: string | undefined;
+      isJs: boolean;
+      isDts: boolean;
+      // CommonJS by OUTPUT extension: a .cts source emits .cjs from BOTH passes
+      // and the ESM pass writes last, so a .cjs is CommonJS whichever pass made
+      // it; a .js is CommonJS only in the CJS pass, and .mjs is real ESM.
+      isCommonJs: boolean;
+    }
+    const pending: PendingOutput[] = [];
 
     for (const [outputPath, file] of output.outputFiles) {
       const sourceFileName = file.sourceFileName;
@@ -556,9 +659,7 @@ export async function compileProjectTs7(
       const isMap = outputPath.endsWith(".map");
       const isDts = /\.d\.(ts|cts|mts)$/.test(outputPath);
       const isJs = !isDts && !isMap && /\.(js|cjs|mjs)$/.test(outputPath);
-      // .mjs output is an ES module even during the CommonJS pass, so the
-      // CommonJS-only rewrites must not touch it.
-      const isCommonJsOutput = isJs && !outputPath.endsWith(".mjs");
+      const isCommonJs = outputPath.endsWith(".cjs") || (config.format === "cjs" && outputPath.endsWith(".js"));
 
       // Non-code outputs (a resolveJsonModule .json, for instance) are assets:
       // copy the source bytes rather than the emitted text. TypeScript 7
@@ -566,29 +667,6 @@ export async function compileProjectTs7(
       // user's file for no reason.
       if (!isJs && !isDts && !isMap && sourceFileName && fs.existsSync(sourceFileName)) {
         text = fs.readFileSync(sourceFileName, "utf8");
-      }
-
-      if (sourceFileName && (isJs || isDts)) {
-        if (isCommonJsOutput && config.format === "cjs") {
-          text = applyImportMetaShim(text);
-        }
-
-        text = rewriteSpecifiers(text, sourceFileName, isDts ? jsExt : jsExt, config.rootDir, (asset) =>
-          assetImports.add(asset)
-        );
-
-        if (config.cjsInterop && config.format === "cjs") {
-          const sourceFile = program.getSourceFile({ uri: fileNameToDocumentURI(sourceFileName) });
-          if (sourceFile) {
-            const shape = analyzeExportShape(sourceFile);
-            const applies = shape.hasDefaultExport && !shape.hasNamedExports && !shape.hasTypeOnlyExports;
-            if (applies && isCommonJsOutput) {
-              text = `${text.replace(/\n?$/, "\n")}module.exports = exports.default;\n`;
-            } else if (applies && isDts && !outputPath.endsWith(".d.mts")) {
-              text = applyDeclarationInterop(text);
-            }
-          }
-        }
       }
 
       // Rename to the build's output extensions, exactly as the classic
@@ -599,16 +677,51 @@ export async function compileProjectTs7(
       else if (outputPath.endsWith(".js.map")) finalPath = outputPath.replace(/\.js\.map$/, `${jsExt}.map`);
       else if (outputPath.endsWith(".d.ts.map")) finalPath = outputPath.replace(/\.d\.ts\.map$/, `${dtsExt}.map`);
 
-      // A .cts source emits .cjs from BOTH passes and the ESM pass writes last,
-      // so seal any .cjs output whichever pass produced it; a .js output is
-      // CommonJS only in the CJS pass, and .mjs is real ESM with no `exports`.
-      const emitsCommonJs = outputPath.endsWith(".cjs") || (config.format === "cjs" && outputPath.endsWith(".js"));
-      pending.push({ finalPath, text, emitsCommonJs });
+      pending.push({ outputPath, finalPath, text, sourceFileName, isJs, isDts, isCommonJs });
+    }
+
+    // The classic `before` / `afterDeclarations` transformers: specifier
+    // rewriting on both JS and declarations, the import.meta shim on CommonJS
+    // JS in the CJS pass, then the CJS interop line or its declaration form.
+    const code = pending.filter((p) => p.sourceFileName && (p.isJs || p.isDts));
+    const rewritesBySource = new Map<string, Map<string, string>>();
+    withParsedOutputs(new Map(code.map((p) => [p.finalPath, p.text])), (parsed) => {
+      for (const entry of code) {
+        const sourceFileName = entry.sourceFileName!;
+        let rewrites = rewritesBySource.get(sourceFileName);
+        if (!rewrites) {
+          const sourceFile = program.getSourceFile({ uri: fileNameToDocumentURI(sourceFileName) });
+          rewrites = sourceFile
+            ? collectSpecifierRewrites(sourceFile, sourceFileName, jsExt, config.rootDir, (asset) =>
+                assetImports.add(asset)
+              )
+            : new Map();
+          rewritesBySource.set(sourceFileName, rewrites);
+        }
+
+        const emitted = parsed(entry.finalPath);
+        if (!emitted) continue;
+        const shimImportMeta = entry.isJs && entry.isCommonJs && config.format === "cjs";
+        entry.text = applyEdits(entry.text, collectEmitEdits(emitted, rewrites, entry.isCommonJs, shimImportMeta));
+      }
+    });
+
+    if (config.cjsInterop && config.format === "cjs") {
+      for (const entry of code) {
+        const sourceFile = program.getSourceFile({ uri: fileNameToDocumentURI(entry.sourceFileName!) });
+        if (!sourceFile) continue;
+        const shape = analyzeExportShape(sourceFile);
+        const applies = shape.hasDefaultExport && !shape.hasNamedExports && !shape.hasTypeOnlyExports;
+        if (applies && entry.isJs && entry.isCommonJs) {
+          entry.text = appendStatement(entry.text, "module.exports = exports.default;");
+        } else if (applies && entry.isDts && !entry.outputPath.endsWith(".d.mts")) {
+          entry.text = applyDeclarationInterop(entry.text);
+        }
+      }
     }
 
     if (config.sealCjsExports) {
-      const toAnalyze = new Map(pending.filter((p) => p.emitsCommonJs).map((p) => [p.finalPath, p.text]));
-      const facts = analyzeEmittedCommonJs(toAnalyze);
+      const sealed = pending.filter((p) => p.isJs && p.isCommonJs);
 
       // Cleared if any source file in the build exports a mutable binding.
       const settleAccessors = !program.getSourceFileNames().some((name) => {
@@ -616,11 +729,12 @@ export async function compileProjectTs7(
         return source !== undefined && !source.isDeclarationFile && hasMutableExportedBinding(source);
       });
 
-      for (const entry of pending) {
-        if (!entry.emitsCommonJs) continue;
-        const f = facts.get(entry.finalPath);
-        if (f) entry.text = appendSealEpilogue(entry.text, f, settleAccessors);
-      }
+      withParsedOutputs(new Map(sealed.map((p) => [p.finalPath, p.text])), (parsed) => {
+        for (const entry of sealed) {
+          const emitted = parsed(entry.finalPath);
+          if (emitted) entry.text = appendSealEpilogue(entry.text, analyzeCjsEmit(emitted), settleAccessors);
+        }
+      });
     }
 
     for (const { finalPath, text } of pending) {
@@ -629,10 +743,6 @@ export async function compileProjectTs7(
         fs.mkdirSync(path.dirname(finalPath), { recursive: true });
         fs.writeFileSync(finalPath, text);
       }
-    }
-
-    if (output.emitSkipped) {
-      utils.log.error("Emit was skipped due to errors");
     }
 
     // Copy assets discovered during specifier rewriting.

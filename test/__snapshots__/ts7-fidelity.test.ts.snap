@@ -1,0 +1,124 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`TypeScript 7.1 engine — basic > produces byte-identical sourcemap mappings apart from known divergences 1`] = `
+[
+  "dist/default-arrow.cjs.map",
+  "dist/default-arrow.d.ts.map",
+  "dist/default-class.cjs.map",
+  "dist/default-class.d.cts.map",
+  "dist/default-class.d.ts.map",
+  "dist/default-const.cjs.map",
+  "dist/default-const.d.cts.map",
+  "dist/default-const.d.ts.map",
+  "dist/default-export-equals.cjs.map",
+  "dist/default-export-equals.d.cts.map",
+  "dist/default-export-equals.d.ts.map",
+  "dist/default-function.cjs.map",
+  "dist/default-function.d.cts.map",
+  "dist/default-literal.cjs.map",
+  "dist/default-literal.d.cts.map",
+  "dist/default-literal.d.ts.map",
+  "dist/default-object.cjs.map",
+  "dist/default-object.d.cts.map",
+  "dist/default-object.d.ts.map",
+  "dist/default-with-enum-exports.cjs.map",
+  "dist/default-with-enum-exports.d.cts.map",
+  "dist/default-with-enum-exports.d.ts.map",
+  "dist/default-with-export-star.cjs.map",
+  "dist/default-with-export-star.d.cts.map",
+  "dist/default-with-export-star.d.ts.map",
+  "dist/default-with-export-star.js.map",
+  "dist/default-with-named.cjs.map",
+  "dist/default-with-same-name-type.cjs.map",
+  "dist/default-with-same-name-type.d.cts.map",
+  "dist/default-with-same-name-type.d.ts.map",
+  "dist/default-with-type-exports.d.cts.map",
+  "dist/default-with-type-exports.d.ts.map",
+  "dist/hello.cjs.map",
+  "dist/hello.d.cts.map",
+  "dist/hello.d.ts.map",
+  "dist/index.cjs.map",
+  "dist/index.d.cts.map",
+  "dist/index.d.ts.map",
+  "dist/index.js.map",
+  "dist/plugins/a.cjs.map",
+  "dist/plugins/a.d.cts.map",
+  "dist/plugins/a.d.ts.map",
+  "dist/plugins/b.cjs.map",
+  "dist/plugins/b.d.cts.map",
+  "dist/plugins/c.d.mts.map",
+  "dist/plugins/d/index.cjs.map",
+  "dist/plugins/d/index.d.cts.map",
+  "dist/plugins/d/index.d.ts.map",
+  "dist/plugins/index.cjs.map",
+  "dist/plugins/index.d.cts.map",
+  "dist/plugins/index.d.ts.map",
+  "dist/plugins/index.js.map",
+  "dist/utils.cjs.map",
+  "dist/utils.d.cts.map",
+  "dist/utils.d.ts.map",
+]
+`;
+
+exports[`TypeScript 7.1 engine — bin > produces byte-identical sourcemap mappings apart from known divergences 1`] = `[]`;
+
+exports[`TypeScript 7.1 engine — custom-conditions > produces byte-identical sourcemap mappings apart from known divergences 1`] = `
+[
+  "dist/index.cjs.map",
+  "dist/utils.cjs.map",
+]
+`;
+
+exports[`TypeScript 7.1 engine — custom-paths > produces byte-identical sourcemap mappings apart from known divergences 1`] = `[]`;
+
+exports[`TypeScript 7.1 engine — esm-only > produces byte-identical sourcemap mappings apart from known divergences 1`] = `[]`;
+
+exports[`TypeScript 7.1 engine — flat > produces byte-identical sourcemap mappings apart from known divergences 1`] = `[]`;
+
+exports[`TypeScript 7.1 engine — ignore-tests > produces byte-identical sourcemap mappings apart from known divergences 1`] = `
+[
+  "dist/components/button.cjs.map",
+  "dist/index.cjs.map",
+  "dist/utils/math.cjs.map",
+  "dist/utils/string.cjs.map",
+]
+`;
+
+exports[`TypeScript 7.1 engine — jsr > produces byte-identical sourcemap mappings apart from known divergences 1`] = `
+[
+  "dist/index.cjs.map",
+]
+`;
+
+exports[`TypeScript 7.1 engine — multi-bin > produces byte-identical sourcemap mappings apart from known divergences 1`] = `[]`;
+
+exports[`TypeScript 7.1 engine — no-edit-package-json > produces byte-identical sourcemap mappings apart from known divergences 1`] = `
+[
+  "dist/index.cjs.map",
+]
+`;
+
+exports[`TypeScript 7.1 engine — seal-cjs-exports > produces byte-identical sourcemap mappings apart from known divergences 1`] = `
+[
+  "dist/default.cjs.map",
+  "dist/default.d.cts.map",
+  "dist/index.cjs.map",
+  "dist/index.d.cts.map",
+  "dist/index.d.ts.map",
+  "dist/index.js.map",
+  "dist/leaf.cjs.map",
+  "dist/legacy.cjs.map",
+]
+`;
+
+exports[`TypeScript 7.1 engine — seal-cjs-exports-live > produces byte-identical sourcemap mappings apart from known divergences 1`] = `
+[
+  "dist/index.cjs.map",
+  "dist/index.d.cts.map",
+  "dist/index.d.ts.map",
+  "dist/index.js.map",
+  "dist/mutable.cjs.map",
+]
+`;
+
+exports[`TypeScript 7.1 engine — tsconfig-paths > produces byte-identical sourcemap mappings apart from known divergences 1`] = `[]`;
