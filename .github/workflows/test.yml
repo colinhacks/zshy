@@ -76,8 +76,12 @@ jobs:
       - name: Override TypeScript version
         run: pnpm add -D typescript@${{ matrix.typescript-version }} --ignore-scripts
 
+      # Read from the package rather than `pnpm exec tsc --version`: the
+      # `typescript-next` nightly alias also provides a `tsc` bin, and pnpm
+      # links the higher version, so the bin no longer reports the package
+      # under test here.
       - name: Print TypeScript version
-        run: pnpm exec tsc --version
+        run: node -p "require('typescript/package.json').version"
 
       - name: Smoke test — build zshy with zshy
         run: pnpm build
