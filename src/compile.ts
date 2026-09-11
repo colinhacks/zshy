@@ -84,13 +84,14 @@ function writesExportsProperty(node: ts.Node): boolean {
   );
 }
 
-interface CjsEmitFacts {
+export interface CjsEmitFacts {
   // `exports.x` written from inside a function runs after the epilogue, so freezing would make it throw
   writesExportsLate: boolean;
   // `module.exports = ...` hands callers something other than the object the epilogue seals, so sealing it achieves nothing
   rebindsModuleExports: boolean;
 }
 
+// mirrored on the TypeScript 7 AST in compile-ts7.ts (`analyzeCjsEmit`); a rule added here needs adding there
 function analyzeCjsEmit(data: string): CjsEmitFacts {
   const source = ts.createSourceFile("emit.cjs", data, ts.ScriptTarget.Latest, false, ts.ScriptKind.JS);
   const facts: CjsEmitFacts = {
@@ -123,8 +124,8 @@ function analyzeCjsEmit(data: string): CjsEmitFacts {
 }
 
 // above the sourceMappingURL comment so it stays last; either way every existing line keeps its position, so the source map holds
-function appendSealEpilogue(data: string, settleAccessors: boolean): string {
-  const facts = analyzeCjsEmit(data);
+// exported for compile-ts7.ts, which reaches the same facts through the TypeScript 7 API and must emit the same epilogue byte for byte
+export function appendSealEpilogue(data: string, facts: CjsEmitFacts, settleAccessors: boolean): string {
   if (facts.rebindsModuleExports) return data;
 
   const lines = [
@@ -145,6 +146,7 @@ function appendSealEpilogue(data: string, settleAccessors: boolean): string {
 }
 
 // TypeScript emits a named re-export as an unconditional getter onto the source binding, and the settle loop cannot tell one that forwards to a live `export let` from one that forwards to a constant. Snapshotting a live one makes `require` report the load-time value forever while `import` reports the current one, so a build containing any mutable exported binding gives up settling everywhere.
+// mirrored on the TypeScript 7 AST in compile-ts7.ts (`hasMutableExportedBinding`); a rule added here needs adding there
 function hasMutableExportedBinding(source: ts.SourceFile): boolean {
   const mutableLocals = new Set<string>();
   for (const statement of source.statements) {
@@ -199,7 +201,7 @@ export async function compileProject(config: ProjectOptions, entryPoints: string
     // a `.cts` source emits `.cjs` from BOTH passes and the ESM pass writes last, so seal any `.cjs` output whichever pass produced it; a `.js` output is CommonJS only in the CJS pass, and `.mjs` is real ESM with no `exports`
     const emitsCommonJs = fileName.endsWith(".cjs") || (config.format === "cjs" && fileName.endsWith(".js"));
     if (config.sealCjsExports && emitsCommonJs) {
-      processedData = appendSealEpilogue(processedData, settleAccessors);
+      processedData = appendSealEpilogue(processedData, analyzeCjsEmit(processedData), settleAccessors);
     }
 
     if (fileName.endsWith(".d.ts")) {
