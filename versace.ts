@@ -82,15 +82,54 @@ function restorePackageVersion(): void {
   console.log("Restored package.json version to 0.0.0");
 }
 
-function runNpmPublish(tag: string, additionalFlags: string[] = []): void {
+function isLiveOnNpm(name: string, version: string): boolean {
   try {
-    const flagsStr = additionalFlags.length > 0 ? ` ${additionalFlags.join(" ")}` : "";
-    const command = `npm publish --tag ${tag}${flagsStr}`;
-    console.log(`Running ${command}...`);
-    execSync(command, { stdio: "inherit" });
-    console.log(`✅ Successfully published to npm with tag ${tag}`);
+    const out = execSync(`npm view ${name}@${version} version`, {
+      encoding: "utf-8",
+      stdio: ["ignore", "pipe", "ignore"],
+    });
+    return out.trim() === version;
+  } catch {
+    // A version that does not exist makes `npm view` exit non-zero.
+    return false;
+  }
+}
+
+// npm's refusal when the version is already sitting in the staged queue. The exact wording is
+// unverified against a real refusal, so the match is loose; anything it misses stays fatal.
+const ALREADY_STAGED = /already (been )?staged|staged version|E409|EPUBLISHCONFLICT|previously published/i;
+
+// `npm stage publish` puts the version in npm's staged queue instead of publishing it. The
+// trusted publisher on zshy is stage-only, so CI cannot publish: a maintainer approves each
+// staged version with 2FA (`npm stage approve <id>` / `pnpm stage approve`), and until then the
+// version is reserved but not installable. Needs npm >= 11.15.
+//
+// Idempotent, so a re-run after an approval is safe: a live version is skipped, and a version
+// already in the queue makes npm refuse, which is success here — the approval decides the rest.
+function runNpmStagePublish(name: string, version: string, tag: string, additionalFlags: string[] = []): void {
+  if (isLiveOnNpm(name, version)) {
+    console.log(`✅ ${name}@${version} is already live on npm — nothing to stage`);
+    return;
+  }
+
+  const flagsStr = additionalFlags.length > 0 ? ` ${additionalFlags.join(" ")}` : "";
+  const command = `npm stage publish --tag ${tag}${flagsStr}`;
+  console.log(`Running ${command}...`);
+
+  try {
+    process.stdout.write(execSync(command, { encoding: "utf-8", stdio: ["ignore", "pipe", "pipe"] }));
+    console.log(`✅ Staged ${name}@${version} with tag ${tag} — awaiting a maintainer's 2FA approval`);
   } catch (error) {
-    console.error("❌ npm publish failed:", error);
+    const failure = error as { stdout?: string; stderr?: string };
+    const output = `${failure.stdout ?? ""}${failure.stderr ?? ""}`;
+    process.stdout.write(output);
+
+    if (ALREADY_STAGED.test(output)) {
+      console.log(`✅ ${name}@${version} is already staged — awaiting a maintainer's 2FA approval`);
+      return;
+    }
+
+    console.error("❌ npm stage publish failed");
     throw error;
   }
 }
@@ -165,7 +204,7 @@ function main(): void {
     const finalVersion =
       selectedTag === "latest" ? baseVersion : generatePreReleaseVersion(baseVersion, selectedTag, bumpType);
 
-    console.log(`📦 Preparing to publish version ${finalVersion} with tag ${selectedTag}`);
+    console.log(`📦 Preparing to stage version ${finalVersion} with tag ${selectedTag}`);
     if (selectedTag !== "latest") {
       console.log(`Version bump: ${bumpType} (${baseVersion} → ${finalVersion})`);
     }
@@ -173,14 +212,14 @@ function main(): void {
       console.log(`Additional flags: ${additionalFlags.join(" ")}`);
     }
 
+    const name = readPackageJson().name ?? "zshy";
+
     try {
       // Update package.json
       updatePackageVersion(finalVersion);
 
-      // Publish
-      runNpmPublish(selectedTag, additionalFlags);
-
-      console.log(`🎉 Successfully published version ${finalVersion} with tag ${selectedTag}`);
+      // Stage, rather than publish — see runNpmStagePublish.
+      runNpmStagePublish(name, finalVersion, selectedTag, additionalFlags);
     } finally {
       // Always restore the original version
       restorePackageVersion();
@@ -188,7 +227,7 @@ function main(): void {
   } catch (error) {
     if (error && typeof error === "object" && "code" in error && error.code === "ARG_UNKNOWN_OPTION") {
       console.error(
-        "❌ Unknown option detected. All flags except --latest, --alpha, --beta, --canary, --patch, --minor, --major will be passed to npm publish"
+        "❌ Unknown option detected. All flags except --latest, --alpha, --beta, --canary, --patch, --minor, --major will be passed to npm stage publish"
       );
     } else {
       console.error("❌ Error:", (error as Error).message);
