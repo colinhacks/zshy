@@ -39,12 +39,13 @@
     "@types/node": "latest",
     "@types/react": "^19.1.8",
     "@types/semver": "^7.7.0",
+    "my-pkg": "link:./test",
     "react": "^19.1.0",
     "semver": "^7.7.2",
     "tsx": "^4.20.3",
     "typescript": "^5.8.3",
-    "vitest": "^2.1.5",
-    "my-pkg": "link:./test"
+    "typescript-next": "npm:typescript@7.1.0-dev.20260831.1",
+    "vitest": "^2.1.5"
   },
   "peerDependencies": {
     "typescript": ">5.5.0"

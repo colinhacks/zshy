@@ -76,11 +76,44 @@ jobs:
       - name: Override TypeScript version
         run: pnpm add -D typescript@${{ matrix.typescript-version }} --ignore-scripts
 
+      # Read from the package rather than `pnpm exec tsc --version`: the
+      # `typescript-next` nightly alias also provides a `tsc` bin, and pnpm
+      # links the higher version, so the bin no longer reports the package
+      # under test here.
       - name: Print TypeScript version
-        run: pnpm exec tsc --version
+        run: node -p "require('typescript/package.json').version"
 
       - name: Smoke test — build zshy with zshy
         run: pnpm build
 
       - name: Smoke test — basic fixture (dry run)
         run: pnpm test:basic
+
+  # The TS 7.1 engine (src/compile-ts7.ts) is a prototype and is not yet on the
+  # default build path. The main `test` job gates it against a pinned nightly,
+  # which is what keeps it reproducible. This job re-runs the same fidelity
+  # check against whatever `typescript@next` currently is, so upstream emit
+  # drift shows up on its own rather than as a surprise at adoption time. It is
+  # advisory: nightly churn must not block unrelated work.
+  ts7-nightly-drift:
+    name: TypeScript 7.1 prototype vs latest nightly
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        uses: ./.github/actions/install-dependencies
+        with:
+          node-version: 24
+
+      - name: Move to the latest TypeScript nightly
+        run: pnpm add -D "typescript-next@npm:typescript@next" --ignore-scripts
+
+      - name: Print the nightly under test
+        run: node -p "require('typescript-next/package.json').version"
+
+      - name: Emit-fidelity check
+        run: pnpm vitest run test/ts7-fidelity.test.ts
