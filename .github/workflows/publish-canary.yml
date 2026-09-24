@@ -1,5 +1,15 @@
 name: Publish --canary
 
+# This workflow does not reach npm. Publishing is stage-only now: CI can only put a
+# version in npm's staged queue, and a maintainer has to approve it with 2FA. This
+# workflow runs on every push to main, so there is nobody to approve each canary, and
+# staging them would just fill the queue with versions nobody will ever release. The
+# npm step has in fact been commented out since v0.2.5 — `zshy@canary` still points at
+# 0.0.15-canary.20250710T073403 — so this only makes the existing state explicit.
+#
+# To ship a canary again, either stage one by hand or give this workflow a trigger a
+# human is present for.
+
 on:
   push:
     branches:
@@ -14,28 +24,19 @@ jobs:
     runs-on: ubuntu-latest
     
     permissions:
+      # No id-token: nothing here authenticates to npm, and an unused OIDC identity on a
+      # workflow that runs repo code on every push to main is surface for nothing.
       contents: read
-      id-token: write # for npm provenance
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Install Dependencies
         uses: ./.github/actions/install-dependencies
-        with:
-          registry-url: 'https://registry.npmjs.org'
-        
+
       - name: Run tests
         run: pnpm test
-        
+
       - name: Build project
         run: pnpm build
-        
-      # - name: Configure npm authentication
-      #   run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
-        
-      # - name: Publish canary to npm
-      #   run: pnpm tsx versace.ts --canary --provenance
-      #   env:
-      #     NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
