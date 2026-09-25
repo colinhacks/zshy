@@ -3,4 +3,4 @@ export type DefaultWithSameNameType = {
 };
 declare const DefaultWithSameNameType: (input: DefaultWithSameNameType) => string;
 export default DefaultWithSameNameType;
-//# sourceMappingURL=default-with-same-name-type.d.ts.map
+//# sourceMappingURL=default-with-same-name-type.d.cts.map

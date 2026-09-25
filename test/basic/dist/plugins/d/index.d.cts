@@ -8,4 +8,4 @@ export interface PluginD {
 }
 export declare const pluginD: PluginD;
 export default pluginD;
-//# sourceMappingURL=index.d.ts.map
+//# sourceMappingURL=index.d.cts.map

@@ -3,4 +3,4 @@ export default hello;
 export interface Hello {
     asdf: string;
 }
-//# sourceMappingURL=hello.d.ts.map
+//# sourceMappingURL=hello.d.cts.map

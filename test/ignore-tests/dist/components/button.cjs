@@ -4,4 +4,4 @@ exports.Button = Button;
 function Button({ label }) {
     return `Button(${label})`;
 }
-//# sourceMappingURL=button.js.map
+//# sourceMappingURL=button.cjs.map

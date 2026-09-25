@@ -73,4 +73,4 @@ exports.defaultConfig = {
 };
 // Re-export utilities
 __exportStar(require("./utils.cjs"), exports);
-//# sourceMappingURL=index.js.map
+//# sourceMappingURL=index.cjs.map

@@ -3,4 +3,4 @@ export interface ButtonProps {
     onClick: () => void;
 }
 export declare function Button({ label }: ButtonProps): string;
-//# sourceMappingURL=button.d.ts.map
+//# sourceMappingURL=button.d.cts.map

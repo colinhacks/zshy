@@ -8,4 +8,4 @@ function add(a, b) {
 function multiply(a, b) {
     return a * b;
 }
-//# sourceMappingURL=math.js.map
+//# sourceMappingURL=math.cjs.map

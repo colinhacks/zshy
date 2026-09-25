@@ -6,4 +6,4 @@ function greet(name) {
     return `Hello, ${name}!`;
 }
 exports.version = "1.0.0";
-//# sourceMappingURL=index.js.map
+//# sourceMappingURL=index.cjs.map

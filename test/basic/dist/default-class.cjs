@@ -7,4 +7,4 @@ class DefaultClass {
 }
 exports.default = DefaultClass;
 module.exports = exports.default;
-//# sourceMappingURL=default-class.js.map
+//# sourceMappingURL=default-class.cjs.map

@@ -8,4 +8,4 @@ function capitalize(str) {
 function reverse(str) {
     return str.split("").reverse().join("");
 }
-//# sourceMappingURL=string.js.map
+//# sourceMappingURL=string.cjs.map

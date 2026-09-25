@@ -13,4 +13,4 @@ type DefaultWithTypeExports = {
     (input: Foo): Baz;
 };
 export default DefaultWithTypeExports;
-//# sourceMappingURL=default-with-type-exports.d.ts.map
+//# sourceMappingURL=default-with-type-exports.d.cts.map

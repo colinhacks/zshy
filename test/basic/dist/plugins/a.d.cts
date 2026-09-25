@@ -9,4 +9,4 @@ export interface PluginA {
 }
 export declare const pluginA: PluginA;
 export default pluginA;
-//# sourceMappingURL=a.d.ts.map
+//# sourceMappingURL=a.d.cts.map

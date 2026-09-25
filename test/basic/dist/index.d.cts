@@ -13,4 +13,4 @@ export declare const createConfig: (name: string, version: string) => Config;
 export declare const defaultConfig: Config;
 export { appConfig };
 export * from "./utils.cjs";
-//# sourceMappingURL=index.d.ts.map
+//# sourceMappingURL=index.d.cts.map

@@ -1,3 +1,3 @@
 export declare function add(a: number, b: number): number;
 export declare function multiply(a: number, b: number): number;
-//# sourceMappingURL=utils.d.ts.map
+//# sourceMappingURL=utils.d.cts.map

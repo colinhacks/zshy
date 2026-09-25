@@ -11,4 +11,4 @@ type Group = {
     (logUserId: number, userId: number, groupId: number): void;
 };
 export default Group;
-//# sourceMappingURL=default-with-enum-exports.d.ts.map
+//# sourceMappingURL=default-with-enum-exports.d.cts.map
