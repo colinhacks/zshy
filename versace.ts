@@ -65,7 +65,8 @@ function generatePreReleaseVersion(baseVersion: string, tag: string, bumpType: "
   return `${bumpedVersion}-${tag}.${timestamp}`;
 }
 
-function updatePackageVersion(newVersion: string): void {
+// Returns the version package.json carried before, so it can be put back afterwards.
+function updatePackageVersion(newVersion: string): string {
   const packageJson = readPackageJson();
   const oldVersion = packageJson.version;
 
@@ -73,13 +74,16 @@ function updatePackageVersion(newVersion: string): void {
 
   packageJson.version = newVersion;
   writePackageJson(packageJson);
+  return oldVersion;
 }
 
-function restorePackageVersion(): void {
+// package.json carries the released version on main (stager matches a release run to its version
+// by reading it there), so the original is put back rather than a placeholder.
+function restorePackageVersion(version: string): void {
   const packageJson = readPackageJson();
-  packageJson.version = "0.0.0";
+  packageJson.version = version;
   writePackageJson(packageJson);
-  console.log("Restored package.json version to 0.0.0");
+  console.log(`Restored package.json version to ${version}`);
 }
 
 function isLiveOnNpm(name: string, version: string): boolean {
@@ -214,15 +218,14 @@ function main(): void {
 
     const name = readPackageJson().name ?? "zshy";
 
+    // Update package.json
+    const originalVersion = updatePackageVersion(finalVersion);
     try {
-      // Update package.json
-      updatePackageVersion(finalVersion);
-
       // Stage, rather than publish — see runNpmStagePublish.
       runNpmStagePublish(name, finalVersion, selectedTag, additionalFlags);
     } finally {
       // Always restore the original version
-      restorePackageVersion();
+      restorePackageVersion(originalVersion);
     }
   } catch (error) {
     if (error && typeof error === "object" && "code" in error && error.code === "ARG_UNKNOWN_OPTION") {

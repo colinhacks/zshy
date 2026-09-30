@@ -4,27 +4,45 @@ on:
   # Dispatch only, and deliberately so. A `workflow_dispatch` needs a GitHub session or token
   # carrying write access; a stolen git push credential carries neither, so it can no longer start a
   # release by landing a commit. That is the shape of the 2026-09-21 nubjs/nub compromise, where a
-  # stolen push credential cut a tag and 18 packages published unattended. Bumping VERSION.txt on
+  # stolen push credential cut a tag and 18 packages published unattended. Bumping the version on
   # main is therefore inert until a maintainer runs `gh workflow run publish-latest.yml -R
   # colinhacks/zshy`, and the staged version then still needs their 2FA approval before npm serves
   # it. The version is still read from VERSION.txt, so what ships is unchanged; only the trigger is.
+  #
+  # ONE RUN, THREE JOBS. `stage` tests, builds and puts the version in npm's staged queue.
+  # `approval` is a job on the `release-approval` environment, whose required reviewer is the
+  # maintainer: GitHub holds the run there, with no runner, for up to 30 days. The npm approval is
+  # the gate; the environment approval only resumes the run, and `finish` checks the registry before
+  # it tags or releases anything. `stager approve` does both, approving on npm and then resuming the
+  # run, which it finds by the version in package.json at the run's commit — hence the check below
+  # that package.json and VERSION.txt agree.
   workflow_dispatch:
 
+# Default-deny; each job asks for what its steps use.
+permissions: {}
+
+# One release at a time, held across the approval wait, so a second dispatch queues instead of
+# staging next to a held run. Never cancelled: a run mid-`npm stage publish` must finish.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
 jobs:
-  publish:
-    name: Main
+  stage:
+    name: Stage
     runs-on: ubuntu-latest
-    # The job stages the version on npm and then waits for a maintainer to approve it
-    # with 2FA. A GitHub Actions job can run for six hours at most; if the approval
-    # arrives later, re-run the job — a live version is skipped, a staged one is
-    # tolerated, the wait passes at once, and the release steps run.
-    timeout-minutes: 360
+    # This job only tests, builds and stages; the wait for the approval is the `approval` job,
+    # which holds no runner.
+    timeout-minutes: 60
     permissions:
-      packages: write
-      id-token: write # for npm provenance
-      contents: write
-      pull-requests: read  
-    
+      contents: read
+      id-token: write # for npm provenance and the OIDC trusted publisher
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      # npm serves the version already (a re-dispatch after the approval), so there is nothing to
+      # wait for and `approval` is skipped.
+      served: ${{ steps.served.outputs.served }}
+
     steps:
       # A step, not a job-level `if:`: a skipped job is silent, and the run would go green having
       # released nothing while looking like it had.
@@ -34,6 +52,20 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      # stager finds the run to resume by reading the version from package.json at the run's
+      # commit, so a release commit bumps both files. Checked before anything is built or staged.
+      - name: Check that VERSION.txt and package.json agree
+        id: version
+        run: |
+          version="$(tr -d '[:space:]' < VERSION.txt)"
+          pkg="$(node -p "require('./package.json').version")"
+          [ "$version" = "$pkg" ] \
+            || { echo "::error::VERSION.txt says $version but package.json says $pkg; bump both to the release version"; exit 1; }
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "releasing zshy@$version"
 
       - name: Install Dependencies
         uses: ./.github/actions/install-dependencies
@@ -52,10 +84,10 @@ jobs:
 
       - name: Run tests
         run: pnpm test
-        
+
       - name: Build project
         run: pnpm build
-        
+
       - name: Stage on npm
         # Stages the version through OIDC trusted publishing (id-token: write above). The
         # trusted publisher on zshy is stage-only, so this cannot publish: a maintainer
@@ -63,84 +95,132 @@ jobs:
         # credential can supply. There is no npm token to authenticate with any more.
         run: pnpm tsx versace.ts --latest --provenance --verbose
 
-      - name: Wait for the staged version to be approved
-        # The human gate. Everything below — the changelog, the tag, the GitHub release —
-        # runs only once npm actually serves the version, so a release never exists for a
-        # version nobody approved.
+      - name: Check whether npm serves the version
+        id: served
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
-          VERSION="$(tr -d '[:space:]' < VERSION.txt)"
+          if [ "$(npm view "zshy@$VERSION" version 2>/dev/null)" = "$VERSION" ]; then
+            echo "served=true" >> "$GITHUB_OUTPUT"
+            echo "zshy@$VERSION is served already; no approval to wait for"
+          else
+            echo "served=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Say how to approve
+        if: steps.served.outputs.served != 'true'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          # shellcheck disable=SC2016  # the backticks below are markdown for the step summary, not command substitution
           {
             echo "## zshy@$VERSION is staged, waiting for approval"
             echo
-            echo "It is not installable until a maintainer approves it with 2FA:"
+            echo 'It is not installable until a maintainer approves it with 2FA. This run is now held on the `release-approval` environment, with no runner, for up to 30 days. It resumes when that deployment is approved, and `finish` then waits for npm to serve the version before it tags and creates the GitHub release.'
             echo
             echo '```'
-            echo "npm stage list zshy       # find the stage id"
-            echo "npm stage approve <id>    # approve it"
-            echo "pnpm stage approve        # or pick interactively (pnpm 12+)"
+            echo "stager approve 'zshy@$VERSION'   # approve in the browser, then resume this run"
+            echo "stager reject 'zshy@$VERSION'    # drop the staged version and fail this run"
             echo '```'
             echo
-            echo "This job waits up to 350 minutes. If the approval comes later, re-run it."
+            echo "Without stager: read the stage id with \`npm stage list zshy\` and approve it with \`npm stage approve <id>\`, or use \`pnpm stage approve\` (pnpm 12+) or the Staged Packages tab on npmjs.com. Then approve the pending \`release-approval\` deployment on $RUN_URL."
           } >> "$GITHUB_STEP_SUMMARY"
-          deadline=$(( $(date +%s) + 350 * 60 ))
+
+  approval:
+    name: Approval
+    # Held by the environment's required reviewer, not by a runner: GitHub keeps the run waiting
+    # for up to 30 days, with no six-hour cap, until the deployment is approved. It is a resume
+    # signal only; a version nobody approved on npm still stops `finish` at the registry check.
+    needs: stage
+    if: needs.stage.outputs.served != 'true'
+    runs-on: ubuntu-latest
+    environment: release-approval
+    permissions: {}
+    steps:
+      - env:
+          VERSION: ${{ needs.stage.outputs.version }}
+        run: echo "resuming; finish checks that npm serves zshy@$VERSION"
+
+  finish:
+    name: Finish
+    needs: [stage, approval]
+    # `approval` is skipped when npm already serves the version, and `finish` still runs then to
+    # create whatever an earlier run did not. The explicit condition drops the implicit
+    # `success()`, so `stage` is checked by name.
+    if: ${{ !cancelled() && needs.stage.result == 'success' && (needs.approval.result == 'success' || (needs.approval.result == 'skipped' && needs.stage.outputs.served == 'true')) }}
+    runs-on: ubuntu-latest
+    # 6h is GitHub's hard cap for a hosted runner; the wait takes 340 minutes of it and the steps
+    # after it need a few.
+    timeout-minutes: 360
+    permissions:
+      contents: write
+      pull-requests: read
+    env:
+      VERSION: ${{ needs.stage.outputs.version }}
+
+    steps:
+      # THE HUMAN GATE. The run resumes on the environment approval, which says nothing about npm,
+      # so the changelog, the tag and the GitHub release wait here until the registry serves the
+      # version; a release never exists for a version nobody approved. The loop also absorbs the
+      # automated review npm runs once a version is approved, which has held zod releases for up
+      # to two hours. If the approval comes later still, re-run this job.
+      - name: Wait for npm to serve the version
+        run: |
+          deadline=$(( $(date +%s) + 340 * 60 ))
+          i=0
           until [ "$(npm view "zshy@$VERSION" version 2>/dev/null)" = "$VERSION" ]; do
             if [ "$(date +%s)" -ge "$deadline" ]; then
-              echo "::error::zshy@$VERSION is still not served after 350 minutes — approve the staged version and re-run this job; it resumes from the approval."
+              echo "::error::zshy@$VERSION is still not served after 340 minutes; if it was never approved on npm, approve it with 2FA (stager approve 'zshy@$VERSION'), then re-run this job"
               exit 1
             fi
-            echo "… zshy@$VERSION not served yet (staged, awaiting approval) — $(date -u +%H:%M:%SZ)"
+            i=$((i + 1))
+            if [ $((i % 15)) -eq 0 ]; then echo "zshy@$VERSION is not served yet ($i minutes)"; fi
             sleep 60
           done
-          echo "✅ zshy@$VERSION is live on npm"
+          echo "zshy@$VERSION is live on npm"
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
 
       - name: Configure changelog
         run: |
+          # shellcheck disable=SC1083,SC2028,SC2140  # the expressions below emit the changelog action's own placeholders into single-quoted JSON
           echo '{"categories": [], "template": "## Commits:\n\n${{ '${{UNCATEGORIZED}}' }}", "pr_template": ${{ '"- ${{MERGE_SHA}} ${{TITLE}}"' }} }' > changelog_config.json
           cat changelog_config.json
-          echo "last_tag=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
-          echo "curr_commit=$(git rev-parse HEAD)" >> $GITHUB_ENV
+          echo "last_tag=$(git describe --tags --abbrev=0)" >> "$GITHUB_ENV"
 
+      # The run's commit rather than `github.ref`: main may have moved on while the run was held.
       - name: Generate changelog
         id: github_release
-        uses: mikepenz/release-changelog-builder-action@v2.9.0
+        uses: mikepenz/release-changelog-builder-action@eff1e48187ab0f73c1da7b9980c4a85fc5e169bc # v2.9.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           fromTag: "${{ env.last_tag }}"
-          toTag: ${{ github.ref }}
+          toTag: ${{ github.sha }}
           commitMode: true
           configuration: changelog_config.json
 
-      - name: Get version
-        # From VERSION.txt, which is what `versace.ts version` reads.
-        id: get_version
-        run: echo "version=$(pnpm tsx versace.ts version get version)" >> $GITHUB_ENV
-
-      - name: Check whether the release already exists
-        # actions/create-release fails on a tag that already has a release, which a re-run
-        # after a late approval would hit. Skip the step instead.
-        id: existing_release
+      # The notes go through env and a file so a commit subject cannot break out of the command.
+      - name: Create release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: v${{ env.version }}
+          CHANGELOG: ${{ steps.github_release.outputs.changelog }}
         run: |
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            echo "✅ release $TAG already exists — leaving it alone"
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
+          if gh release view "v$VERSION" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            echo "v$VERSION is already released"
+            exit 0
           fi
-
-      - name: Create release
-        if: steps.existing_release.outputs.exists == 'false'
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ env.version }}
-          release_name: v${{ env.version }}
-          commitish: ${{ github.ref }}
-          body: ${{ steps.github_release.outputs.changelog }}
-          draft: false
-          prerelease: false
+          printf '%s' "$CHANGELOG" > "$RUNNER_TEMP/release_notes.md"
+          # The job token cannot write a ref once main has moved past this commit with a workflow
+          # change, which a run held for days makes likely.
+          gh release create "v$VERSION" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "v$VERSION" \
+            --notes-file "$RUNNER_TEMP/release_notes.md" \
+            || { echo "::error::could not create v$VERSION at $GITHUB_SHA with the job token; create it with your own (gh release create v$VERSION -R $GITHUB_REPOSITORY --target $GITHUB_SHA --title v$VERSION --generate-notes), then re-run this job"; exit 1; }
