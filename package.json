@@ -58,7 +58,7 @@
   "scripts": {
     "build": "tsx src/index.ts",
     "test": "vitest run",
-    "test:basic": "tsx ./src/index.ts --project ./test/basic/tsconfig.json --dry-run",
+    "test:basic": "cd test/basic && tsx ../../src/index.ts --project ./tsconfig.json --dry-run",
     "clean": "git clean -xdf . -e node_modules"
   },
   "zshy": {
