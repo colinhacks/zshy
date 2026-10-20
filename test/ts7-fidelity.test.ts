@@ -1,41 +1,45 @@
-import { execFileSync } from "node:child_process";
+import { execFile, execFileSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
+import { promisify } from "node:util";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import type { BuildContext } from "../src/compile.js";
-import { compileProjectTs7 } from "../src/compile-ts7.js";
-import { isTestFile, readTsconfig, relativePosix } from "../src/utils.js";
+import { engineKindFor } from "../src/engine.js";
+import { relativePosix } from "../src/utils.js";
 
-// Gate for the TypeScript 7.1 engine (src/compile-ts7.ts), which is a prototype
-// and is NOT yet wired into the default build.
+// Gate for the TypeScript 7 engine (src/compile-ts7.ts).
 //
-// It rebuilds every fixture whose output is committed to git and compares
-// against that output. That committed output is the same baseline CI already
-// enforces for the classic engine, via the dirty-tree check in test.yml, so
-// "byte-identical to the golden files" is exactly the bar the classic engine
-// is held to.
+// Every fixture is copied beside itself and built by the real CLI with `typescript` resolved to the TypeScript 7.1
+// devDependency (see test/support/typescript-7.mjs), then compared against the fixture's committed output. That output
+// is what the classic engine produces — CI fails on a dirty tree after the classic suite rebuilds the same fixtures in
+// place — so "byte-identical to the golden files" is exactly the bar the classic engine is held to.
 //
-// Residual differences are pinned per fixture, so a regression in zshy's own
-// transforms fails loudly and an upstream fix shows up as a test to update.
+// zshy.test.ts rebuilds the same fixtures in place, which is why vitest.config.ts runs test files one at a time.
+//
+// Residual differences are pinned per fixture, so a regression in zshy's own transforms fails loudly and an upstream
+// fix shows up as a test to update.
+
+const execFileAsync = promisify(execFile);
 
 const REPO = path.resolve(import.meta.dirname, "..");
+const CLI = path.join(REPO, "src", "index.ts");
+const HOOK = path.join(REPO, "test", "support", "typescript-7.mjs");
+
 /** Files that live in an output directory but are inputs, not build output. */
 const NOT_OUTPUT = new Set(["package.json", "tsconfig.json", "jsr.json"]);
+/** Inputs zshy rewrites in place; they must come out of the build exactly as the classic engine left them. */
+const EDITED_IN_PLACE = ["package.json", "jsr.json"];
+/** Every fixture keeps its sources under `src/`, which is the rootDir zshy computes for it. */
+const ROOT_DIR = "src";
 
 interface Fixture {
   name: string;
+  /** The fixture's outDir and declarationDir, relative to it, when they are not `dist`. */
+  outputDirs?: string[];
   /**
-   * Files whose content still differs, with the reason. Every entry here is an
-   * upstream tsgo emit difference reproducible with all of zshy's transforms
-   * disabled — not something zshy's port does differently.
+   * Files whose content still differs, with the reason. Every entry here is an upstream TypeScript 7 emit difference
+   * reproducible with all of zshy's transforms disabled — not something zshy's port does differently.
    */
   knownDivergences: Record<string, string>;
-  /**
-   * Golden files `compileProjectTs7` is not responsible for: asset entrypoints
-   * are copied by main.ts, and a tsbuildinfo is a build artifact rather than a
-   * compile output.
-   */
-  notEmittedByCompile?: string[];
 }
 
 const FIXTURES: Fixture[] = [
@@ -48,22 +52,28 @@ const FIXTURES: Fixture[] = [
       "dist/default-literal.d.cts": 'tsgo emits `declare const _default = "x"` for `declare const _default: "x"`',
       "dist/default-literal.d.ts": "as above",
     },
-    notEmittedByCompile: ["dist/env.d.ts", "dist/tsconfig.tsbuildinfo"],
   },
   { name: "tsconfig-paths", knownDivergences: {} },
   { name: "ignore-tests", knownDivergences: {} },
   { name: "multi-bin", knownDivergences: {} },
   { name: "custom-conditions", knownDivergences: {} },
-  { name: "custom-paths", knownDivergences: {} },
+  { name: "custom-paths", outputDirs: ["dist/build/src", "dist/types/src"], knownDivergences: {} },
   { name: "no-edit-package-json", knownDivergences: {} },
   { name: "jsr", knownDivergences: {} },
-  { name: "flat", knownDivergences: {} },
+  { name: "flat", outputDirs: [""], knownDivergences: {} },
   { name: "bin", knownDivergences: {} },
   { name: "esm-only", knownDivergences: {} },
   { name: "seal-cjs-exports", knownDivergences: {} },
-  // The one fixture with a mutable exported binding: settling is off for the
-  // whole build and only the freeze is emitted.
+  // The one fixture with a mutable exported binding: settling is off for the whole build and only the freeze is emitted.
   { name: "seal-cjs-exports-live", knownDivergences: {} },
+];
+
+// The gate above only ever sees builds that succeed. These pin the other half of the classic contract: an error is
+// counted, and nothing reaches disk. The classic engine reports a declaration-emit error twice — once before emit and
+// once from the emit itself — and counts both.
+const FAILING = [
+  { name: "esm-only-error", reason: "a type error (TS2322)", errors: 1 },
+  { name: "declaration-error", reason: "a declaration-emit error (TS9007, isolatedDeclarations)", errors: 2 },
 ];
 
 function walk(dir: string, out: string[] = []): string[] {
@@ -76,254 +86,186 @@ function walk(dir: string, out: string[] = []): string[] {
   return out;
 }
 
+/** A fixture's tracked files and their contents, keyed by path relative to the fixture. */
+function committedFiles(fixtureDir: string): Map<string, Buffer> {
+  return new Map(
+    execFileSync("git", ["ls-files", "-z", fixtureDir], { cwd: REPO, encoding: "utf8" })
+      .split("\0")
+      .filter(Boolean)
+      .map((p) => [relativePosix(fixtureDir, path.join(REPO, p)), fs.readFileSync(path.join(REPO, p))])
+  );
+}
+
 /**
- * The committed build output for a fixture, as git sees it.
+ * The committed build output among a fixture's files.
  *
- * Scoped to the fixture's own output directories rather than matched by
- * extension: `custom-paths` has stale hand-committed `src/*.js` next to its
- * real output, `basic` has hand-written ambient `src/*.d.ts`, and a flat build
- * puts its output in the same directory as package.json and the source tree.
- * Assets count as output — zshy copies them — so this deliberately does not
- * filter by extension.
+ * Scoped to the fixture's own output directories rather than matched by extension: `custom-paths` has stale
+ * hand-committed `src/*.js` next to its real output, `basic` has hand-written ambient `src/*.d.ts`, and a flat build
+ * puts its output in the same directory as package.json and the source tree. Assets count as output — zshy copies them
+ * — so this deliberately does not filter by extension.
  */
-function goldenFiles(fixtureDir: string, outputDirs: string[], rootDir: string): string[] {
-  return execFileSync("git", ["ls-files", fixtureDir], { cwd: REPO, encoding: "utf8" })
-    .split("\n")
-    .filter(Boolean)
-    .map((f) => relativePosix(fixtureDir, path.join(REPO, f)))
+function goldenFiles(committed: Map<string, Buffer>, outputDirs: string[]): string[] {
+  return [...committed.keys()]
     .filter((rel) => outputDirs.some((d) => d === "" || rel.startsWith(`${d}/`)))
-    .filter((rel) => rootDir === "" || !rel.startsWith(`${rootDir}/`))
+    .filter((rel) => !rel.startsWith(`${ROOT_DIR}/`))
     .filter((rel) => !NOT_OUTPUT.has(path.basename(rel)));
 }
 
 /**
- * Sourcemap `sources` are relative to the file's own directory, and this test
- * builds one level deeper than the golden output, so compare what the paths
- * resolve TO rather than the paths themselves.
+ * Sourcemap `sources` are relative to the map's own directory, so compare what the paths resolve TO, relative to the
+ * fixture, rather than the paths themselves.
  */
-function sourcemapSources(mapPath: string, fixtureDir: string): string[] {
-  const map = JSON.parse(fs.readFileSync(mapPath, "utf8"));
-  // `sources` point back into the fixture's src tree from wherever the map
-  // lives, so resolving them yields the same absolute path for both trees.
-  return (map.sources as string[]).map((s: string) =>
-    relativePosix(fixtureDir, path.resolve(path.dirname(mapPath), s))
-  );
+function sourcemapSources(map: string, mapPath: string): string[] {
+  return (JSON.parse(map).sources as string[]).map((s) => path.posix.join(path.posix.dirname(mapPath), s));
 }
 
-/** Derives entrypoints from package.json#/zshy the way main.ts does. */
-function entryPointsFor(base: string, zshy: any): string[] {
-  const rawExports = typeof zshy.exports === "string" ? { ".": zshy.exports } : (zshy.exports ?? {});
-  const fromExports = Object.values(rawExports as Record<string, string>).flatMap((sourcePath) => {
-    if (sourcePath.includes("*")) {
-      const pattern = sourcePath.endsWith("/**/*") ? sourcePath.slice(2, -5) : sourcePath.slice(2, -2);
-      const dir = path.join(base, pattern);
-      if (!fs.existsSync(dir)) return [];
-      const deep = sourcePath.endsWith("/**/*");
-      const files = deep ? walk(dir) : fs.readdirSync(dir).map((f) => path.join(dir, f));
-      return files
-        .filter((f) => fs.statSync(f).isFile() && /\.(ts|tsx|cts|mts)$/.test(f) && !f.endsWith(".d.ts"))
-        .map((f) => relativePosix(base, f))
-        .filter((f) => !isTestFile(f));
-    }
-    return /\.(ts|tsx|cts|mts)$/.test(sourcePath) && !sourcePath.endsWith(".d.ts") ? [sourcePath.slice(2)] : [];
-  });
-
-  const bin =
-    typeof zshy.bin === "string"
-      ? [zshy.bin.slice(2)]
-      : Object.values((zshy.bin ?? {}) as Record<string, string>).map((p) => p.slice(2));
-
-  return [...new Set([...fromExports, ...bin])];
-}
-
-interface EngineBuild {
-  ctx: BuildContext;
-  /** Files the engine wrote, relative to OUT_ROOT. */
+interface Ts7Build {
+  exitCode: number;
+  output: string;
+  /** Where the copy was built: a sibling of the fixture, so relative `extends` and sourcemap paths are unchanged. */
+  dir: string;
+  /** Files the build wrote, relative to `dir`. */
   produced: string[];
   /** Committed files the classic engine wrote, relative to the fixture. */
   golden: string[];
+  /** Every committed file of the fixture, relative to it. */
+  committed: Map<string, Buffer>;
 }
 
-/**
- * Builds a fixture through the TS 7 engine the way main.ts drives the classic
- * one: the same option overrides, the same two passes, the same entrypoint
- * derivation. Everything is rebased under `outRoot` so the fixture's own
- * outDir/declarationDir layout is preserved exactly, including `outDir: "."`
- * and a declarationDir that differs from outDir.
- */
-async function buildThroughEngine(fixtureName: string, outRoot: string): Promise<EngineBuild> {
-  const BASE = path.join(REPO, "test", fixtureName);
-  fs.rmSync(outRoot, { recursive: true, force: true });
+async function buildWithTs7(name: string, outputDirs = ["dist"]): Promise<Ts7Build> {
+  const fixtureDir = path.join(REPO, "test", name);
+  const dir = path.join(REPO, "test", `.ts7-${name}`);
+  fs.rmSync(dir, { recursive: true, force: true });
 
-  const pkg = JSON.parse(fs.readFileSync(path.join(BASE, "package.json"), "utf8"));
-  const zshy = typeof pkg.zshy === "string" ? { exports: pkg.zshy } : pkg.zshy;
-  const parsed = readTsconfig(path.join(BASE, "tsconfig.json")) as any;
-  delete parsed.customConditions;
-
-  const relOutDir = relativePosix(BASE, path.resolve(BASE, parsed.outDir ?? "./dist"));
-  const relDeclDir = relativePosix(BASE, path.resolve(BASE, parsed.declarationDir ?? parsed.outDir ?? "./dist"));
-
-  const compilerOptions: any = {
-    ...parsed,
-    outDir: path.join(outRoot, relOutDir),
-    skipLibCheck: true,
-    declaration: true,
-    esModuleInterop: true,
-    noEmit: false,
-    emitDeclarationOnly: false,
-    rewriteRelativeImportExtensions: true,
-    verbatimModuleSyntax: false,
-    composite: false,
-  };
-  if (parsed.declarationDir) compilerOptions.declarationDir = path.join(outRoot, relDeclDir);
-
-  const entryPoints = entryPointsFor(BASE, zshy);
-  const rootDir = parsed.rootDir
-    ? path.resolve(BASE, parsed.rootDir)
-    : path.dirname(path.resolve(BASE, entryPoints[0]!));
-
-  const golden = goldenFiles(
-    path.join("test", fixtureName),
-    [...new Set([relOutDir, relDeclDir])],
-    relativePosix(BASE, rootDir)
-  );
-
-  const ctx: BuildContext = { writtenFiles: new Set(), copiedAssets: new Set(), errorCount: 0, warningCount: 0 };
-  const base = {
-    configPath: path.join(BASE, "tsconfig.json"),
-    pkgJsonDir: BASE,
-    rootDir,
-    verbose: false,
-    dryRun: false,
-    cjsInterop: true,
-    sealCjsExports: zshy.sealCjsExports === true,
-  };
-  const isTypeModule = pkg.type === "module";
-
-  // Mirrors main.ts: the CJS pass is skipped entirely when zshy.cjs is false.
-  if (zshy.cjs !== false) {
-    await compileProjectTs7(
-      { ...base, ext: isTypeModule ? "cjs" : "js", format: "cjs", compilerOptions } as any,
-      entryPoints,
-      ctx
-    );
+  const committed = committedFiles(fixtureDir);
+  const golden = goldenFiles(committed, outputDirs);
+  const inputs = [...committed.keys()].filter((rel) => !golden.includes(rel));
+  for (const rel of inputs) {
+    fs.mkdirSync(path.dirname(path.join(dir, rel)), { recursive: true });
+    fs.writeFileSync(path.join(dir, rel), committed.get(rel)!);
   }
-  await compileProjectTs7(
-    { ...base, ext: isTypeModule ? "js" : "mjs", format: "esm", compilerOptions } as any,
-    entryPoints,
-    ctx
-  );
 
-  return { ctx, produced: walk(outRoot).map((p) => path.relative(outRoot, p)), golden };
+  let exitCode = 0;
+  let output: string;
+  try {
+    const result = await execFileAsync(
+      process.execPath,
+      ["--import", HOOK, "--import", "tsx", CLI, "--project", "./tsconfig.json", "--verbose"],
+      { cwd: dir, encoding: "utf8" }
+    );
+    output = result.stdout + result.stderr;
+  } catch (error: any) {
+    exitCode = typeof error.code === "number" ? error.code : 1;
+    output = `${error.stdout ?? ""}${error.stderr ?? ""}`;
+  }
+
+  const produced = walk(dir)
+    .map((p) => relativePosix(dir, p))
+    .filter((rel) => !inputs.includes(rel));
+  return { exitCode, output, dir, produced, golden, committed };
 }
+
+/** The TypeScript the build ran on, from its verbose log; the hook means it is not necessarily the installed one. */
+function versionUsed(output: string): string | undefined {
+  return /Using TypeScript (\S+)/.exec(output)?.[1];
+}
+
+const builds = new Map<string, Ts7Build>();
+
+beforeAll(async () => {
+  // A handful at a time: each build is a Node process plus a TypeScript 7 server process
+  const queue: { name: string; outputDirs?: string[] }[] = [...FIXTURES, ...FAILING];
+  const worker = async () => {
+    for (let next = queue.shift(); next; next = queue.shift()) {
+      builds.set(next.name, await buildWithTs7(next.name, next.outputDirs));
+    }
+  };
+  await Promise.all(Array.from({ length: 4 }, worker));
+}, 300_000);
+
+afterAll(() => {
+  // CI fails on a dirty tree, so no copy may survive the run.
+  for (const { dir } of builds.values()) fs.rmSync(dir, { recursive: true, force: true });
+});
 
 for (const fixture of FIXTURES) {
   describe(`TypeScript 7.1 engine — ${fixture.name}`, () => {
-    const BASE = path.join(REPO, "test", fixture.name);
-    const OUT_ROOT = path.join(BASE, ".zshy-ts7-out");
+    const build = () => builds.get(fixture.name)!;
+    const built = (rel: string) => fs.readFileSync(path.join(build().dir, rel), "utf8");
+    const committed = (rel: string) => build().committed.get(rel)!.toString("utf8");
 
-    let produced: string[] = [];
-    let golden: string[] = [];
-    let ctx: BuildContext;
-
-    beforeAll(async () => {
-      ({ ctx, produced, golden } = await buildThroughEngine(fixture.name, OUT_ROOT));
-    }, 120_000);
-
-    afterAll(() => {
-      // CI fails on a dirty tree, so this must not survive the run.
-      fs.rmSync(OUT_ROOT, { recursive: true, force: true });
-    });
-
-    it("compiles without diagnostics", () => {
-      expect({ errors: ctx.errorCount, warnings: ctx.warningCount }).toEqual({ errors: 0, warnings: 0 });
+    it("builds on TypeScript 7 without diagnostics", () => {
+      const { exitCode, output } = build();
+      expect(engineKindFor(versionUsed(output) ?? "")).toBe("ts7");
+      expect(output).not.toMatch(/Compilation finished with/);
+      expect(exitCode).toBe(0);
     });
 
     it("emits every file the classic engine emits", () => {
-      const missing = golden
-        .filter((rel) => !(fixture.notEmittedByCompile ?? []).includes(rel))
-        .filter((rel) => !produced.includes(rel));
-      expect(missing).toEqual([]);
+      const { golden, produced } = build();
+      expect(golden.filter((rel) => !produced.includes(rel))).toEqual([]);
     });
 
     it("emits no files the classic engine does not", () => {
+      const { golden, produced } = build();
       expect(produced.filter((rel) => !golden.includes(rel))).toEqual([]);
     });
 
+    it("edits package.json (and jsr.json) exactly as the classic engine does", () => {
+      const differing = EDITED_IN_PLACE.filter((rel) => build().committed.has(rel)).filter(
+        (rel) => built(rel) !== committed(rel)
+      );
+      expect(differing).toEqual([]);
+    });
+
     it("produces byte-identical JavaScript", () => {
+      const { golden, produced } = build();
       const differing = produced
         .filter((rel) => /\.(js|cjs|mjs)$/.test(rel) && golden.includes(rel))
-        .filter(
-          (rel) => fs.readFileSync(path.join(OUT_ROOT, rel), "utf8") !== fs.readFileSync(path.join(BASE, rel), "utf8")
-        );
+        .filter((rel) => built(rel) !== committed(rel));
       expect(differing).toEqual([]);
     });
 
     it("produces byte-identical declarations apart from known tsgo divergences", () => {
+      const { golden, produced } = build();
       const differing = produced
         .filter((rel) => /\.d\.(ts|cts|mts)$/.test(rel) && golden.includes(rel))
-        .filter(
-          (rel) => fs.readFileSync(path.join(OUT_ROOT, rel), "utf8") !== fs.readFileSync(path.join(BASE, rel), "utf8")
-        );
+        .filter((rel) => built(rel) !== committed(rel));
       expect(differing.sort()).toEqual(Object.keys(fixture.knownDivergences).sort());
     });
 
-    // Which sourcemaps still have differing `mappings`, pinned as the exact
-    // set. This is overwhelmingly upstream: comparing tsc 5.8.3 against tsgo 7.1
-    // on the same sources with ZERO zshy transforms in play, 36 of 42 maps in
-    // `basic` already differ, so the post-emit rewrites are not the driver. The
-    // snapshot still gates a regression — a map that starts differing, or
-    // stops, shows up by name.
+    // Which sourcemaps still have differing `mappings`, pinned as the exact set. This is overwhelmingly upstream:
+    // TypeScript 5.8 and 7.1 already map most of these files differently on the same sources with ZERO zshy transforms
+    // in play. The snapshot still gates a regression — a map that starts differing, or stops, shows up by name.
     it("produces byte-identical sourcemap mappings apart from known divergences", () => {
+      const { golden, produced } = build();
       const differing = produced
         .filter((rel) => rel.endsWith(".map") && golden.includes(rel))
-        .filter(
-          (rel) =>
-            JSON.parse(fs.readFileSync(path.join(OUT_ROOT, rel), "utf8")).mappings !==
-            JSON.parse(fs.readFileSync(path.join(BASE, rel), "utf8")).mappings
-        );
+        .filter((rel) => JSON.parse(built(rel)).mappings !== JSON.parse(committed(rel)).mappings);
       expect(differing.sort()).toMatchSnapshot();
     });
 
     it("resolves sourcemaps to the same sources as the classic engine", () => {
-      // `mappings` are not yet byte-identical — tsgo emits different mappings
-      // around default exports (reproduced with zshy's transforms disabled) and
-      // the post-emit text rewrites append content the mappings do not cover.
-      // What must hold today is that every map still points at the right source.
+      const { golden, produced } = build();
       const wrong = produced
         .filter((rel) => rel.endsWith(".map") && golden.includes(rel))
         .filter(
           (rel) =>
-            JSON.stringify(sourcemapSources(path.join(OUT_ROOT, rel), BASE)) !==
-            JSON.stringify(sourcemapSources(path.join(BASE, rel), BASE))
+            JSON.stringify(sourcemapSources(built(rel), rel)) !== JSON.stringify(sourcemapSources(committed(rel), rel))
         );
       expect(wrong).toEqual([]);
     });
   });
 }
 
-// The gate above only ever sees builds that succeed. These pin the other half
-// of the classic contract: an error is counted, and nothing reaches disk.
 describe("TypeScript 7.1 engine — builds that must fail", () => {
-  // The classic engine reports a declaration-emit error twice — once from
-  // `getPreEmitDiagnostics`, once again from `emitResult.diagnostics` — and
-  // counts both; the same two sources feed the count here.
-  const cases = [
-    { name: "esm-only-error", reason: "a type error (TS2322)", errors: 1 },
-    { name: "declaration-error", reason: "a declaration-emit error (TS9007, isolatedDeclarations)", errors: 2 },
-  ];
-
-  for (const { name, reason, errors } of cases) {
-    const OUT_ROOT = path.join(REPO, "test", name, ".zshy-ts7-out");
-
-    afterAll(() => {
-      fs.rmSync(OUT_ROOT, { recursive: true, force: true });
-    });
-
-    it(`reports ${reason} and writes nothing`, async () => {
-      const { ctx, produced } = await buildThroughEngine(name, OUT_ROOT);
-      expect(ctx.errorCount).toBe(errors);
+  for (const { name, reason, errors } of FAILING) {
+    it(`reports ${reason} and writes nothing`, () => {
+      const { exitCode, output, produced } = builds.get(name)!;
+      expect(engineKindFor(versionUsed(output) ?? "")).toBe("ts7");
+      expect(output).toContain(`Compilation finished with ${errors} error${errors === 1 ? "" : "s"}`);
+      expect(exitCode).toBe(1);
       expect(produced).toEqual([]);
-    }, 60_000);
+    });
   }
 });

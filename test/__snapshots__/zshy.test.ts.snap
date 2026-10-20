@@ -19,6 +19,7 @@ exports[`zshy with different tsconfig configurations > should copy exports to js
        "./features/*": "./src/*"
      }
    }
+»  Using TypeScript <version>
 »  Reading tsconfig from ./tsconfig.json
 »  Determining entrypoints...
 »  Matching glob: ./src/*.{ts,tsx,mts,cts}
@@ -70,6 +71,10 @@ exports[`zshy with different tsconfig configurations > should copy exports to js
      "resolveJsonModule": true,
      "noImplicitOverride": true,
      "noImplicitThis": true,
+     "types": [
+       "node"
+     ],
+     "noUncheckedSideEffectImports": false,
      "outDir": "<root>/test/jsr/dist",
      "emitDeclarationOnly": false,
      "composite": false
@@ -131,6 +136,7 @@ exports[`zshy with different tsconfig configurations > should keep live bindings
      },
      "sealCjsExports": true
    }
+»  Using TypeScript <version>
 »  Reading tsconfig from ./tsconfig.json
 »  Determining entrypoints...
    ╔══════════════════════════════╤════════════════╗
@@ -180,6 +186,10 @@ exports[`zshy with different tsconfig configurations > should keep live bindings
      "resolveJsonModule": true,
      "noImplicitOverride": true,
      "noImplicitThis": true,
+     "types": [
+       "node"
+     ],
+     "noUncheckedSideEffectImports": false,
      "outDir": "<root>/test/seal-cjs-exports-live/dist",
      "emitDeclarationOnly": false,
      "composite": false
@@ -238,6 +248,7 @@ exports[`zshy with different tsconfig configurations > should not edit package.j
      },
      "noEdit": true
    }
+»  Using TypeScript <version>
 »  Reading tsconfig from ./tsconfig.json
 »  Determining entrypoints...
    ╔══════════╤════════════════╗
@@ -287,6 +298,10 @@ exports[`zshy with different tsconfig configurations > should not edit package.j
      "resolveJsonModule": true,
      "noImplicitOverride": true,
      "noImplicitThis": true,
+     "types": [
+       "node"
+     ],
+     "noUncheckedSideEffectImports": false,
      "outDir": "<root>/test/no-edit-package-json/dist",
      "emitDeclarationOnly": false,
      "composite": false
@@ -328,6 +343,7 @@ exports[`zshy with different tsconfig configurations > should reproduce issue #5
        "./components/*": "./src/components/*"
      }
    }
+»  Using TypeScript <version>
 »  Reading tsconfig from ./tsconfig.json
 »  Determining entrypoints...
 »  Matching glob: ./src/utils/**/*.{ts,tsx,mts,cts}
@@ -384,6 +400,10 @@ exports[`zshy with different tsconfig configurations > should reproduce issue #5
      "resolveJsonModule": true,
      "noImplicitOverride": true,
      "noImplicitThis": true,
+     "types": [
+       "node"
+     ],
+     "noUncheckedSideEffectImports": false,
      "outDir": "<root>/test/ignore-tests/dist",
      "emitDeclarationOnly": false,
      "composite": false
@@ -477,6 +497,7 @@ exports[`zshy with different tsconfig configurations > should seal the CommonJS 
      },
      "sealCjsExports": true
    }
+»  Using TypeScript <version>
 »  Reading tsconfig from ./tsconfig.json
 »  Determining entrypoints...
    ╔═════════════════════════════════╤══════════════════╗
@@ -528,6 +549,10 @@ exports[`zshy with different tsconfig configurations > should seal the CommonJS 
      "resolveJsonModule": true,
      "noImplicitOverride": true,
      "noImplicitThis": true,
+     "types": [
+       "node"
+     ],
+     "noUncheckedSideEffectImports": false,
      "outDir": "<root>/test/seal-cjs-exports/dist",
      "emitDeclarationOnly": false,
      "composite": false
@@ -606,6 +631,7 @@ exports[`zshy with different tsconfig configurations > should skip CJS build whe
        "custom-cjs": "esm"
      }
    }
+»  Using TypeScript <version>
 »  Reading tsconfig from ./tsconfig.json
 »  Determining entrypoints...
    ╔══════════╤════════════════╗
@@ -655,6 +681,10 @@ exports[`zshy with different tsconfig configurations > should skip CJS build whe
      "resolveJsonModule": true,
      "noImplicitOverride": true,
      "noImplicitThis": true,
+     "types": [
+       "node"
+     ],
+     "noUncheckedSideEffectImports": false,
      "outDir": "<root>/test/esm-only/dist",
      "emitDeclarationOnly": false,
      "composite": false
@@ -697,6 +727,7 @@ exports[`zshy with different tsconfig configurations > should support bin withou
 »  Parsed zshy config: {
      "bin": "./src/cli.ts"
    }
+»  Using TypeScript <version>
 »  Reading tsconfig from ./tsconfig.json
 »  Determining entrypoints...
    ╔══════════════════╤══════════════╗
@@ -746,6 +777,10 @@ exports[`zshy with different tsconfig configurations > should support bin withou
      "resolveJsonModule": true,
      "noImplicitOverride": true,
      "noImplicitThis": true,
+     "types": [
+       "node"
+     ],
+     "noUncheckedSideEffectImports": false,
      "outDir": "<root>/test/bin/dist",
      "emitDeclarationOnly": false,
      "composite": false
@@ -790,6 +825,7 @@ exports[`zshy with different tsconfig configurations > should support multiple b
        "cli-two": "./src/cli-two.ts"
      }
    }
+»  Using TypeScript <version>
 »  Reading tsconfig from ./tsconfig.json
 »  Determining entrypoints...
    ╔═════════════════╤══════════════════╗
@@ -843,6 +879,10 @@ exports[`zshy with different tsconfig configurations > should support multiple b
      "resolveJsonModule": true,
      "noImplicitOverride": true,
      "noImplicitThis": true,
+     "types": [
+       "node"
+     ],
+     "noUncheckedSideEffectImports": false,
      "outDir": "<root>/test/multi-bin/dist",
      "emitDeclarationOnly": false,
      "composite": false
@@ -912,6 +952,7 @@ exports[`zshy with different tsconfig configurations > should support tsconfig p
        ".": "./src/index.ts"
      }
    }
+»  Using TypeScript <version>
 »  Reading tsconfig from ./tsconfig.json
 »  Determining entrypoints...
    ╔═══════════════════════╤════════════════╗
@@ -941,34 +982,33 @@ exports[`zshy with different tsconfig configurations > should support tsconfig p
      "skipLibCheck": true,
      "forceConsistentCasingInFileNames": true,
      "declaration": true,
-     "baseUrl": "<root>/test/tsconfig-paths/src",
      "paths": {
        "@components/*": [
-         "<root>/test/tsconfig-paths/src/components/*"
+         "./src/components/*"
        ],
        "@/config": [
-         "<root>/test/tsconfig-paths/src/config.ts"
+         "./src/config.ts"
        ],
        "utils/*": [
-         "utils/*"
+         "./src/utils/*"
        ],
        "components/*": [
-         "components/*"
+         "./src/components/*"
        ],
        "lib/*": [
-         "lib/*"
+         "./src/lib/*"
        ],
        "~/*": [
-         "*"
+         "./src/*"
        ],
        "$config": [
-         "config.ts"
+         "./src/config.ts"
        ],
        "#helpers": [
-         "./utils/helpers.ts"
+         "./src/utils/helpers.ts"
        ],
        "@utils/*": [
-         "<root>/test/tsconfig-paths/src/utils/*"
+         "./src/utils/*"
        ]
      },
      "pathsBasePath": "<root>/test/tsconfig-paths",
@@ -1053,6 +1093,7 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
      },
      "bin": "./src/index.ts"
    }
+»  Using TypeScript <version>
 »  Reading tsconfig from ./tsconfig.json
 »  Determining entrypoints...
 »  Matching glob: ./src/plugins/**/*.{ts,tsx,mts,cts}
@@ -1142,6 +1183,10 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
      "resolveJsonModule": true,
      "noImplicitOverride": true,
      "noImplicitThis": true,
+     "types": [
+       "node"
+     ],
+     "noUncheckedSideEffectImports": false,
      "outDir": "<root>/test/basic/dist",
      "composite": false,
      "emitDeclarationOnly": false
@@ -1442,6 +1487,7 @@ exports[`zshy with different tsconfig configurations > should work with custom c
        "custom-src": "src"
      }
    }
+»  Using TypeScript <version>
 »  Reading tsconfig from ./tsconfig.json
 »  Determining entrypoints...
    ╔════════════════════════════════╤════════════════╗
@@ -1493,6 +1539,10 @@ exports[`zshy with different tsconfig configurations > should work with custom c
      "resolveJsonModule": true,
      "noImplicitOverride": true,
      "noImplicitThis": true,
+     "types": [
+       "node"
+     ],
+     "noUncheckedSideEffectImports": false,
      "outDir": "<root>/test/custom-conditions/dist",
      "emitDeclarationOnly": false,
      "composite": false
@@ -1561,6 +1611,7 @@ exports[`zshy with different tsconfig configurations > should work with custom o
        ".": "./src/index.ts"
      }
    }
+»  Using TypeScript <version>
 »  Reading tsconfig from ./tsconfig.json
 »  Determining entrypoints...
    ╔══════════╤════════════════╗
@@ -1610,6 +1661,10 @@ exports[`zshy with different tsconfig configurations > should work with custom o
      "resolveJsonModule": true,
      "noImplicitOverride": true,
      "noImplicitThis": true,
+     "types": [
+       "node"
+     ],
+     "noUncheckedSideEffectImports": false,
      "outDir": "<root>/test/custom-paths/dist/build/src",
      "declarationDir": "<root>/test/custom-paths/dist/types/src",
      "emitDeclarationOnly": false,
@@ -1660,6 +1715,7 @@ exports[`zshy with different tsconfig configurations > should work with flat bui
        ".": "./src/index.ts"
      }
    }
+»  Using TypeScript <version>
 »  Reading tsconfig from ./tsconfig.json
 »  You're building your code to the project root. This means your compiled files will be generated alongside your source files.
    Ensure that your "files" in package.json does not include TypeScript source files, or your users may experience .d.ts resolution issues in some environments:
@@ -1712,6 +1768,10 @@ exports[`zshy with different tsconfig configurations > should work with flat bui
      "resolveJsonModule": true,
      "noImplicitOverride": true,
      "noImplicitThis": true,
+     "types": [
+       "node"
+     ],
+     "noUncheckedSideEffectImports": false,
      "outDir": "<root>/test/flat",
      "emitDeclarationOnly": false,
      "composite": false

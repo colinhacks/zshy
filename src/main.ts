@@ -3,8 +3,9 @@ import * as path from "node:path";
 import parseArgs from "arg";
 import glob from "fast-glob";
 import { table } from "table";
-import * as ts from "typescript";
-import { type BuildContext, compileProject } from "./compile.js";
+import type * as ts from "typescript";
+import type { BuildContext } from "./compile.js";
+import { type Engine, loadEngine } from "./engine.js";
 import {
   detectConfigIndentation,
   findConfigPath,
@@ -12,7 +13,6 @@ import {
   isSourceFile,
   isTestFile,
   log,
-  readTsconfig,
   relativePosix,
   removeExtension,
   setSilent,
@@ -392,12 +392,24 @@ Examples:
     tsconfigPath = path.join(pkgJsonDir, "tsconfig.json");
   }
 
-  const _parsedConfig = readTsconfig(tsconfigPath);
   if (!fs.existsSync(tsconfigPath)) {
     // Check if tsconfig.json exists
     log.error(`❌ tsconfig.json not found at ${toPosix(path.resolve(tsconfigPath))}`);
     process.exit(1);
   }
+
+  let engine: Engine;
+  try {
+    engine = await loadEngine();
+  } catch (error) {
+    log.error(`❌ ${error instanceof Error ? error.message : error}`);
+    process.exit(1);
+  }
+  if (isVerbose) {
+    log.info(`Using TypeScript ${engine.version}`);
+  }
+
+  const _parsedConfig = engine.readTsconfig(tsconfigPath);
   if (!isSilent) {
     log.info(`Reading tsconfig from ./${relativePosix(pkgJsonDir, tsconfigPath)}`);
   }
@@ -424,17 +436,17 @@ Examples:
   const declarationDir = path.resolve(pkgJsonDir, _parsedConfig?.declarationDir || relOutDir);
   const relDeclarationDir = relativePosix(pkgJsonDir, declarationDir);
 
-  // zshy forces `moduleResolution: Node10` for the CJS build, which TypeScript
-  // 6 flagged as deprecated (TS5107). Silence the deprecation diagnostic when
-  // running under TS 6+ so users don't see an error from our internally-forced
+  // On the classic API zshy forces `moduleResolution: Node10` for the CJS build,
+  // which TypeScript 6 flagged as deprecated (TS5107). Silence the deprecation
+  // diagnostic under TS 6 so users don't see an error from our internally-forced
   // setting. Respect the user's own value if they've already set one.
-  const tsMajor = Number.parseInt(ts.version, 10);
-  const ignoreDeprecations = _parsedConfig.ignoreDeprecations ?? (tsMajor >= 6 ? "6.0" : undefined);
+  const tsMajor = Number.parseInt(engine.version, 10);
+  const ignoreDeprecations = _parsedConfig.ignoreDeprecations ?? (tsMajor === 6 ? "6.0" : undefined);
 
   const tsconfigJson: ts.CompilerOptions = {
     ..._parsedConfig,
     outDir,
-    target: _parsedConfig.target ?? ts.ScriptTarget.ES2020, // ensure compatible target for CommonJS
+    target: _parsedConfig.target ?? engine.ScriptTarget.ES2020, // ensure compatible target for CommonJS
     skipLibCheck: true, // skip library checks to reduce errors
     declaration: true,
     esModuleInterop: true,
@@ -748,9 +760,9 @@ Examples:
     log.info(
       `Resolved compilerOptions: ${formatForLog({
         ...tsconfigJson,
-        module: ts.ModuleKind[tsconfigJson.module!],
-        moduleResolution: ts.ModuleResolutionKind[tsconfigJson.moduleResolution!],
-        target: ts.ScriptTarget[tsconfigJson.target!],
+        module: engine.ModuleKind[tsconfigJson.module!],
+        moduleResolution: engine.ModuleResolutionKind[tsconfigJson.moduleResolution!],
+        target: engine.ScriptTarget[tsconfigJson.target!],
       })}`
     );
   }
@@ -771,7 +783,7 @@ Examples:
     if (!isSilent) {
       log.info(`Building CJS...${isTypeModule ? ` (rewriting .ts -> .cjs/.d.cts)` : ``}`);
     }
-    await compileProject(
+    await engine.compileProject(
       {
         configPath: tsconfigPath,
         ext: isTypeModule ? "cjs" : "js",
@@ -784,8 +796,10 @@ Examples:
         sealCjsExports: config.sealCjsExports,
         compilerOptions: {
           ...tsconfigJson,
-          module: ts.ModuleKind.CommonJS,
-          moduleResolution: ts.ModuleResolutionKind.Node10,
+          module: engine.ModuleKind.CommonJS,
+          // TypeScript 7 removed Node10; its default for CommonJS is Bundler, resolving with the `require` condition
+          moduleResolution:
+            engine.kind === "classic" ? engine.ModuleResolutionKind.Node10 : engine.ModuleResolutionKind.Bundler,
           outDir,
         },
       },
@@ -802,7 +816,7 @@ Examples:
   if (!isSilent) {
     log.info(`Building ESM...${isTypeModule ? `` : ` (rewriting .ts -> .mjs/.d.mts)`}`);
   }
-  await compileProject(
+  await engine.compileProject(
     {
       configPath: tsconfigPath,
       ext: isTypeModule ? "js" : "mjs",
@@ -816,14 +830,15 @@ Examples:
       sealCjsExports: config.sealCjsExports,
       compilerOptions: {
         ...tsconfigJson,
-        module: ts.ModuleKind.ESNext,
-        moduleResolution: ts.ModuleResolutionKind.Bundler,
+        module: engine.ModuleKind.ESNext,
+        moduleResolution: engine.ModuleResolutionKind.Bundler,
         outDir,
       },
     },
     uniqueEntryPoints,
     buildContext
   );
+  engine.close();
 
   ///////////////////////////////////
   ///      copy asset entrypoints  ///

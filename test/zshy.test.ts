@@ -395,6 +395,8 @@ function normalizeOutput(output: string): string {
       // Normalize any specific file counts that might vary
       // .replace(/\(\d+ matches\)/g, "(<count> matches)")
       .replace(/Detected package manager: [^\n]+/g, "Detected package manager: <pm>")
+      // The compat jobs run this suite against several TypeScript versions
+      .replace(/Using TypeScript [^\n]+/g, "Using TypeScript <version>")
       // Remove Node.js process warnings (e.g. DEP0205 `module.register()`) that
       // vary by Node version and otherwise leak into captured stdout/stderr
       .replace(/^\(node:\d+\) .*$/gm, "")
