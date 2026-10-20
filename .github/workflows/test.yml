@@ -40,11 +40,11 @@ jobs:
       - name: Build
         run: pnpm build
 
-  # Verifies that zshy itself compiles cleanly across the supported TypeScript
-  # range, including the latest stable and the next/dev tag. Snapshot tests are
+  # Verifies that zshy itself compiles cleanly across the TypeScript range it
+  # builds with through the classic compiler API. Snapshot tests are
   # intentionally skipped here because some snapshots include the resolved TS
   # CompilerOptions (which legitimately differ across versions, e.g. when zshy
-  # injects `ignoreDeprecations: "6.0"` under TS 6+). Instead we run the two
+  # injects `ignoreDeprecations: "6.0"` under TS 6). Instead we run the two
   # version-agnostic smoke tests:
   #   1. `pnpm build`        — zshy builds zshy from source
   #   2. `pnpm test:basic`   — zshy dry-run-builds the basic test fixture
@@ -56,13 +56,13 @@ jobs:
       matrix:
         # 5.7 is the lower bound because zshy hard-codes
         # `rewriteRelativeImportExtensions`, which TS added in 5.7. The
-        # `peerDependencies.typescript` field still claims `>5.5.0`; that's a
-        # pre-existing inconsistency tracked separately. `latest` covers the
-        # current TS major (6.x). 5.8 is intentionally omitted because the
-        # main `Test with Node 24` job already runs the full suite against the
-        # ^5.8.3 dev dependency. `next` is omitted because it currently
-        # resolves to a stale dev build of the same major as `latest`.
-        typescript-version: ["5.7", "latest"]
+        # `peerDependencies.typescript` lower bound still claims `>5.5.0`; that's
+        # a pre-existing inconsistency tracked separately. 6 is the last major
+        # with the classic API; `latest` is TypeScript 7 now, which the
+        # typescript-7 job below covers. 5.8 is intentionally omitted because
+        # the main `Test with Node 24` job already runs the full suite against
+        # the ^5.8.3 dev dependency.
+        typescript-version: ["5.7", "6"]
 
     steps:
       - name: Checkout
@@ -77,9 +77,8 @@ jobs:
         run: pnpm add -D typescript@${{ matrix.typescript-version }} --ignore-scripts
 
       # Read from the package rather than `pnpm exec tsc --version`: the
-      # `typescript-next` nightly alias also provides a `tsc` bin, and pnpm
-      # links the higher version, so the bin no longer reports the package
-      # under test here.
+      # `typescript-next` alias also provides a `tsc` bin, and pnpm links the
+      # higher version, so the bin no longer reports the package under test.
       - name: Print TypeScript version
         run: node -p "require('typescript/package.json').version"
 
@@ -89,16 +88,28 @@ jobs:
       - name: Smoke test — basic fixture (dry run)
         run: pnpm test:basic
 
-  # The TS 7.1 engine (src/compile-ts7.ts) is a prototype and is not yet on the
-  # default build path. The main `test` job gates it against a pinned nightly,
-  # which is what keeps it reproducible. This job re-runs the same fidelity
-  # check against whatever `typescript@next` currently is, so upstream emit
-  # drift shows up on its own rather than as a surprise at adoption time. It is
-  # advisory: nightly churn must not block unrelated work.
-  ts7-nightly-drift:
-    name: TypeScript 7.1 prototype vs latest nightly
+  # The main `test` job already gates the TypeScript 7 engine
+  # (src/compile-ts7.ts) on every fixture, against the pinned `typescript-next`
+  # alias. This re-runs that gate with TypeScript 7 installed as `typescript`
+  # itself, the way a user has it, so `typescript/sync` resolves for real.
+  # `next` is advisory: it surfaces upstream emit drift on its own rather than
+  # as a surprise at the next bump, and nightly churn must not block unrelated
+  # work. Move `beta` to `latest` once 7.1 is stable.
+  #
+  # zshy cannot build itself here: its classic engine is written against the
+  # classic API, which TypeScript 7 no longer ships.
+  typescript-7:
+    name: TypeScript ${{ matrix.typescript-version }} (TypeScript 7 API)
     runs-on: ubuntu-latest
-    continue-on-error: true
+    continue-on-error: ${{ matrix.advisory }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - typescript-version: beta
+            advisory: false
+          - typescript-version: next
+            advisory: true
 
     steps:
       - name: Checkout
@@ -109,11 +120,11 @@ jobs:
         with:
           node-version: 24
 
-      - name: Move to the latest TypeScript nightly
-        run: pnpm add -D "typescript-next@npm:typescript@next" --ignore-scripts
+      - name: Install TypeScript ${{ matrix.typescript-version }} as `typescript`
+        run: pnpm add -D typescript@${{ matrix.typescript-version }} --ignore-scripts
 
-      - name: Print the nightly under test
-        run: node -p "require('typescript-next/package.json').version"
+      - name: Print TypeScript version
+        run: node -p "require('typescript/package.json').version"
 
-      - name: Emit-fidelity check
-        run: pnpm vitest run test/ts7-fidelity.test.ts
+      - name: Build every fixture with the TypeScript 7 engine
+        run: pnpm vitest run test/ts7-fidelity.test.ts test/engine.test.ts
