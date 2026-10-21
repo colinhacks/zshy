@@ -2,6 +2,7 @@
   "compilerOptions": {
     // Environment setup & latest features
     "lib": ["ESNext"],
+    "types": ["node"],
     "target": "es2020",
     "module": "nodenext",
     "moduleResolution": "nodenext",
@@ -33,17 +34,7 @@
     "emitDeclarationOnly": false,
     "sourceMap": true,
     "declarationMap": true,
-    "resolveJsonModule": true,
-
-    // The TypeScript 7 engine (src/compile-ts7.ts) imports the TypeScript 7.1 API, but `typescript` here is the
-    // classic 5.x the rest of zshy is written against, which has no `typescript/sync`. These name the declarations in
-    // the `typescript-next` alias instead, for type-checking only: the emitted code still imports `typescript/sync`,
-    // which resolves to whatever TypeScript the user has installed.
-    "paths": {
-      "typescript/sync": ["./node_modules/typescript-next/dist/api/sync/api.d.ts"],
-      "typescript/ast": ["./node_modules/typescript-next/dist/ast/index.d.ts"],
-      "typescript/ast/is": ["./node_modules/typescript-next/dist/ast/is.d.ts"]
-    }
+    "resolveJsonModule": true
   },
   "include": ["./**/*.ts", "test/src/plugins/b.cts", "play.cts"],
 }

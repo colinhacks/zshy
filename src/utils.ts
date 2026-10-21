@@ -1,6 +1,5 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import * as ts from "typescript";
 
 export function formatForLog(data: unknown) {
   return JSON.stringify(data, null, 2).split("\n").join("\n   ");
@@ -51,55 +50,13 @@ export function removeExtension(filePath: string): string {
   return filePath.split(".").slice(0, -1).join(".") || filePath;
 }
 
-export function readTsconfig(tsconfigPath: string) {
-  // Read and parse tsconfig.json
-  const configPath = path.resolve(tsconfigPath);
-  const configDir = path.dirname(configPath);
-
-  const configFile = ts.readConfigFile(configPath, ts.sys.readFile);
-
-  if (configFile.error) {
-    console.error(
-      "Error reading tsconfig.json:",
-      ts.formatDiagnostic(configFile.error, {
-        getCurrentDirectory: () => configDir,
-        getCanonicalFileName: (fileName) => fileName,
-        getNewLine: () => ts.sys.newLine,
-      })
-    );
-    process.exit(1);
-  }
-
-  // Parse the config with explicit base path
-  const parsedConfig = ts.parseJsonConfigFileContent(
-    configFile.config,
-    {
-      ...ts.sys,
-      // Override getCurrentDirectory to use the tsconfig directory
-      getCurrentDirectory: () => configDir,
-    },
-    configDir
-  );
-
-  if (parsedConfig.errors.length > 0) {
-    log.error("Error parsing tsconfig.json:");
-    for (const error of parsedConfig.errors) {
-      console.error(
-        ts.formatDiagnostic(error, {
-          getCurrentDirectory: () => configDir,
-          getCanonicalFileName: (fileName) => fileName,
-          getNewLine: () => ts.sys.newLine,
-        })
-      );
-    }
-    process.exit(1);
-  }
-
-  if (!parsedConfig.options) {
-    log.error("Error reading tsconfig.json#/compilerOptions");
-    process.exit(1);
-  }
-  return parsedConfig.options!;
+/**
+ * zshy builds with the compiler API that TypeScript 7.1 introduced (`typescript/sync`). TypeScript 7.0 shipped it only
+ * as a preview under `typescript/unstable/*`, and earlier releases have the classic API instead.
+ */
+export function supportsTypeScript(version: string): boolean {
+  const [major = 0, minor = 0] = version.split(".").map((part) => Number.parseInt(part, 10));
+  return major > 7 || (major === 7 && minor >= 1);
 }
 
 export const jsExtensions: Set<string> = new Set([".js", ".mjs", ".cjs", ".ts", ".mts", ".cts", ".tsx"]);

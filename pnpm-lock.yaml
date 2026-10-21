@@ -46,11 +46,8 @@ importers:
         specifier: ^4.20.3
         version: 4.20.3
       typescript:
-        specifier: ^5.8.3
-        version: 5.8.3
-      typescript-next:
-        specifier: npm:typescript@7.1.0-beta
-        version: typescript@7.1.0-beta
+        specifier: ^7.1.0-beta
+        version: 7.1.0-beta
       vitest:
         specifier: ^2.1.5
         version: 2.1.9(@types/node@24.0.4)
@@ -1098,11 +1095,6 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
-  typescript@5.8.3:
-    resolution: {integrity: sha512-p1diW6TqL9L07nNxvRMM7hMMw4c5XOo/1ibL4aAIGmSAt9slTE1Xgw5KWuof2uTOvCg9BY7ZRi+GaF+7sfgPeQ==}
-    engines: {node: '>=14.17'}
-    hasBin: true
-
   typescript@7.1.0-beta:
     resolution: {integrity: sha512-cjWjZAJDsmZzsNC5GwHNlW0YPM65jZa5oR0KyQcYX3KSVIfTvtBq//vewISyatKk4OLi5grZjHhIVE9fdrw1UQ==}
     engines: {node: '>=16.20.0'}
@@ -2007,8 +1999,6 @@ snapshots:
       fsevents: 2.3.3
 
   typescript@5.6.1-rc: {}
-
-  typescript@5.8.3: {}
 
   typescript@7.1.0-beta:
     optionalDependencies:

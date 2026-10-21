@@ -1,3 +1,3 @@
-declare const _default: () => void;
 export = _default;
+declare function _default(): void;
 //# sourceMappingURL=default-arrow.d.ts.map

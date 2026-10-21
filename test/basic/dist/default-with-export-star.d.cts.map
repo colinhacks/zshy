@@ -1,1 +1,1 @@
-{"version":3,"file":"default-with-export-star.d.ts","sourceRoot":"","sources":["../src/default-with-export-star.ts"],"names":[],"mappings":"AAAA,oCAAgC;AAChC,MAAM,CAAC,OAAO,UAAU,gBAAgB,SAEvC"}
+{"version":3,"file":"default-with-export-star.d.ts","sources":["../src/default-with-export-star.ts"],"names":[],"mappings":"AAAA,cAAc,iBAAiB,CAAC;AAChC,MAAM,CAAC,OAAO,UAAU,gBAAgB,SAEvC"}
