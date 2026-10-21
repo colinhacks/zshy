@@ -25,14 +25,13 @@
     "**/*.d.mts",
     "**/*.d.cts"
   ],
-  "main": "./index.cjs",
+  "main": "./index.js",
   "module": "./index.js",
-  "types": "./index.d.cts",
+  "types": "./index.d.ts",
   "exports": {
     ".": {
-      "types": "./index.d.cts",
-      "import": "./index.js",
-      "require": "./index.cjs"
+      "types": "./index.d.ts",
+      "default": "./index.js"
     }
   }
 }

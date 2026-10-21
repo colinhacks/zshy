@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "Test fixture for zshy custom conditions",
   "type": "module",
-  "main": "./dist/index.cjs",
-  "types": "./dist/index.d.cts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsx ../../src/index.ts --project tsconfig.json"
   },
@@ -18,7 +18,6 @@
     },
     "conditions": {
       "custom-esm": "esm",
-      "custom-cjs": "cjs",
       "custom-src": "src"
     }
   },
@@ -29,19 +28,15 @@
   "exports": {
     ".": {
       "custom-esm": "./dist/index.js",
-      "custom-cjs": "./dist/index.cjs",
       "custom-src": "./src/index.ts",
-      "types": "./dist/index.d.cts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     },
     "./utils": {
       "custom-esm": "./dist/utils.js",
-      "custom-cjs": "./dist/utils.cjs",
       "custom-src": "./src/utils.ts",
-      "types": "./dist/utils.d.cts",
-      "import": "./dist/utils.js",
-      "require": "./dist/utils.cjs"
+      "types": "./dist/utils.d.ts",
+      "default": "./dist/utils.js"
     }
   }
 }
