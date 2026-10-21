@@ -2,7 +2,7 @@
 
 import arg from "arg";
 import { execSync } from "child_process";
-import { existsSync, readFileSync, writeFileSync } from "fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import semver from "semver";
 
 const VERSION_FILE = "VERSION.txt";
@@ -93,6 +93,8 @@ function restorePackageVersion(version: string): void {
 function pack(destination: string): void {
   const version = readVersionFile();
   validateVersion(version);
+  // npm pack writes into the destination but does not create it
+  mkdirSync(destination, { recursive: true });
   const originalVersion = updatePackageVersion(version);
   try {
     execSync(`npm pack --pack-destination ${JSON.stringify(destination)}`, { stdio: "inherit" });
