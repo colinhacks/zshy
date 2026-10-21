@@ -7,9 +7,7 @@
     "typescript",
     "build-tool",
     "compiler",
-    "dual-package",
     "esm",
-    "cjs",
     "library",
     "tsc"
   ],
@@ -32,7 +30,7 @@
     "url": "https://github.com/sponsors/colinhacks"
   },
   "module": "./dist/index.js",
-  "bin": "./dist/index.cjs",
+  "bin": "./dist/index.js",
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.2",
     "@biomejs/biome": "^2.0.5",
@@ -69,14 +67,13 @@
       "@zod/source": "src"
     }
   },
-  "main": "./dist/index.cjs",
-  "types": "./dist/index.d.cts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "@zod/source": "./src/index.ts",
-      "types": "./dist/index.d.cts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     }
   },
   "files": [

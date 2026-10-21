@@ -1,5 +1,106 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`zshy with different tsconfig configurations > should accept cjs: false, as zshy 0.8 configs spell ESM-only 1`] = `
+{
+  "exitCode": 0,
+  "stderr": "",
+  "stdout": "╔═══════════════════════════════════════════════╗
+   ║ zshy » the bundler-free TypeScript build tool ║
+   ╚═══════════════════════════════════════════════╝
+»  Starting build...
+»  Verbose mode enabled
+»  Detected package manager: <pm>
+»  Build will fail only on errors (default)
+»  Detected project root: <root>/test/esm-only
+»  Reading package.json from ./package.json
+»  Parsed zshy config: {
+     "exports": {
+       ".": "./src/index.ts"
+     },
+     "cjs": false,
+     "conditions": {
+       "custom-cjs": "esm"
+     }
+   }
+»  Using TypeScript <version>
+»  Reading tsconfig from ./tsconfig.json
+»  Determining entrypoints...
+   ╔══════════╤════════════════╗
+   ║ Subpath  │ Entrypoint     ║
+   ╟──────────┼────────────────╢
+   ║ "my-pkg" │ ./src/index.ts ║
+   ╚══════════╧════════════════╝
+»  Resolved build paths:
+   ╔══════════╤═══════════════╗
+   ║ Location │ Resolved path ║
+   ╟──────────┼───────────────╢
+   ║ rootDir  │ ./src         ║
+   ║ outDir   │ ./dist        ║
+   ╚══════════╧═══════════════╝
+»  Cleaning up outDir...
+»  Cleaning up declarationDir...
+»  Resolved entrypoints: [
+     "./src/index.ts"
+   ]
+»  Resolved compilerOptions: {
+     "allowJs": true,
+     "allowImportingTsExtensions": true,
+     "declaration": true,
+     "declarationMap": true,
+     "forceConsistentCasingInFileNames": true,
+     "jsx": 4,
+     "lib": [
+       "lib.esnext.d.ts"
+     ],
+     "module": "ESNext",
+     "moduleResolution": "Bundler",
+     "moduleDetection": 1,
+     "noEmit": false,
+     "noFallthroughCasesInSwitch": true,
+     "noImplicitThis": true,
+     "noPropertyAccessFromIndexSignature": false,
+     "noUncheckedIndexedAccess": true,
+     "noUnusedLocals": true,
+     "noUnusedParameters": false,
+     "noImplicitOverride": true,
+     "noUncheckedSideEffectImports": false,
+     "outDir": "<root>/test/esm-only/dist",
+     "resolveJsonModule": true,
+     "rewriteRelativeImportExtensions": true,
+     "skipLibCheck": true,
+     "strict": true,
+     "sourceMap": true,
+     "target": "ES2020",
+     "types": [
+       "node"
+     ],
+     "verbatimModuleSyntax": false,
+     "esModuleInterop": true,
+     "configFilePath": "<root>/test/esm-only/tsconfig.json",
+     "emitDeclarationOnly": false,
+     "composite": false
+   }
+»  Building...
+»  Writing files (4 total)...
+     ./dist/index.d.ts
+     ./dist/index.d.ts.map
+     ./dist/index.js
+     ./dist/index.js.map
+»  Updating package.json...
+»  Setting "main": "./dist/index.js"
+»  Setting "module": "./dist/index.js"
+»  Setting "types": "./dist/index.d.ts"
+»  Setting "exports": {
+     ".": {
+       "custom-cjs": "./dist/index.js",
+       "types": "./dist/index.d.ts",
+       "default": "./dist/index.js"
+     }
+   }
+»  Build complete!",
+}
+`;
+
 exports[`zshy with different tsconfig configurations > should copy exports to jsr.json when jsr.json exists 1`] = `
 {
   "exitCode": 0,
@@ -36,7 +137,6 @@ exports[`zshy with different tsconfig configurations > should copy exports to js
    ║ rootDir  │ ./src         ║
    ║ outDir   │ ./dist        ║
    ╚══════════╧═══════════════╝
-»  Package is an ES module (package.json#/type is "module")
 »  Cleaning up outDir...
 »  Cleaning up declarationDir...
 »  Resolved entrypoints: [
@@ -80,32 +180,24 @@ exports[`zshy with different tsconfig configurations > should copy exports to js
      "emitDeclarationOnly": false,
      "composite": false
    }
-»  Building CJS... (rewriting .ts -> .cjs/.d.cts)
-»  Enabling CJS interop transform...
-»  Building ESM...
-»  Writing files (8 total)...
-     ./dist/index.cjs
-     ./dist/index.cjs.map
-     ./dist/index.d.cts
-     ./dist/index.d.cts.map
+»  Building...
+»  Writing files (4 total)...
      ./dist/index.d.ts
      ./dist/index.d.ts.map
      ./dist/index.js
      ./dist/index.js.map
 »  Updating package.json...
-»  Setting "main": "./dist/index.cjs"
+»  Setting "main": "./dist/index.js"
 »  Setting "module": "./dist/index.js"
-»  Setting "types": "./dist/index.d.cts"
+»  Setting "types": "./dist/index.d.ts"
 »  Setting "exports": {
      ".": {
-       "types": "./dist/index.d.cts",
-       "import": "./dist/index.js",
-       "require": "./dist/index.cjs"
+       "types": "./dist/index.d.ts",
+       "default": "./dist/index.js"
      },
      "./features/*": {
        "types": "./dist/*",
-       "import": "./dist/*",
-       "require": "./dist/*"
+       "default": "./dist/*"
      }
    }
 »  Updating jsr.json...
@@ -113,119 +205,6 @@ exports[`zshy with different tsconfig configurations > should copy exports to js
 »  Setting "exports": {
      ".": "./src/index.ts",
      "./features/index": "./src/index.ts"
-   }
-»  Build complete!",
-}
-`;
-
-exports[`zshy with different tsconfig configurations > should keep live bindings live when sealCjsExports is set 1`] = `
-{
-  "exitCode": 0,
-  "stderr": "",
-  "stdout": "╔═══════════════════════════════════════════════╗
-   ║ zshy » the bundler-free TypeScript build tool ║
-   ╚═══════════════════════════════════════════════╝
-»  Starting build...
-»  Verbose mode enabled
-»  Detected package manager: <pm>
-»  Build will fail only on errors (default)
-»  Detected project root: <root>/test/seal-cjs-exports-live
-»  Reading package.json from ./package.json
-»  Parsed zshy config: {
-     "exports": {
-       ".": "./src/index.ts"
-     },
-     "sealCjsExports": true
-   }
-»  Using TypeScript <version>
-»  Reading tsconfig from ./tsconfig.json
-»  Determining entrypoints...
-   ╔══════════════════════════════╤════════════════╗
-   ║ Subpath                      │ Entrypoint     ║
-   ╟──────────────────────────────┼────────────────╢
-   ║ "seal-cjs-exports-live-test" │ ./src/index.ts ║
-   ╚══════════════════════════════╧════════════════╝
-»  Resolved build paths:
-   ╔══════════╤═══════════════╗
-   ║ Location │ Resolved path ║
-   ╟──────────┼───────────────╢
-   ║ rootDir  │ ./src         ║
-   ║ outDir   │ ./dist        ║
-   ╚══════════╧═══════════════╝
-»  Package is an ES module (package.json#/type is "module")
-»  Cleaning up outDir...
-»  Cleaning up declarationDir...
-»  Resolved entrypoints: [
-     "./src/index.ts"
-   ]
-»  Resolved compilerOptions: {
-     "allowJs": true,
-     "allowImportingTsExtensions": true,
-     "declaration": true,
-     "declarationMap": true,
-     "forceConsistentCasingInFileNames": true,
-     "jsx": 4,
-     "lib": [
-       "lib.esnext.d.ts"
-     ],
-     "module": "ESNext",
-     "moduleResolution": "Bundler",
-     "moduleDetection": 1,
-     "noEmit": false,
-     "noFallthroughCasesInSwitch": true,
-     "noImplicitThis": true,
-     "noPropertyAccessFromIndexSignature": false,
-     "noUncheckedIndexedAccess": true,
-     "noUnusedLocals": true,
-     "noUnusedParameters": false,
-     "noImplicitOverride": true,
-     "noUncheckedSideEffectImports": false,
-     "outDir": "<root>/test/seal-cjs-exports-live/dist",
-     "resolveJsonModule": true,
-     "rewriteRelativeImportExtensions": true,
-     "skipLibCheck": true,
-     "strict": true,
-     "sourceMap": true,
-     "target": "ES2020",
-     "types": [
-       "node"
-     ],
-     "verbatimModuleSyntax": false,
-     "esModuleInterop": true,
-     "configFilePath": "<root>/test/seal-cjs-exports-live/tsconfig.json",
-     "emitDeclarationOnly": false,
-     "composite": false
-   }
-»  Building CJS... (rewriting .ts -> .cjs/.d.cts)
-»  Enabling CJS interop transform...
-»  Building ESM...
-»  Writing files (16 total)...
-     ./dist/index.cjs
-     ./dist/index.cjs.map
-     ./dist/index.d.cts
-     ./dist/index.d.cts.map
-     ./dist/index.d.ts
-     ./dist/index.d.ts.map
-     ./dist/index.js
-     ./dist/index.js.map
-     ./dist/mutable.cjs
-     ./dist/mutable.cjs.map
-     ./dist/mutable.d.cts
-     ./dist/mutable.d.cts.map
-     ./dist/mutable.d.ts
-     ./dist/mutable.d.ts.map
-     ./dist/mutable.js
-     ./dist/mutable.js.map
-»  Updating package.json...
-»  Setting "main": "./dist/index.cjs"
-»  Setting "module": "./dist/index.js"
-»  Setting "types": "./dist/index.d.cts"
-»  Setting "exports": {
-     ".": {
-       "types": "./dist/index.d.cts",
-       "import": "./dist/index.js",
-       "require": "./dist/index.cjs"
-     }
    }
 »  Build complete!",
 }
@@ -265,7 +244,6 @@ exports[`zshy with different tsconfig configurations > should not edit package.j
    ║ rootDir  │ ./src         ║
    ║ outDir   │ ./dist        ║
    ╚══════════╧═══════════════╝
-»  Package is an ES module (package.json#/type is "module")
 »  Cleaning up outDir...
 »  Cleaning up declarationDir...
 »  Resolved entrypoints: [
@@ -309,14 +287,8 @@ exports[`zshy with different tsconfig configurations > should not edit package.j
      "emitDeclarationOnly": false,
      "composite": false
    }
-»  Building CJS... (rewriting .ts -> .cjs/.d.cts)
-»  Enabling CJS interop transform...
-»  Building ESM...
-»  Writing files (8 total)...
-     ./dist/index.cjs
-     ./dist/index.cjs.map
-     ./dist/index.d.cts
-     ./dist/index.d.cts.map
+»  Building...
+»  Writing files (4 total)...
      ./dist/index.d.ts
      ./dist/index.d.ts.map
      ./dist/index.js
@@ -365,7 +337,6 @@ exports[`zshy with different tsconfig configurations > should reproduce issue #5
    ║ rootDir  │ ./src         ║
    ║ outDir   │ ./dist        ║
    ╚══════════╧═══════════════╝
-»  Package is an ES module (package.json#/type is "module")
 »  Cleaning up outDir...
 »  Cleaning up declarationDir...
 »  Resolved entrypoints: [
@@ -412,61 +383,40 @@ exports[`zshy with different tsconfig configurations > should reproduce issue #5
      "emitDeclarationOnly": false,
      "composite": false
    }
-»  Building CJS... (rewriting .ts -> .cjs/.d.cts)
-»  Enabling CJS interop transform...
-»  Building ESM...
-»  Writing files (32 total)...
-     ./dist/components/button.cjs
-     ./dist/components/button.cjs.map
-     ./dist/components/button.d.cts
-     ./dist/components/button.d.cts.map
+»  Building...
+»  Writing files (16 total)...
      ./dist/components/button.d.ts
      ./dist/components/button.d.ts.map
      ./dist/components/button.js
      ./dist/components/button.js.map
-     ./dist/index.cjs
-     ./dist/index.cjs.map
-     ./dist/index.d.cts
-     ./dist/index.d.cts.map
      ./dist/index.d.ts
      ./dist/index.d.ts.map
      ./dist/index.js
      ./dist/index.js.map
-     ./dist/utils/math.cjs
-     ./dist/utils/math.cjs.map
-     ./dist/utils/math.d.cts
-     ./dist/utils/math.d.cts.map
      ./dist/utils/math.d.ts
      ./dist/utils/math.d.ts.map
      ./dist/utils/math.js
      ./dist/utils/math.js.map
-     ./dist/utils/string.cjs
-     ./dist/utils/string.cjs.map
-     ./dist/utils/string.d.cts
-     ./dist/utils/string.d.cts.map
      ./dist/utils/string.d.ts
      ./dist/utils/string.d.ts.map
      ./dist/utils/string.js
      ./dist/utils/string.js.map
 »  Updating package.json...
-»  Setting "main": "./dist/index.cjs"
+»  Setting "main": "./dist/index.js"
 »  Setting "module": "./dist/index.js"
-»  Setting "types": "./dist/index.d.cts"
+»  Setting "types": "./dist/index.d.ts"
 »  Setting "exports": {
      ".": {
-       "types": "./dist/index.d.cts",
-       "import": "./dist/index.js",
-       "require": "./dist/index.cjs"
+       "types": "./dist/index.d.ts",
+       "default": "./dist/index.js"
      },
      "./utils/*": {
        "types": "./dist/utils/*",
-       "import": "./dist/utils/*",
-       "require": "./dist/utils/*"
+       "default": "./dist/utils/*"
      },
      "./components/*": {
        "types": "./dist/components/*",
-       "import": "./dist/components/*",
-       "require": "./dist/components/*"
+       "default": "./dist/components/*"
      }
    }
 »  Updating jsr.json...
@@ -476,242 +426,6 @@ exports[`zshy with different tsconfig configurations > should reproduce issue #5
      "./utils/math": "./src/utils/math.ts",
      "./utils/string": "./src/utils/string.ts",
      "./components/button": "./src/components/button.ts"
-   }
-»  Build complete!",
-}
-`;
-
-exports[`zshy with different tsconfig configurations > should seal the CommonJS exports when sealCjsExports is set 1`] = `
-{
-  "exitCode": 0,
-  "stderr": "",
-  "stdout": "╔═══════════════════════════════════════════════╗
-   ║ zshy » the bundler-free TypeScript build tool ║
-   ╚═══════════════════════════════════════════════╝
-»  Starting build...
-»  Verbose mode enabled
-»  Detected package manager: <pm>
-»  Build will fail only on errors (default)
-»  Detected project root: <root>/test/seal-cjs-exports
-»  Reading package.json from ./package.json
-»  Parsed zshy config: {
-     "exports": {
-       ".": "./src/index.ts",
-       "./default": "./src/default.ts"
-     },
-     "sealCjsExports": true
-   }
-»  Using TypeScript <version>
-»  Reading tsconfig from ./tsconfig.json
-»  Determining entrypoints...
-   ╔═════════════════════════════════╤══════════════════╗
-   ║ Subpath                         │ Entrypoint       ║
-   ╟─────────────────────────────────┼──────────────────╢
-   ║ "seal-cjs-exports-test"         │ ./src/index.ts   ║
-   ║ "seal-cjs-exports-test/default" │ ./src/default.ts ║
-   ╚═════════════════════════════════╧══════════════════╝
-»  Resolved build paths:
-   ╔══════════╤═══════════════╗
-   ║ Location │ Resolved path ║
-   ╟──────────┼───────────────╢
-   ║ rootDir  │ ./src         ║
-   ║ outDir   │ ./dist        ║
-   ╚══════════╧═══════════════╝
-»  Package is an ES module (package.json#/type is "module")
-»  Cleaning up outDir...
-»  Cleaning up declarationDir...
-»  Resolved entrypoints: [
-     "./src/index.ts",
-     "./src/default.ts"
-   ]
-»  Resolved compilerOptions: {
-     "allowJs": true,
-     "allowImportingTsExtensions": true,
-     "declaration": true,
-     "declarationMap": true,
-     "forceConsistentCasingInFileNames": true,
-     "jsx": 4,
-     "lib": [
-       "lib.esnext.d.ts"
-     ],
-     "module": "ESNext",
-     "moduleResolution": "Bundler",
-     "moduleDetection": 1,
-     "noEmit": false,
-     "noFallthroughCasesInSwitch": true,
-     "noImplicitThis": true,
-     "noPropertyAccessFromIndexSignature": false,
-     "noUncheckedIndexedAccess": true,
-     "noUnusedLocals": true,
-     "noUnusedParameters": false,
-     "noImplicitOverride": true,
-     "noUncheckedSideEffectImports": false,
-     "outDir": "<root>/test/seal-cjs-exports/dist",
-     "resolveJsonModule": true,
-     "rewriteRelativeImportExtensions": true,
-     "skipLibCheck": true,
-     "strict": true,
-     "sourceMap": true,
-     "target": "ES2020",
-     "types": [
-       "node"
-     ],
-     "verbatimModuleSyntax": false,
-     "esModuleInterop": true,
-     "configFilePath": "<root>/test/seal-cjs-exports/tsconfig.json",
-     "emitDeclarationOnly": false,
-     "composite": false
-   }
-»  Building CJS... (rewriting .ts -> .cjs/.d.cts)
-»  Enabling CJS interop transform...
-»  Building ESM...
-»  Writing files (28 total)...
-     ./dist/default.cjs
-     ./dist/default.cjs.map
-     ./dist/default.d.cts
-     ./dist/default.d.cts.map
-     ./dist/default.d.ts
-     ./dist/default.d.ts.map
-     ./dist/default.js
-     ./dist/default.js.map
-     ./dist/index.cjs
-     ./dist/index.cjs.map
-     ./dist/index.d.cts
-     ./dist/index.d.cts.map
-     ./dist/index.d.ts
-     ./dist/index.d.ts.map
-     ./dist/index.js
-     ./dist/index.js.map
-     ./dist/leaf.cjs
-     ./dist/leaf.cjs.map
-     ./dist/leaf.d.cts
-     ./dist/leaf.d.cts.map
-     ./dist/leaf.d.ts
-     ./dist/leaf.d.ts.map
-     ./dist/leaf.js
-     ./dist/leaf.js.map
-     ./dist/legacy.cjs
-     ./dist/legacy.cjs.map
-     ./dist/legacy.d.cts
-     ./dist/legacy.d.cts.map
-»  Updating package.json...
-»  Setting "main": "./dist/index.cjs"
-»  Setting "module": "./dist/index.js"
-»  Setting "types": "./dist/index.d.cts"
-»  Setting "exports": {
-     ".": {
-       "types": "./dist/index.d.cts",
-       "import": "./dist/index.js",
-       "require": "./dist/index.cjs"
-     },
-     "./default": {
-       "types": "./dist/default.d.cts",
-       "import": "./dist/default.js",
-       "require": "./dist/default.cjs"
-     }
-   }
-»  Build complete!",
-}
-`;
-
-exports[`zshy with different tsconfig configurations > should skip CJS build when commonjs is false 1`] = `
-{
-  "exitCode": 0,
-  "stderr": "",
-  "stdout": "╔═══════════════════════════════════════════════╗
-   ║ zshy » the bundler-free TypeScript build tool ║
-   ╚═══════════════════════════════════════════════╝
-»  Starting build...
-»  Verbose mode enabled
-»  Detected package manager: <pm>
-»  Build will fail only on errors (default)
-»  Detected project root: <root>/test/esm-only
-»  Reading package.json from ./package.json
-»  Parsed zshy config: {
-     "exports": {
-       ".": "./src/index.ts"
-     },
-     "cjs": false,
-     "conditions": {
-       "custom-cjs": "esm"
-     }
-   }
-»  Using TypeScript <version>
-»  Reading tsconfig from ./tsconfig.json
-»  Determining entrypoints...
-   ╔══════════╤════════════════╗
-   ║ Subpath  │ Entrypoint     ║
-   ╟──────────┼────────────────╢
-   ║ "my-pkg" │ ./src/index.ts ║
-   ╚══════════╧════════════════╝
-»  Resolved build paths:
-   ╔══════════╤═══════════════╗
-   ║ Location │ Resolved path ║
-   ╟──────────┼───────────────╢
-   ║ rootDir  │ ./src         ║
-   ║ outDir   │ ./dist        ║
-   ╚══════════╧═══════════════╝
-»  Package is an ES module (package.json#/type is "module")
-»  Cleaning up outDir...
-»  Cleaning up declarationDir...
-»  Resolved entrypoints: [
-     "./src/index.ts"
-   ]
-»  Resolved compilerOptions: {
-     "allowJs": true,
-     "allowImportingTsExtensions": true,
-     "declaration": true,
-     "declarationMap": true,
-     "forceConsistentCasingInFileNames": true,
-     "jsx": 4,
-     "lib": [
-       "lib.esnext.d.ts"
-     ],
-     "module": "ESNext",
-     "moduleResolution": "Bundler",
-     "moduleDetection": 1,
-     "noEmit": false,
-     "noFallthroughCasesInSwitch": true,
-     "noImplicitThis": true,
-     "noPropertyAccessFromIndexSignature": false,
-     "noUncheckedIndexedAccess": true,
-     "noUnusedLocals": true,
-     "noUnusedParameters": false,
-     "noImplicitOverride": true,
-     "noUncheckedSideEffectImports": false,
-     "outDir": "<root>/test/esm-only/dist",
-     "resolveJsonModule": true,
-     "rewriteRelativeImportExtensions": true,
-     "skipLibCheck": true,
-     "strict": true,
-     "sourceMap": true,
-     "target": "ES2020",
-     "types": [
-       "node"
-     ],
-     "verbatimModuleSyntax": false,
-     "esModuleInterop": true,
-     "configFilePath": "<root>/test/esm-only/tsconfig.json",
-     "emitDeclarationOnly": false,
-     "composite": false
-   }
-»  Skipping CJS build (cjs: false)
-»  Building ESM...
-»  Writing files (4 total)...
-     ./dist/index.d.ts
-     ./dist/index.d.ts.map
-     ./dist/index.js
-     ./dist/index.js.map
-»  Updating package.json...
-»  Setting "main": "./dist/index.cjs"
-»  Setting "module": "./dist/index.js"
-»  Setting "types": "./dist/index.d.ts"
-»  Setting "exports": {
-     ".": {
-       "custom-cjs": "./dist/index.js",
-       "types": "./dist/index.d.ts",
-       "default": "./dist/index.js"
-     }
    }
 »  Build complete!",
 }
@@ -748,7 +462,6 @@ exports[`zshy with different tsconfig configurations > should support bin withou
    ║ rootDir  │ ./src         ║
    ║ outDir   │ ./dist        ║
    ╚══════════╧═══════════════╝
-»  Package is an ES module (package.json#/type is "module")
 »  Cleaning up outDir...
 »  Cleaning up declarationDir...
 »  Resolved entrypoints: [
@@ -792,20 +505,14 @@ exports[`zshy with different tsconfig configurations > should support bin withou
      "emitDeclarationOnly": false,
      "composite": false
    }
-»  Building CJS... (rewriting .ts -> .cjs/.d.cts)
-»  Enabling CJS interop transform...
-»  Building ESM...
-»  Writing files (8 total)...
-     ./dist/cli.cjs
-     ./dist/cli.cjs.map
-     ./dist/cli.d.cts
-     ./dist/cli.d.cts.map
+»  Building...
+»  Writing files (4 total)...
      ./dist/cli.d.ts
      ./dist/cli.d.ts.map
      ./dist/cli.js
      ./dist/cli.js.map
 »  Updating package.json...
-»  Setting "bin": "./dist/cli.cjs"
+»  Setting "bin": "./dist/cli.js"
 »  Build complete!",
 }
 `;
@@ -849,7 +556,6 @@ exports[`zshy with different tsconfig configurations > should support multiple b
    ║ rootDir  │ ./src         ║
    ║ outDir   │ ./dist        ║
    ╚══════════╧═══════════════╝
-»  Package is an ES module (package.json#/type is "module")
 »  Cleaning up outDir...
 »  Cleaning up declarationDir...
 »  Resolved entrypoints: [
@@ -895,48 +601,33 @@ exports[`zshy with different tsconfig configurations > should support multiple b
      "emitDeclarationOnly": false,
      "composite": false
    }
-»  Building CJS... (rewriting .ts -> .cjs/.d.cts)
-»  Enabling CJS interop transform...
-»  Building ESM...
-»  Writing files (24 total)...
-     ./dist/cli-one.cjs
-     ./dist/cli-one.cjs.map
-     ./dist/cli-one.d.cts
-     ./dist/cli-one.d.cts.map
+»  Building...
+»  Writing files (12 total)...
      ./dist/cli-one.d.ts
      ./dist/cli-one.d.ts.map
      ./dist/cli-one.js
      ./dist/cli-one.js.map
-     ./dist/cli-two.cjs
-     ./dist/cli-two.cjs.map
-     ./dist/cli-two.d.cts
-     ./dist/cli-two.d.cts.map
      ./dist/cli-two.d.ts
      ./dist/cli-two.d.ts.map
      ./dist/cli-two.js
      ./dist/cli-two.js.map
-     ./dist/index.cjs
-     ./dist/index.cjs.map
-     ./dist/index.d.cts
-     ./dist/index.d.cts.map
      ./dist/index.d.ts
      ./dist/index.d.ts.map
      ./dist/index.js
      ./dist/index.js.map
 »  Updating package.json...
-»  Setting "main": "./dist/index.cjs"
+»  Setting "main": "./dist/index.js"
 »  Setting "module": "./dist/index.js"
-»  Setting "types": "./dist/index.d.cts"
+»  Setting "types": "./dist/index.d.ts"
 »  Setting "exports": {
      ".": {
-       "types": "./dist/index.d.cts",
-       "import": "./dist/index.js",
-       "require": "./dist/index.cjs"
+       "types": "./dist/index.d.ts",
+       "default": "./dist/index.js"
      }
    }
 »  Setting "bin": {
-     "cli-one": "./dist/cli-one.cjs",
-     "cli-two": "./dist/cli-two.cjs"
+     "cli-one": "./dist/cli-one.js",
+     "cli-two": "./dist/cli-two.js"
    }
 »  Build complete!",
 }
@@ -975,7 +666,6 @@ exports[`zshy with different tsconfig configurations > should support tsconfig p
    ║ rootDir  │ ./src         ║
    ║ outDir   │ ./dist        ║
    ╚══════════╧═══════════════╝
-»  Package is an ES module (package.json#/type is "module")
 »  Cleaning up outDir...
 »  Cleaning up declarationDir...
 »  Resolved entrypoints: [
@@ -1028,35 +718,24 @@ exports[`zshy with different tsconfig configurations > should support tsconfig p
      "verbatimModuleSyntax": false,
      "composite": false
    }
-»  Building CJS... (rewriting .ts -> .cjs/.d.cts)
-»  Enabling CJS interop transform...
-»  Building ESM...
-»  Writing files (16 total)...
-     ./dist/components/calculator.cjs
-     ./dist/components/calculator.d.cts
+»  Building...
+»  Writing files (8 total)...
      ./dist/components/calculator.d.ts
      ./dist/components/calculator.js
-     ./dist/config.cjs
-     ./dist/config.d.cts
      ./dist/config.d.ts
      ./dist/config.js
-     ./dist/index.cjs
-     ./dist/index.d.cts
      ./dist/index.d.ts
      ./dist/index.js
-     ./dist/utils/math.cjs
-     ./dist/utils/math.d.cts
      ./dist/utils/math.d.ts
      ./dist/utils/math.js
 »  Updating package.json...
-»  Setting "main": "./dist/index.cjs"
+»  Setting "main": "./dist/index.js"
 »  Setting "module": "./dist/index.js"
-»  Setting "types": "./dist/index.d.cts"
+»  Setting "types": "./dist/index.d.ts"
 »  Setting "exports": {
      ".": {
-       "types": "./dist/index.d.cts",
-       "import": "./dist/index.js",
-       "require": "./dist/index.cjs"
+       "types": "./dist/index.d.ts",
+       "default": "./dist/index.js"
      }
    }
 »  Build complete!",
@@ -1138,7 +817,6 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
    ║ rootDir  │ ./src         ║
    ║ outDir   │ ./dist        ║
    ╚══════════╧═══════════════╝
-»  Package is an ES module (package.json#/type is "module")
 »  Cleaning up outDir...
 »  Cleaning up declarationDir...
 »  Resolved entrypoints: [
@@ -1201,140 +879,77 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
      "configFilePath": "<root>/test/basic/tsconfig.json",
      "emitDeclarationOnly": false
    }
-»  Building CJS... (rewriting .ts -> .cjs/.d.cts)
-»  Enabling CJS interop transform...
+»  Building...
 »  Found 5 asset import(s), copying to output directory...
 »  Copied asset: ./src/assets/styles.css → ./dist/assets/styles.css
 »  Copied asset: ./src/assets/config.json → ./dist/assets/config.json
 »  Copied asset: ./src/plugins/plugin-a.css → ./dist/plugins/plugin-a.css
 »  Copied asset: ./src/plugins/plugin-b.css → ./dist/plugins/plugin-b.css
 »  Copied asset: ./src/assets/README.md → ./dist/assets/README.md
-»  Building ESM...
-»  Found 5 asset import(s), copying to output directory...
 »  Copying 3 assets...
 »  Copied asset: ./src/env.d.ts → ./dist/env.d.ts
 »  Copied asset: ./src/assets/config.json → ./dist/assets/config.json
 »  Copied asset: ./assets/test.txt → ./assets/test.txt
-»  Writing files (157 total)...
+»  Writing files (85 total)...
      ./dist/assets/README.md
      ./dist/assets/config.json
      ./dist/assets/styles.css
-     ./dist/default-arrow.cjs
-     ./dist/default-arrow.cjs.map
-     ./dist/default-arrow.d.cts
-     ./dist/default-arrow.d.cts.map
      ./dist/default-arrow.d.ts
      ./dist/default-arrow.d.ts.map
      ./dist/default-arrow.js
      ./dist/default-arrow.js.map
-     ./dist/default-class.cjs
-     ./dist/default-class.cjs.map
-     ./dist/default-class.d.cts
-     ./dist/default-class.d.cts.map
      ./dist/default-class.d.ts
      ./dist/default-class.d.ts.map
      ./dist/default-class.js
      ./dist/default-class.js.map
-     ./dist/default-const.cjs
-     ./dist/default-const.cjs.map
-     ./dist/default-const.d.cts
-     ./dist/default-const.d.cts.map
      ./dist/default-const.d.ts
      ./dist/default-const.d.ts.map
      ./dist/default-const.js
      ./dist/default-const.js.map
-     ./dist/default-export-equals.cjs
-     ./dist/default-export-equals.cjs.map
-     ./dist/default-export-equals.d.cts
-     ./dist/default-export-equals.d.cts.map
      ./dist/default-export-equals.d.ts
      ./dist/default-export-equals.d.ts.map
      ./dist/default-export-equals.js
      ./dist/default-export-equals.js.map
-     ./dist/default-function.cjs
-     ./dist/default-function.cjs.map
-     ./dist/default-function.d.cts
-     ./dist/default-function.d.cts.map
      ./dist/default-function.d.ts
      ./dist/default-function.d.ts.map
      ./dist/default-function.js
      ./dist/default-function.js.map
-     ./dist/default-literal.cjs
-     ./dist/default-literal.cjs.map
-     ./dist/default-literal.d.cts
-     ./dist/default-literal.d.cts.map
      ./dist/default-literal.d.ts
      ./dist/default-literal.d.ts.map
      ./dist/default-literal.js
      ./dist/default-literal.js.map
-     ./dist/default-object.cjs
-     ./dist/default-object.cjs.map
-     ./dist/default-object.d.cts
-     ./dist/default-object.d.cts.map
      ./dist/default-object.d.ts
      ./dist/default-object.d.ts.map
      ./dist/default-object.js
      ./dist/default-object.js.map
-     ./dist/default-with-enum-exports.cjs
-     ./dist/default-with-enum-exports.cjs.map
-     ./dist/default-with-enum-exports.d.cts
-     ./dist/default-with-enum-exports.d.cts.map
      ./dist/default-with-enum-exports.d.ts
      ./dist/default-with-enum-exports.d.ts.map
      ./dist/default-with-enum-exports.js
      ./dist/default-with-enum-exports.js.map
-     ./dist/default-with-export-star.cjs
-     ./dist/default-with-export-star.cjs.map
-     ./dist/default-with-export-star.d.cts
-     ./dist/default-with-export-star.d.cts.map
      ./dist/default-with-export-star.d.ts
      ./dist/default-with-export-star.d.ts.map
      ./dist/default-with-export-star.js
      ./dist/default-with-export-star.js.map
-     ./dist/default-with-named.cjs
-     ./dist/default-with-named.cjs.map
-     ./dist/default-with-named.d.cts
-     ./dist/default-with-named.d.cts.map
      ./dist/default-with-named.d.ts
      ./dist/default-with-named.d.ts.map
      ./dist/default-with-named.js
      ./dist/default-with-named.js.map
-     ./dist/default-with-same-name-type.cjs
-     ./dist/default-with-same-name-type.cjs.map
-     ./dist/default-with-same-name-type.d.cts
-     ./dist/default-with-same-name-type.d.cts.map
      ./dist/default-with-same-name-type.d.ts
      ./dist/default-with-same-name-type.d.ts.map
      ./dist/default-with-same-name-type.js
      ./dist/default-with-same-name-type.js.map
-     ./dist/default-with-type-exports.cjs
-     ./dist/default-with-type-exports.cjs.map
-     ./dist/default-with-type-exports.d.cts
-     ./dist/default-with-type-exports.d.cts.map
      ./dist/default-with-type-exports.d.ts
      ./dist/default-with-type-exports.d.ts.map
      ./dist/default-with-type-exports.js
      ./dist/default-with-type-exports.js.map
-     ./dist/hello.cjs
-     ./dist/hello.cjs.map
-     ./dist/hello.d.cts
-     ./dist/hello.d.cts.map
      ./dist/hello.d.ts
      ./dist/hello.d.ts.map
      ./dist/hello.js
      ./dist/hello.js.map
-     ./dist/index.cjs
-     ./dist/index.cjs.map
-     ./dist/index.d.cts
-     ./dist/index.d.cts.map
      ./dist/index.d.ts
      ./dist/index.d.ts.map
      ./dist/index.js
      ./dist/index.js.map
-     ./dist/plugins/a.cjs
-     ./dist/plugins/a.cjs.map
-     ./dist/plugins/a.d.cts
-     ./dist/plugins/a.d.cts.map
      ./dist/plugins/a.d.ts
      ./dist/plugins/a.d.ts.map
      ./dist/plugins/a.js
@@ -1347,128 +962,99 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
      ./dist/plugins/c.d.mts.map
      ./dist/plugins/c.mjs
      ./dist/plugins/c.mjs.map
-     ./dist/plugins/d/index.cjs
-     ./dist/plugins/d/index.cjs.map
-     ./dist/plugins/d/index.d.cts
-     ./dist/plugins/d/index.d.cts.map
      ./dist/plugins/d/index.d.ts
      ./dist/plugins/d/index.d.ts.map
      ./dist/plugins/d/index.js
      ./dist/plugins/d/index.js.map
-     ./dist/plugins/index.cjs
-     ./dist/plugins/index.cjs.map
-     ./dist/plugins/index.d.cts
-     ./dist/plugins/index.d.cts.map
      ./dist/plugins/index.d.ts
      ./dist/plugins/index.d.ts.map
      ./dist/plugins/index.js
      ./dist/plugins/index.js.map
      ./dist/plugins/plugin-a.css
      ./dist/plugins/plugin-b.css
-     ./dist/utils.cjs
-     ./dist/utils.cjs.map
-     ./dist/utils.d.cts
-     ./dist/utils.d.cts.map
      ./dist/utils.d.ts
      ./dist/utils.d.ts.map
      ./dist/utils.js
      ./dist/utils.js.map
 »  Updating package.json...
-»  Setting "main": "./dist/index.cjs"
+»  Setting "main": "./dist/index.js"
 »  Setting "module": "./dist/index.js"
-»  Setting "types": "./dist/index.d.cts"
+»  Setting "types": "./dist/index.d.ts"
 »  Setting "exports": {
      "./package.json": "./package.json",
      ".": {
-       "types": "./dist/index.d.cts",
-       "import": "./dist/index.js",
-       "require": "./dist/index.cjs"
+       "types": "./dist/index.d.ts",
+       "default": "./dist/index.js"
      },
      "./hello": {
-       "types": "./dist/hello.d.cts",
-       "import": "./dist/hello.js",
-       "require": "./dist/hello.cjs"
+       "types": "./dist/hello.d.ts",
+       "default": "./dist/hello.js"
      },
      "./utils": {
-       "types": "./dist/utils.d.cts",
-       "import": "./dist/utils.js",
-       "require": "./dist/utils.cjs"
+       "types": "./dist/utils.d.ts",
+       "default": "./dist/utils.js"
      },
      "./plugins": {
-       "types": "./dist/plugins/index.d.cts",
-       "import": "./dist/plugins/index.js",
-       "require": "./dist/plugins/index.cjs"
+       "types": "./dist/plugins/index.d.ts",
+       "default": "./dist/plugins/index.js"
      },
      "./plugins/*": {
        "types": "./dist/plugins/*",
-       "import": "./dist/plugins/*",
-       "require": "./dist/plugins/*"
+       "default": "./dist/plugins/*"
      },
      "./default-function": {
-       "types": "./dist/default-function.d.cts",
-       "import": "./dist/default-function.js",
-       "require": "./dist/default-function.cjs"
+       "types": "./dist/default-function.d.ts",
+       "default": "./dist/default-function.js"
      },
      "./default-class": {
-       "types": "./dist/default-class.d.cts",
-       "import": "./dist/default-class.js",
-       "require": "./dist/default-class.cjs"
+       "types": "./dist/default-class.d.ts",
+       "default": "./dist/default-class.js"
      },
      "./default-object": {
-       "types": "./dist/default-object.d.cts",
-       "import": "./dist/default-object.js",
-       "require": "./dist/default-object.cjs"
+       "types": "./dist/default-object.d.ts",
+       "default": "./dist/default-object.js"
      },
      "./default-arrow": {
-       "types": "./dist/default-arrow.d.cts",
-       "import": "./dist/default-arrow.js",
-       "require": "./dist/default-arrow.cjs"
+       "types": "./dist/default-arrow.d.ts",
+       "default": "./dist/default-arrow.js"
      },
      "./default-with-named": {
-       "types": "./dist/default-with-named.d.cts",
-       "import": "./dist/default-with-named.js",
-       "require": "./dist/default-with-named.cjs"
+       "types": "./dist/default-with-named.d.ts",
+       "default": "./dist/default-with-named.js"
      },
      "./default-with-export-star": {
-       "types": "./dist/default-with-export-star.d.cts",
-       "import": "./dist/default-with-export-star.js",
-       "require": "./dist/default-with-export-star.cjs"
+       "types": "./dist/default-with-export-star.d.ts",
+       "default": "./dist/default-with-export-star.js"
      },
      "./default-export-equals": {
-       "types": "./dist/default-export-equals.d.cts",
-       "import": "./dist/default-export-equals.js",
-       "require": "./dist/default-export-equals.cjs"
+       "types": "./dist/default-export-equals.d.ts",
+       "default": "./dist/default-export-equals.js"
      },
      "./default-const": {
-       "types": "./dist/default-const.d.cts",
-       "import": "./dist/default-const.js",
-       "require": "./dist/default-const.cjs"
+       "types": "./dist/default-const.d.ts",
+       "default": "./dist/default-const.js"
      },
      "./default-literal": {
-       "types": "./dist/default-literal.d.cts",
-       "import": "./dist/default-literal.js",
-       "require": "./dist/default-literal.cjs"
+       "types": "./dist/default-literal.d.ts",
+       "default": "./dist/default-literal.js"
      },
      "./default-with-type-exports": {
-       "types": "./dist/default-with-type-exports.d.cts",
-       "import": "./dist/default-with-type-exports.js",
-       "require": "./dist/default-with-type-exports.cjs"
+       "types": "./dist/default-with-type-exports.d.ts",
+       "default": "./dist/default-with-type-exports.js"
      },
      "./default-with-same-name-type": {
-       "types": "./dist/default-with-same-name-type.d.cts",
-       "import": "./dist/default-with-same-name-type.js",
-       "require": "./dist/default-with-same-name-type.cjs"
+       "types": "./dist/default-with-same-name-type.d.ts",
+       "default": "./dist/default-with-same-name-type.js"
      },
      "./default-with-enum-exports": {
-       "types": "./dist/default-with-enum-exports.d.cts",
-       "import": "./dist/default-with-enum-exports.js",
-       "require": "./dist/default-with-enum-exports.cjs"
+       "types": "./dist/default-with-enum-exports.d.ts",
+       "default": "./dist/default-with-enum-exports.js"
      },
      "./env.d.ts": "./dist/env.d.ts",
      "./config.json": "./dist/assets/config.json",
      "./assets/test.txt": "./assets/test.txt"
    }
-»  Setting "bin": "./dist/index.cjs"
+»  Setting "bin": "./dist/index.js"
 »  Build complete!",
 }
 `;
@@ -1493,7 +1079,6 @@ exports[`zshy with different tsconfig configurations > should work with custom c
      },
      "conditions": {
        "custom-esm": "esm",
-       "custom-cjs": "cjs",
        "custom-src": "src"
      }
    }
@@ -1513,7 +1098,6 @@ exports[`zshy with different tsconfig configurations > should work with custom c
    ║ rootDir  │ ./src         ║
    ║ outDir   │ ./dist        ║
    ╚══════════╧═══════════════╝
-»  Package is an ES module (package.json#/type is "module")
 »  Cleaning up outDir...
 »  Cleaning up declarationDir...
 »  Resolved entrypoints: [
@@ -1558,46 +1142,32 @@ exports[`zshy with different tsconfig configurations > should work with custom c
      "emitDeclarationOnly": false,
      "composite": false
    }
-»  Building CJS... (rewriting .ts -> .cjs/.d.cts)
-»  Enabling CJS interop transform...
-»  Building ESM...
-»  Writing files (16 total)...
-     ./dist/index.cjs
-     ./dist/index.cjs.map
-     ./dist/index.d.cts
-     ./dist/index.d.cts.map
+»  Building...
+»  Writing files (8 total)...
      ./dist/index.d.ts
      ./dist/index.d.ts.map
      ./dist/index.js
      ./dist/index.js.map
-     ./dist/utils.cjs
-     ./dist/utils.cjs.map
-     ./dist/utils.d.cts
-     ./dist/utils.d.cts.map
      ./dist/utils.d.ts
      ./dist/utils.d.ts.map
      ./dist/utils.js
      ./dist/utils.js.map
 »  Updating package.json...
-»  Setting "main": "./dist/index.cjs"
+»  Setting "main": "./dist/index.js"
 »  Setting "module": "./dist/index.js"
-»  Setting "types": "./dist/index.d.cts"
+»  Setting "types": "./dist/index.d.ts"
 »  Setting "exports": {
      ".": {
        "custom-esm": "./dist/index.js",
-       "custom-cjs": "./dist/index.cjs",
        "custom-src": "./src/index.ts",
-       "types": "./dist/index.d.cts",
-       "import": "./dist/index.js",
-       "require": "./dist/index.cjs"
+       "types": "./dist/index.d.ts",
+       "default": "./dist/index.js"
      },
      "./utils": {
        "custom-esm": "./dist/utils.js",
-       "custom-cjs": "./dist/utils.cjs",
        "custom-src": "./src/utils.ts",
-       "types": "./dist/utils.d.cts",
-       "import": "./dist/utils.js",
-       "require": "./dist/utils.cjs"
+       "types": "./dist/utils.d.ts",
+       "default": "./dist/utils.js"
      }
    }
 »  Build complete!",
@@ -1638,7 +1208,6 @@ exports[`zshy with different tsconfig configurations > should work with custom o
    ║ outDir         │ ./dist/build/src ║
    ║ declarationDir │ ./dist/types/src ║
    ╚════════════════╧══════════════════╝
-»  Package is an ES module (package.json#/type is "module")
 »  Cleaning up outDir...
 »  Resolved entrypoints: [
      "./src/index.ts"
@@ -1682,27 +1251,20 @@ exports[`zshy with different tsconfig configurations > should work with custom o
      "emitDeclarationOnly": false,
      "composite": false
    }
-»  Building CJS... (rewriting .ts -> .cjs/.d.cts)
-»  Enabling CJS interop transform...
-»  Building ESM...
-»  Writing files (8 total)...
-     ./dist/build/src/index.cjs
-     ./dist/build/src/index.cjs.map
+»  Building...
+»  Writing files (4 total)...
      ./dist/build/src/index.js
      ./dist/build/src/index.js.map
-     ./dist/types/src/index.d.cts
-     ./dist/types/src/index.d.cts.map
      ./dist/types/src/index.d.ts
      ./dist/types/src/index.d.ts.map
 »  Updating package.json...
-»  Setting "main": "./dist/build/src/index.cjs"
+»  Setting "main": "./dist/build/src/index.js"
 »  Setting "module": "./dist/build/src/index.js"
-»  Setting "types": "./dist/types/src/index.d.cts"
+»  Setting "types": "./dist/types/src/index.d.ts"
 »  Setting "exports": {
      ".": {
-       "types": "./dist/types/src/index.d.cts",
-       "import": "./dist/build/src/index.js",
-       "require": "./dist/build/src/index.cjs"
+       "types": "./dist/types/src/index.d.ts",
+       "default": "./dist/build/src/index.js"
      }
    }
 »  Build complete!",
@@ -1745,7 +1307,6 @@ exports[`zshy with different tsconfig configurations > should work with flat bui
    ║ rootDir  │ ./src         ║
    ║ outDir   │ .             ║
    ╚══════════╧═══════════════╝
-»  Package is an ES module (package.json#/type is "module")
 »  Skipping cleanup of outDir as it contains source files
 »  Skipping cleanup of declarationDir as it contains source files
 »  Resolved entrypoints: [
@@ -1789,27 +1350,20 @@ exports[`zshy with different tsconfig configurations > should work with flat bui
      "emitDeclarationOnly": false,
      "composite": false
    }
-»  Building CJS... (rewriting .ts -> .cjs/.d.cts)
-»  Enabling CJS interop transform...
-»  Building ESM...
-»  Writing files (8 total)...
-     ./index.cjs
-     ./index.cjs.map
-     ./index.d.cts
-     ./index.d.cts.map
+»  Building...
+»  Writing files (4 total)...
      ./index.d.ts
      ./index.d.ts.map
      ./index.js
      ./index.js.map
 »  Updating package.json...
-»  Setting "main": "./index.cjs"
+»  Setting "main": "./index.js"
 »  Setting "module": "./index.js"
-»  Setting "types": "./index.d.cts"
+»  Setting "types": "./index.d.ts"
 »  Setting "exports": {
      ".": {
-       "types": "./index.d.cts",
-       "import": "./index.js",
-       "require": "./index.cjs"
+       "types": "./index.d.ts",
+       "default": "./index.js"
      }
    }
 »  Build complete!",

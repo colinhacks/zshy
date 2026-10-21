@@ -17,14 +17,13 @@
   "files": [
     "dist"
   ],
-  "main": "./dist/build/src/index.cjs",
+  "main": "./dist/build/src/index.js",
   "module": "./dist/build/src/index.js",
-  "types": "./dist/types/src/index.d.cts",
+  "types": "./dist/types/src/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/types/src/index.d.cts",
-      "import": "./dist/build/src/index.js",
-      "require": "./dist/build/src/index.cjs"
+      "types": "./dist/types/src/index.d.ts",
+      "default": "./dist/build/src/index.js"
     }
   }
 }

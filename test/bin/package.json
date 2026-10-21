@@ -18,5 +18,5 @@
   "exports": {
     "./some-existing-export": "./some-path.js"
   },
-  "bin": "./dist/cli.cjs"
+  "bin": "./dist/cli.js"
 }

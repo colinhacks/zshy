@@ -1,11 +1,6 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync, rmSync } from "node:fs";
-import { createRequire } from "node:module";
-import { pathToFileURL } from "node:url";
-import { ScriptKind } from "typescript/ast";
-import { API } from "typescript/sync";
-import { afterAll, afterEach, beforeEach, describe, expect, it } from "vitest";
-import { appliesCjsInterop } from "../src/compile.js";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { supportsTypeScript } from "../src/utils.js";
 
 describe("supportsTypeScript", () => {
@@ -19,41 +14,6 @@ describe("supportsTypeScript", () => {
     for (const version of ["5.8.3", "6.0.3", "7.0.1-rc", "7.0.2", ""]) {
       expect(supportsTypeScript(version)).toBe(false);
     }
-  });
-});
-
-describe("CJS interop", () => {
-  const api = new API({ cwd: process.cwd() });
-  afterAll(() => api.close());
-
-  const applies = (text: string) => {
-    const lease = api.createSourceFile("/virtual/index.ts", text, { scriptKind: ScriptKind.TS });
-    try {
-      return appliesCjsInterop(lease.sourceFile);
-    } finally {
-      lease.dispose();
-    }
-  };
-
-  it("applies when a default identifier also has a type-only declaration", () => {
-    expect(
-      applies(`
-type Foo = { value: string };
-const Foo = () => "value";
-export default Foo;
-`)
-    ).toBe(true);
-  });
-
-  it("does not apply when a file has type-only named exports", () => {
-    expect(
-      applies(`
-type Foo = { value: string };
-export { type Foo };
-const run = () => "value";
-export default run;
-`)
-    ).toBe(false);
   });
 });
 
@@ -210,78 +170,6 @@ describe("zshy with different tsconfig configurations", () => {
     expect(snapshot).toMatchSnapshot();
   });
 
-  it("should seal the CommonJS exports when sealCjsExports is set", () => {
-    const cwd = process.cwd() + "/test/seal-cjs-exports";
-    const snapshot = runZshyWithTsconfig("tsconfig.json", { dryRun: false, cwd });
-    expect(snapshot).toMatchSnapshot();
-
-    const require_ = createRequire(import.meta.url);
-    const built = cwd + "/dist/index.cjs";
-    const mod = require_(built);
-    const accessors = Object.getOwnPropertyNames(mod).filter(
-      (key) => Object.getOwnPropertyDescriptor(mod, key)?.get !== undefined
-    );
-    expect(accessors).toEqual([]);
-    expect(mod.starred()).toBe("starred");
-    expect(mod.renamed()).toBe("named");
-    expect(mod.local()).toBe("local");
-    expect(Object.isFrozen(mod)).toBe(true);
-
-    // a `.cts` source emits `.cjs` from both passes and the ESM pass writes last, so it only seals if the ESM pass also carries the flag
-    expect(readFileSync(cwd + "/dist/legacy.cjs", "utf-8")).toContain("seal-cjs-exports");
-    expect(mod.fromCts()).toBe("cts");
-    // the real ESM output must stay untouched
-    expect(readFileSync(cwd + "/dist/index.js", "utf-8")).not.toContain("seal-cjs-exports");
-
-    // the cjs interop transform rebinds `module.exports` for a lone default export, so callers never see the object an epilogue would seal
-    expect(readFileSync(cwd + "/dist/default.cjs", "utf-8")).not.toContain("seal-cjs-exports");
-    expect(require_(cwd + "/dist/default.cjs")()).toBe("only");
-
-    // a `module.exports = ...` assignment would settle the same exports but blind cjs-module-lexer, and these named imports would stop resolving
-    const namedImport = spawnSync(
-      process.execPath,
-      [
-        "--input-type=module",
-        "-e",
-        `import { starred, renamed, local } from ${JSON.stringify(pathToFileURL(built).href)}; console.log(starred(), renamed(), local());`,
-      ],
-      { encoding: "utf8" }
-    );
-    expect(namedImport.stderr).toBe("");
-    expect(namedImport.stdout.trim()).toBe("starred named local");
-  });
-
-  it("should keep live bindings live when sealCjsExports is set", () => {
-    const cwd = process.cwd() + "/test/seal-cjs-exports-live";
-    const snapshot = runZshyWithTsconfig("tsconfig.json", { dryRun: false, cwd });
-    expect(snapshot).toMatchSnapshot();
-
-    const require_ = createRequire(import.meta.url);
-    // freezing a module that assigns to its own exports after load would make that assignment throw
-    const mutable = require_(cwd + "/dist/mutable.cjs");
-    expect(Object.isFrozen(mutable)).toBe(false);
-    mutable.increment();
-    expect(mutable.counter).toBe(1);
-
-    // a named re-export is an unconditional getter onto the source binding, so settling it would pin `counter` at its load-time value while the ESM build kept counting
-    const mod = require_(cwd + "/dist/index.cjs");
-    mod.increment();
-    mod.increment();
-    expect(mod.counter).toBe(3);
-
-    const esm = spawnSync(
-      process.execPath,
-      [
-        "--input-type=module",
-        "-e",
-        `const m = await import(${JSON.stringify(pathToFileURL(cwd + "/dist/index.js").href)}); m.increment(); m.increment(); console.log(m.counter);`,
-      ],
-      { encoding: "utf8" }
-    );
-    expect(esm.stderr).toBe("");
-    expect(esm.stdout.trim()).toBe("2");
-  });
-
   it("should work with custom conditions", () => {
     // Run from the custom-conditions directory
     const snapshot = runZshyWithTsconfig("tsconfig.json", {
@@ -291,7 +179,7 @@ describe("zshy with different tsconfig configurations", () => {
     expect(snapshot).toMatchSnapshot();
   });
 
-  it("should skip CJS build when commonjs is false", () => {
+  it("should accept cjs: false, as zshy 0.8 configs spell ESM-only", () => {
     // Run from the esm-only directory
     const snapshot = runZshyWithTsconfig("tsconfig.json", {
       dryRun: false,
@@ -300,14 +188,13 @@ describe("zshy with different tsconfig configurations", () => {
     expect(snapshot).toMatchSnapshot();
   });
 
-  it("should report type errors when commonjs is false", () => {
+  it("should report type errors", () => {
     const result = runZshyWithTsconfig("tsconfig.json", {
       dryRun: true,
       cwd: process.cwd() + "/test/esm-only-error",
     });
 
     expect(result.exitCode).toBe(1);
-    expect(result.stdout).toContain("Skipping CJS build (cjs: false)");
     expect(result.stdout).toContain("TS2322");
     expect(result.stdout).toContain("Type 'number' is not assignable to type 'string'.");
   });
@@ -319,6 +206,17 @@ describe("zshy with different tsconfig configurations", () => {
     expect(result.exitCode).toBe(1);
     expect(result.stdout).toContain("TS9013");
     expect(result.stdout).toContain("Build completed with errors");
+    expect(existsSync(`${cwd}/dist`)).toBe(false);
+  });
+
+  it("should refuse to build CommonJS", () => {
+    const cwd = process.cwd() + "/test/cjs-removed";
+    const result = runZshyWithTsconfig("tsconfig.json", { dryRun: false, cwd });
+
+    expect(result.exitCode).toBe(1);
+    expect(result.stdout).toContain(
+      "zshy builds ES modules only, so package.json#/zshy/cjs can no longer be enabled. Remove it, or use zshy 0.8 to build CommonJS."
+    );
     expect(existsSync(`${cwd}/dist`)).toBe(false);
   });
 
@@ -364,7 +262,7 @@ describe("zshy with different tsconfig configurations", () => {
     expect(newPackageJson.exports).toEqual(originalExports);
 
     // Verify bin was updated
-    expect(newPackageJson.bin).toBe("./dist/cli.cjs");
+    expect(newPackageJson.bin).toBe("./dist/cli.js");
 
     expect(snapshot).toMatchSnapshot();
   });

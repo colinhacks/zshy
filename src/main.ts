@@ -24,7 +24,7 @@ interface RawConfig {
   exports?: Record<string, string>;
   bin?: Record<string, string> | string | null;
   cjs?: boolean | null;
-  conditions?: Record<string, "esm" | "cjs" | "src">;
+  conditions?: Record<string, string>;
   tsconfig?: string; // optional path to tsconfig.json file
   noEdit?: boolean;
   sealCjsExports?: boolean;
@@ -33,11 +33,9 @@ interface RawConfig {
 interface NormalizedConfig {
   exports: Record<string, string>;
   bin: Record<string, string> | string | null;
-  conditions: Record<string, "esm" | "cjs" | "src">;
-  cjs: boolean;
+  conditions: Record<string, "esm" | "src">;
   tsconfig: string;
   noEdit: boolean;
-  sealCjsExports: boolean;
 }
 
 type JsrExportEntry = {
@@ -175,8 +173,6 @@ Examples:
   const isDryRun = !!args["--dry-run"];
   const failThreshold = args["--fail-threshold"] || "error"; // Default to 'error'
 
-  const isCjsInterop = true; // Enable CJS interop for testing
-
   // Validate that the threshold value is one of the allowed values
   if (failThreshold !== "never" && failThreshold !== "warn" && failThreshold !== "error") {
     log.error(
@@ -287,9 +283,15 @@ Examples:
       if (typeof rawConfig.conditions === "object" && rawConfig.conditions !== null) {
         // const { import: importCondition, require: requireCondition, ...rest } = config.conditions;
         for (const [condition, value] of Object.entries(rawConfig.conditions)) {
-          if (value !== "esm" && value !== "cjs" && value !== "src") {
+          if (value === "cjs") {
             log.error(
-              `❌ Invalid condition value "${value}" for "${condition}" in package.json#/${CONFIG_KEY}/conditions. Valid values are "esm", "cjs", "src", or null`
+              `❌ The "${condition}" condition in package.json#/${CONFIG_KEY}/conditions points at "cjs", but zshy builds ES modules only. Point it at "esm" or "src", or use zshy 0.8 to build CommonJS.`
+            );
+            process.exit(1);
+          }
+          if (value !== "esm" && value !== "src") {
+            log.error(
+              `❌ Invalid condition value "${value}" for "${condition}" in package.json#/${CONFIG_KEY}/conditions. Valid values are "esm", "src", or null`
             );
             process.exit(1);
           }
@@ -319,36 +321,31 @@ Examples:
     process.exit(1);
   }
 
+  // zshy builds ES modules only. `cjs: false` was how 0.8 asked for that and is still accepted; anything that asks for
+  // CommonJS output is refused rather than silently dropped.
+  if (rawConfig.cjs) {
+    log.error(
+      `❌ zshy builds ES modules only, so package.json#/${CONFIG_KEY}/cjs can no longer be enabled. Remove it, or use zshy 0.8 to build CommonJS.`
+    );
+    process.exit(1);
+  }
+  if (rawConfig.sealCjsExports) {
+    log.error(
+      `❌ zshy builds ES modules only, so package.json#/${CONFIG_KEY}/sealCjsExports no longer applies. Remove it, or use zshy 0.8 to build CommonJS.`
+    );
+    process.exit(1);
+  }
+  if (pkgJson.type !== "module") {
+    log.error(
+      `❌ zshy builds ES modules only, so package.json#/type must be "module". Set "type": "module" in package.json, or use zshy 0.8 to build CommonJS.`
+    );
+    process.exit(1);
+  }
+
   const config = { ...rawConfig } as NormalizedConfig;
 
   // Normalize boolean options
   config.noEdit ??= false;
-  config.sealCjsExports ??= false;
-
-  // Normalize cjs property
-  if (config.cjs === undefined) {
-    config.cjs = true; // Default to true if not specified
-  }
-
-  // Validate that if cjs is disabled, no conditions are set to "cjs"
-  if (config.cjs === false && config.conditions) {
-    const cjsConditions = Object.entries(config.conditions).filter(([_, value]) => value === "cjs");
-    if (cjsConditions.length > 0) {
-      const conditionNames = cjsConditions.map(([name]) => name).join(", ");
-      log.error(
-        `❌ CJS is disabled (cjs: false) but the following conditions are set to "cjs": ${conditionNames}. Either enable CJS or change these conditions.`
-      );
-      process.exit(1);
-    }
-  }
-
-  // Validate that if cjs is disabled, package.json type must be "module"
-  if (config.cjs === false && pkgJson.type !== "module") {
-    log.error(
-      `❌ CJS is disabled (cjs: false) but package.json#/type is not set to "module". When disabling CommonJS builds, you must set "type": "module" in your package.json.`
-    );
-    process.exit(1);
-  }
 
   ///////////////////////////
   ///    read tsconfig    ///
@@ -425,7 +422,7 @@ Examples:
   // }
 
   // set/override compiler options
-  delete _parsedConfig.customConditions; //  can't be set for CommonJS builds
+  delete _parsedConfig.customConditions;
 
   const outDir = path.resolve(pkgJsonDir, _parsedConfig?.outDir || "./dist");
   const relOutDir = relativePosix(pkgJsonDir, outDir);
@@ -435,7 +432,7 @@ Examples:
   const tsconfigJson: RawCompilerOptions = {
     ..._parsedConfig,
     outDir,
-    target: _parsedConfig.target ?? ScriptTarget.ES2020, // ensure compatible target for CommonJS
+    target: _parsedConfig.target ?? ScriptTarget.ES2020,
     skipLibCheck: true, // skip library checks to reduce errors
     declaration: true,
     esModuleInterop: true,
@@ -680,17 +677,6 @@ Examples:
     log.prefix = originalPrefix;
   }
 
-  const isTypeModule = pkgJson.type === "module";
-  if (!isSilent) {
-    if (isTypeModule) {
-      log.info(`Package is an ES module (package.json#/type is "module")`);
-    } else {
-      log.info(
-        `Package is a CommonJS module (${pkgJson.type === "commonjs" ? 'package.json#/type is "commonjs"' : 'package.json#/type not set to "module"'})`
-      );
-    }
-  }
-
   //////////////////////////////////////////////
   ///   clean up outDir and declarationDir   ///
   //////////////////////////////////////////////
@@ -763,60 +749,17 @@ Examples:
     warningCount: 0,
   };
 
-  // Check if CJS should be skipped
-  const skipCjs = config.cjs === false;
-
-  // CJS
-  if (!skipCjs) {
-    if (!isSilent) {
-      log.info(`Building CJS...${isTypeModule ? ` (rewriting .ts -> .cjs/.d.cts)` : ``}`);
-    }
-    await compileProject(
-      api,
-      {
-        configPath: tsconfigPath,
-        ext: isTypeModule ? "cjs" : "js",
-        format: "cjs",
-        verbose: isVerbose,
-        dryRun: isDryRun,
-        pkgJsonDir,
-        rootDir,
-        cjsInterop: isCjsInterop,
-        sealCjsExports: config.sealCjsExports,
-        compilerOptions: {
-          ...tsconfigJson,
-          module: ModuleKind.CommonJS,
-          // TypeScript 7 has no Node10 resolution; Bundler is its default for CommonJS, resolving with the `require` condition
-          moduleResolution: ModuleResolutionKind.Bundler,
-          outDir,
-        },
-      },
-      uniqueEntryPoints,
-      buildContext
-    );
-  } else {
-    if (!isSilent) {
-      log.info("Skipping CJS build (cjs: false)");
-    }
-  }
-
-  // ESM
   if (!isSilent) {
-    log.info(`Building ESM...${isTypeModule ? `` : ` (rewriting .ts -> .mjs/.d.mts)`}`);
+    log.info("Building...");
   }
   await compileProject(
     api,
     {
       configPath: tsconfigPath,
-      ext: isTypeModule ? "js" : "mjs",
-      format: "esm",
       verbose: isVerbose,
       dryRun: isDryRun,
       pkgJsonDir,
       rootDir,
-      cjsInterop: isCjsInterop,
-      // the ESM pass still emits `.cjs` for a `.cts` source, and it writes last
-      sealCjsExports: config.sealCjsExports,
       compilerOptions: {
         ...tsconfigJson,
         module: ModuleKind.ESNext,
@@ -949,30 +892,18 @@ Examples:
                   exportObj[condition] = sourcePath;
                 } else if (value === "esm") {
                   exportObj[condition] = relJsPath;
-                } else if (value === "cjs") {
-                  exportObj[condition] = relJsPath;
                 }
               }
             }
 
             // Add standard conditions
             exportObj.types = relDtsPath;
-            if (skipCjs) {
-              // ESM-only: use default condition instead of import
-              exportObj.default = relJsPath;
-            } else {
-              // Dual CJS/ESM: use import and require
-              exportObj.import = relJsPath;
-              exportObj.require = relJsPath;
-            }
+            exportObj.default = relJsPath;
 
             newExports[finalExportPath] = exportObj;
           } else if (isSourceFile(sourcePath)) {
-            const esmPath = removeExtension(relJsPath) + (isTypeModule ? `.js` : `.mjs`);
-            const cjsPath = removeExtension(relJsPath) + (isTypeModule ? `.cjs` : `.js`);
-            // Use ESM type declarations when CJS is skipped, otherwise use CJS declarations
-            const dtsExt = skipCjs ? (isTypeModule ? ".d.ts" : ".d.mts") : isTypeModule ? ".d.cts" : ".d.ts";
-            const dtsPath = removeExtension(relDtsPath) + dtsExt;
+            const jsPath = removeExtension(relJsPath) + ".js";
+            const dtsPath = removeExtension(relDtsPath) + ".d.ts";
 
             // Build exports object with proper condition ordering
             const exportObj: Record<string, string> = {};
@@ -983,39 +914,25 @@ Examples:
                 if (value === "src") {
                   exportObj[condition] = sourcePath;
                 } else if (value === "esm") {
-                  exportObj[condition] = esmPath;
-                } else if (value === "cjs") {
-                  exportObj[condition] = cjsPath;
+                  exportObj[condition] = jsPath;
                 }
               }
             }
 
             // Add standard conditions
             exportObj.types = dtsPath;
-            if (skipCjs) {
-              // ESM-only: use default condition instead of import
-              exportObj.default = esmPath;
-            } else {
-              // Dual CJS/ESM: use import and require
-              exportObj.import = esmPath;
-              exportObj.require = cjsPath;
-            }
+            exportObj.default = jsPath;
 
             newExports[exportPath] = exportObj;
 
             if (exportPath === ".") {
-              if (!skipCjs) {
-                pkgJson.main = cjsPath;
-                pkgJson.module = esmPath;
-                pkgJson.types = dtsPath;
-              } else {
-                // Only set module and types, not main
-                pkgJson.module = esmPath;
-                pkgJson.types = dtsPath;
-              }
+              // `main` too, for tools that read no `exports`; it also replaces the `.cjs` path a zshy 0.8 build left there
+              pkgJson.main = jsPath;
+              pkgJson.module = jsPath;
+              pkgJson.types = dtsPath;
               if (isVerbose) {
-                log.info(`Setting "main": ${formatForLog(cjsPath)}`);
-                log.info(`Setting "module": ${formatForLog(esmPath)}`);
+                log.info(`Setting "main": ${formatForLog(jsPath)}`);
+                log.info(`Setting "module": ${formatForLog(jsPath)}`);
                 log.info(`Setting "types": ${formatForLog(dtsPath)}`);
               }
             }
@@ -1040,14 +957,9 @@ Examples:
 
         // Handle root export special fields (only if no TypeScript root export exists)
         if (exportPath === ".") {
-          if (!skipCjs) {
-            pkgJson.main = relAssetPath;
-            pkgJson.module = relAssetPath;
-            pkgJson.types = relAssetPath;
-          } else {
-            pkgJson.module = relAssetPath;
-            pkgJson.types = relAssetPath;
-          }
+          pkgJson.main = relAssetPath;
+          pkgJson.module = relAssetPath;
+          pkgJson.types = relAssetPath;
           if (isVerbose) {
             log.info(`Setting "main": ${formatForLog(relAssetPath)}`);
             log.info(`Setting "module": ${formatForLog(relAssetPath)}`);
@@ -1080,9 +992,7 @@ Examples:
           const absJsPath = path.resolve(outDir, relSourcePath);
           const relJsPath = "./" + relativePosix(pkgJsonDir, absJsPath);
 
-          // Use ESM files for bin when CJS is skipped, otherwise use CJS
-          const binExt = skipCjs ? (isTypeModule ? ".js" : ".mjs") : isTypeModule ? ".cjs" : ".js";
-          const binPath = removeExtension(relJsPath) + binExt;
+          const binPath = removeExtension(relJsPath) + ".js";
           newBin[binName] = binPath;
         }
       }

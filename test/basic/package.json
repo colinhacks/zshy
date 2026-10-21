@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "description": "Test fixture for zshy - represents a typical TypeScript library",
   "type": "module",
-  "main": "./dist/index.cjs",
-  "types": "./dist/index.d.cts",
-  "bin": "./dist/index.cjs",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": "./dist/index.js",
   "scripts": {
     "build": "tsx ../../src/index.ts --project tsconfig.json"
   },
@@ -45,89 +45,72 @@
   "exports": {
     "./package.json": "./package.json",
     ".": {
-      "types": "./dist/index.d.cts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     },
     "./hello": {
-      "types": "./dist/hello.d.cts",
-      "import": "./dist/hello.js",
-      "require": "./dist/hello.cjs"
+      "types": "./dist/hello.d.ts",
+      "default": "./dist/hello.js"
     },
     "./utils": {
-      "types": "./dist/utils.d.cts",
-      "import": "./dist/utils.js",
-      "require": "./dist/utils.cjs"
+      "types": "./dist/utils.d.ts",
+      "default": "./dist/utils.js"
     },
     "./plugins": {
-      "types": "./dist/plugins/index.d.cts",
-      "import": "./dist/plugins/index.js",
-      "require": "./dist/plugins/index.cjs"
+      "types": "./dist/plugins/index.d.ts",
+      "default": "./dist/plugins/index.js"
     },
     "./plugins/*": {
       "types": "./dist/plugins/*",
-      "import": "./dist/plugins/*",
-      "require": "./dist/plugins/*"
+      "default": "./dist/plugins/*"
     },
     "./default-function": {
-      "types": "./dist/default-function.d.cts",
-      "import": "./dist/default-function.js",
-      "require": "./dist/default-function.cjs"
+      "types": "./dist/default-function.d.ts",
+      "default": "./dist/default-function.js"
     },
     "./default-class": {
-      "types": "./dist/default-class.d.cts",
-      "import": "./dist/default-class.js",
-      "require": "./dist/default-class.cjs"
+      "types": "./dist/default-class.d.ts",
+      "default": "./dist/default-class.js"
     },
     "./default-object": {
-      "types": "./dist/default-object.d.cts",
-      "import": "./dist/default-object.js",
-      "require": "./dist/default-object.cjs"
+      "types": "./dist/default-object.d.ts",
+      "default": "./dist/default-object.js"
     },
     "./default-arrow": {
-      "types": "./dist/default-arrow.d.cts",
-      "import": "./dist/default-arrow.js",
-      "require": "./dist/default-arrow.cjs"
+      "types": "./dist/default-arrow.d.ts",
+      "default": "./dist/default-arrow.js"
     },
     "./default-with-named": {
-      "types": "./dist/default-with-named.d.cts",
-      "import": "./dist/default-with-named.js",
-      "require": "./dist/default-with-named.cjs"
+      "types": "./dist/default-with-named.d.ts",
+      "default": "./dist/default-with-named.js"
     },
     "./default-with-export-star": {
-      "types": "./dist/default-with-export-star.d.cts",
-      "import": "./dist/default-with-export-star.js",
-      "require": "./dist/default-with-export-star.cjs"
+      "types": "./dist/default-with-export-star.d.ts",
+      "default": "./dist/default-with-export-star.js"
     },
     "./default-export-equals": {
-      "types": "./dist/default-export-equals.d.cts",
-      "import": "./dist/default-export-equals.js",
-      "require": "./dist/default-export-equals.cjs"
+      "types": "./dist/default-export-equals.d.ts",
+      "default": "./dist/default-export-equals.js"
     },
     "./default-const": {
-      "types": "./dist/default-const.d.cts",
-      "import": "./dist/default-const.js",
-      "require": "./dist/default-const.cjs"
+      "types": "./dist/default-const.d.ts",
+      "default": "./dist/default-const.js"
     },
     "./default-literal": {
-      "types": "./dist/default-literal.d.cts",
-      "import": "./dist/default-literal.js",
-      "require": "./dist/default-literal.cjs"
+      "types": "./dist/default-literal.d.ts",
+      "default": "./dist/default-literal.js"
     },
     "./default-with-type-exports": {
-      "types": "./dist/default-with-type-exports.d.cts",
-      "import": "./dist/default-with-type-exports.js",
-      "require": "./dist/default-with-type-exports.cjs"
+      "types": "./dist/default-with-type-exports.d.ts",
+      "default": "./dist/default-with-type-exports.js"
     },
     "./default-with-same-name-type": {
-      "types": "./dist/default-with-same-name-type.d.cts",
-      "import": "./dist/default-with-same-name-type.js",
-      "require": "./dist/default-with-same-name-type.cjs"
+      "types": "./dist/default-with-same-name-type.d.ts",
+      "default": "./dist/default-with-same-name-type.js"
     },
     "./default-with-enum-exports": {
-      "types": "./dist/default-with-enum-exports.d.cts",
-      "import": "./dist/default-with-enum-exports.js",
-      "require": "./dist/default-with-enum-exports.cjs"
+      "types": "./dist/default-with-enum-exports.d.ts",
+      "default": "./dist/default-with-enum-exports.js"
     },
     "./env.d.ts": "./dist/env.d.ts",
     "./config.json": "./dist/assets/config.json",
