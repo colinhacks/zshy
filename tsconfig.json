@@ -2,6 +2,7 @@
   "compilerOptions": {
     // Environment setup & latest features
     "lib": ["ESNext"],
+    "types": ["node"],
     "target": "es2020",
     "module": "nodenext",
     "moduleResolution": "nodenext",
@@ -33,7 +34,7 @@
     "emitDeclarationOnly": false,
     "sourceMap": true,
     "declarationMap": true,
-    "resolveJsonModule": true 
+    "resolveJsonModule": true
   },
   "include": ["./**/*.ts", "test/src/plugins/b.cts", "play.cts"],
 }

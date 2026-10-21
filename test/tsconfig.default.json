@@ -34,6 +34,11 @@
     "declarationMap": true,
     "resolveJsonModule": true,
     "noImplicitOverride": true,
-    "noImplicitThis": true
+    "noImplicitThis": true,
+
+    // TypeScript 6 stopped including every @types package by default and started checking side-effect imports; both
+    // are pinned so the fixtures build the same on 5.x, 6.x and 7.x. zshy copies imported assets such as `./x.css`.
+    "types": ["node"],
+    "noUncheckedSideEffectImports": false
   }
 }

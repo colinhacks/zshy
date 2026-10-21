@@ -10,17 +10,16 @@
     "forceConsistentCasingInFileNames": true,
     "declaration": true,
     "outDir": "./dist",
-    "baseUrl": "${configDir}/src",
     "paths": {
-      "@components/*": ["${configDir}/src/components/*"],
-      "@/config": ["${configDir}/src/config.ts"],
-      "utils/*": ["utils/*"],
-      "components/*": ["components/*"],
-      "lib/*": ["lib/*"],
-      "~/*": ["*"],
-      "$config": ["config.ts"],
-      "#helpers": ["./utils/helpers.ts"],
-      "@utils/*": ["${configDir}/src/utils/*"]
+      "@components/*": ["./src/components/*"],
+      "@/config": ["./src/config.ts"],
+      "utils/*": ["./src/utils/*"],
+      "components/*": ["./src/components/*"],
+      "lib/*": ["./src/lib/*"],
+      "~/*": ["./src/*"],
+      "$config": ["./src/config.ts"],
+      "#helpers": ["./src/utils/helpers.ts"],
+      "@utils/*": ["./src/utils/*"]
     }
   },
   "include": ["src/**/*"]

@@ -40,29 +40,14 @@ jobs:
       - name: Build
         run: pnpm build
 
-  # Verifies that zshy itself compiles cleanly across the supported TypeScript
-  # range, including the latest stable and the next/dev tag. Snapshot tests are
-  # intentionally skipped here because some snapshots include the resolved TS
-  # CompilerOptions (which legitimately differ across versions, e.g. when zshy
-  # injects `ignoreDeprecations: "6.0"` under TS 6+). Instead we run the two
-  # version-agnostic smoke tests:
-  #   1. `pnpm build`        — zshy builds zshy from source
-  #   2. `pnpm test:basic`   — zshy dry-run-builds the basic test fixture
-  typescript-compat:
-    name: TypeScript ${{ matrix.typescript-version }} compat
+  # Runs the suite against TypeScript's nightly build, so a change to the
+  # TypeScript 7 API or its emit shows up here before the devDependency is
+  # bumped. Advisory: nightly churn must not block unrelated work. The main job
+  # covers the pinned 7.1 release.
+  typescript-next:
+    name: TypeScript next (advisory)
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        # 5.7 is the lower bound because zshy hard-codes
-        # `rewriteRelativeImportExtensions`, which TS added in 5.7. The
-        # `peerDependencies.typescript` field still claims `>5.5.0`; that's a
-        # pre-existing inconsistency tracked separately. `latest` covers the
-        # current TS major (6.x). 5.8 is intentionally omitted because the
-        # main `Test with Node 24` job already runs the full suite against the
-        # ^5.8.3 dev dependency. `next` is omitted because it currently
-        # resolves to a stale dev build of the same major as `latest`.
-        typescript-version: ["5.7", "latest"]
+    continue-on-error: true
 
     steps:
       - name: Checkout
@@ -73,14 +58,19 @@ jobs:
         with:
           node-version: 24
 
-      - name: Override TypeScript version
-        run: pnpm add -D typescript@${{ matrix.typescript-version }} --ignore-scripts
+      - name: Install typescript@next
+        run: pnpm add -D typescript@next --ignore-scripts
 
       - name: Print TypeScript version
-        run: pnpm exec tsc --version
+        run: node -p "require('typescript/package.json').version"
 
-      - name: Smoke test — build zshy with zshy
+      - name: Build zshy with zshy
         run: pnpm build
 
-      - name: Smoke test — basic fixture (dry run)
-        run: pnpm test:basic
+      - name: Run tests
+        run: pnpm test
+
+      # Fixture output is committed, so upstream emit drift shows up as a diff
+      - name: Show fixture drift
+        if: always()
+        run: git status --porcelain -- test

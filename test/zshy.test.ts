@@ -2,54 +2,58 @@ import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync, rmSync } from "node:fs";
 import { createRequire } from "node:module";
 import { pathToFileURL } from "node:url";
-import * as ts from "typescript";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { createCjsInteropTransformer } from "../src/tx-cjs-interop.js";
+import { ScriptKind } from "typescript/ast";
+import { API } from "typescript/sync";
+import { afterAll, afterEach, beforeEach, describe, expect, it } from "vitest";
+import { appliesCjsInterop } from "../src/compile.js";
+import { supportsTypeScript } from "../src/utils.js";
 
-describe("CJS interop transformer", () => {
-  it("applies interop when a default identifier also has a type-only declaration", () => {
-    const result = ts.transpileModule(
-      `
+describe("supportsTypeScript", () => {
+  it("accepts TypeScript 7.1 and later, prereleases included", () => {
+    for (const version of ["7.1.0-dev.20261020.3", "7.1.0-beta", "7.1.0", "7.2.0", "8.0.0"]) {
+      expect(supportsTypeScript(version)).toBe(true);
+    }
+  });
+
+  it("rejects TypeScript 7.0, which shipped the new API only as an unstable preview, and the classic releases", () => {
+    for (const version of ["5.8.3", "6.0.3", "7.0.1-rc", "7.0.2", ""]) {
+      expect(supportsTypeScript(version)).toBe(false);
+    }
+  });
+});
+
+describe("CJS interop", () => {
+  const api = new API({ cwd: process.cwd() });
+  afterAll(() => api.close());
+
+  const applies = (text: string) => {
+    const lease = api.createSourceFile("/virtual/index.ts", text, { scriptKind: ScriptKind.TS });
+    try {
+      return appliesCjsInterop(lease.sourceFile);
+    } finally {
+      lease.dispose();
+    }
+  };
+
+  it("applies when a default identifier also has a type-only declaration", () => {
+    expect(
+      applies(`
 type Foo = { value: string };
 const Foo = () => "value";
 export default Foo;
-`,
-      {
-        compilerOptions: {
-          module: ts.ModuleKind.CommonJS,
-          target: ts.ScriptTarget.ES2020,
-        },
-        transformers: {
-          before: [createCjsInteropTransformer()],
-        },
-      }
-    );
-
-    expect(result.outputText).toContain("exports.default = Foo;");
-    expect(result.outputText).toContain("module.exports = exports.default;");
+`)
+    ).toBe(true);
   });
 
-  it("does not apply interop when a file has type-only named exports", () => {
-    const result = ts.transpileModule(
-      `
+  it("does not apply when a file has type-only named exports", () => {
+    expect(
+      applies(`
 type Foo = { value: string };
 export { type Foo };
 const run = () => "value";
 export default run;
-`,
-      {
-        compilerOptions: {
-          module: ts.ModuleKind.CommonJS,
-          target: ts.ScriptTarget.ES2020,
-        },
-        transformers: {
-          before: [createCjsInteropTransformer()],
-        },
-      }
-    );
-
-    expect(result.outputText).toContain("exports.default = run;");
-    expect(result.outputText).not.toContain("module.exports = exports.default;");
+`)
+    ).toBe(false);
   });
 });
 
@@ -308,6 +312,16 @@ describe("zshy with different tsconfig configurations", () => {
     expect(result.stdout).toContain("Type 'number' is not assignable to type 'string'.");
   });
 
+  it("should report declaration-emit errors and write nothing", () => {
+    const cwd = process.cwd() + "/test/declaration-error";
+    const result = runZshyWithTsconfig("tsconfig.json", { dryRun: false, cwd });
+
+    expect(result.exitCode).toBe(1);
+    expect(result.stdout).toContain("TS9013");
+    expect(result.stdout).toContain("Build completed with errors");
+    expect(existsSync(`${cwd}/dist`)).toBe(false);
+  });
+
   it("should copy exports to jsr.json when jsr.json exists", () => {
     const cwd = process.cwd() + "/test/jsr";
     const snapshot = runZshyWithTsconfig("tsconfig.json", {
@@ -395,6 +409,8 @@ function normalizeOutput(output: string): string {
       // Normalize any specific file counts that might vary
       // .replace(/\(\d+ matches\)/g, "(<count> matches)")
       .replace(/Detected package manager: [^\n]+/g, "Detected package manager: <pm>")
+      // The compat jobs run this suite against several TypeScript versions
+      .replace(/Using TypeScript [^\n]+/g, "Using TypeScript <version>")
       // Remove Node.js process warnings (e.g. DEP0205 `module.register()`) that
       // vary by Node version and otherwise leak into captured stdout/stderr
       .replace(/^\(node:\d+\) .*$/gm, "")

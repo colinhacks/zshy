@@ -54,6 +54,8 @@ yarn add --dev zshy
 pnpm add --save-dev zshy
 ```
 
+`zshy` builds with your project's own `typescript`, which must be 7.1 or later. While 7.1 is in beta, install it as `typescript@beta`. To build with TypeScript 5 or 6, use `zshy@0.8`.
+
 <br/>
 
 ### 2. Specify your entrypoint(s) in `package.json#zshy`:
@@ -148,9 +150,9 @@ $ npx zshy # use --dry-run to try it out without writing/updating files
 
 Vanilla `tsc` does not perform _extension rewriting_; it will only ever transpile a `.ts` file to a `.js` file (never `.cjs` or `.mjs`). This is the fundamental limitation that forces library authors to use bundlers or bundler-powered tools like `tsup`, `tsdown`, or `unbuild`...
 
-...until now! `zshy` works around this limitation using the official [TypeScript Compiler API](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API), which provides some powerful (and criminally under-utilized) hooks for customizing file extensions during the `tsc` build process.
+...until now! `zshy` works around this limitation using TypeScript's compiler API: it lets `tsc` emit as usual, then renames each output file and rewrites its relative imports to match.
 
-Using these hooks, `zshy` transpiles each `.ts` file to `.js/.d.ts` (ESM) and `.cjs/.d.cts` (CommonJS):
+That way, `zshy` transpiles each `.ts` file to `.js/.d.ts` (ESM) and `.cjs/.d.cts` (CommonJS):
 
 ```bash
 $ tree .
@@ -550,7 +552,7 @@ A few notes on wildcards exports:
 Yes! With some strategic overrides:
 
 - **`module`**: Overridden (`"commonjs"` for CJS build, `"esnext"` for ESM build)
-- **`moduleResolution`**: Overridden (`"node10"` for CJS, `"bundler"` for ESM)
+- **`moduleResolution`**: Overridden to `"bundler"` for both builds (TypeScript 7 removed `"node10"`; for the CJS build, `"bundler"` resolves with the `require` condition)
 - **`declaration`/`noEmit`/`emitDeclarationOnly`**: Overridden to ensure proper output
 - **`verbatimModuleSyntax`**: Set to `false` to allow multiple build formats
 - **`esModuleInterop`**: Set to `true` (it's a best practice)
@@ -561,6 +563,21 @@ All other options are respected as defined, though `zshy` will also set the foll
 - `outDir` (defaults to `./dist`)
 - `declarationDir` (defaults to `outDir` — you probably shouldn't set this explicitly)
 - `target` (defaults to `es2020`)
+
+<br/>
+
+### Which versions of TypeScript does `zshy` support?
+
+TypeScript 7.1 and later. `zshy` builds with the `typescript` your project has installed, through the API of TypeScript's native compiler, and 7.1 is the first release where that API is stable. While 7.1 is in beta, install it as `typescript@beta`.
+
+To build with TypeScript 5 or 6, use `zshy@0.8`, the last release built on the classic [Compiler API](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API).
+
+Coming from `zshy@0.8`, the JavaScript output should be unchanged. A few declarations come out of TypeScript 7 in a different but equivalent shape, and source maps differ in detail. TypeScript 7 also keeps the defaults TypeScript 6 changed, and `zshy` checks your code with them. Two that commonly surface:
+
+- `types` now defaults to `[]`, so Node.js globals like `console` and `process` need `"types": ["node"]`.
+- Side-effect imports are checked, so `import "./styles.css"` reports TS2882 unless you set `"noUncheckedSideEffectImports": false`. `zshy` still copies the asset.
+
+TypeScript 7 also removes `baseUrl`: spell `paths` targets relative to the tsconfig instead, e.g. `"./src/*"`.
 
 <br/>
 
@@ -617,7 +634,7 @@ $ tree dist
 
 ### How does extension rewriting work?
 
-`zshy` uses the [TypeScript Compiler API](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API) to rewrite file extensions during the `tsc` emit step.
+`zshy` rewrites file extensions as part of the `tsc` emit step.
 
 - If `"type": "module"`
   - `.ts` becomes `.js`/`.d.ts` (ESM) and `.cjs`/`.d.cts` (CJS)
@@ -632,10 +649,7 @@ Similarly, all relative `import`/`export` statements are rewritten to account fo
 | `from "./util.ts"` | `from "./util.js"` | `from "./util.cjs"` |
 | `from "./util.js"` | `from "./util.js"` | `from "./util.cjs"` |
 
-TypeScript's Compiler API provides dedicated hooks for performing such transforms (though they are criminally under-utilized).
-
-- **`ts.TransformerFactory`**: Provides AST transformations to rewrite import/export extensions before module conversion
-- **`ts.CompilerHost#writeFile`**: Handles output file extension changes (`.js` → `.cjs`/`.mjs`)
+The TypeScript 7 API has no transformer hook, so `zshy` works on what `tsc` emits: each output file is renamed to its new extension, and each relative specifier is found by its position in the parsed output and rewritten there. A string that merely looks like a path is never touched.
 
 > **Comparison to `tshy`** — `tshy` was designed to enable dual-package builds powered by the `tsc` compiler. To make this work, it relies on a specific file structure and the creation of temporary `package.json` files to accommodate the various idiosyncrasies of Node.js module resolution. It also requires the use of separate `dist/esm` and `dist/cjs` build subdirectories.
 
@@ -806,7 +820,7 @@ When `noEdit` is enabled, `zshy` will build your files but will not write to `pa
 Not really. It uses `tsc` to typecheck your codebase, which is a lot slower than using a bundler that strips types. That said:
 
 1. You _should_ be type checking your code during builds
-2. TypeScript is [about to get 10x faster](https://devblogs.microsoft.com/typescript/typescript-native-port/)
+2. `zshy` builds on TypeScript 7, the [10x faster native port](https://devblogs.microsoft.com/typescript/typescript-native-port/)
 
 <br/>
 <br/>

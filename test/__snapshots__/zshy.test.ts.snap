@@ -19,6 +19,7 @@ exports[`zshy with different tsconfig configurations > should copy exports to js
        "./features/*": "./src/*"
      }
    }
+»  Using TypeScript <version>
 »  Reading tsconfig from ./tsconfig.json
 »  Determining entrypoints...
 »  Matching glob: ./src/*.{ts,tsx,mts,cts}
@@ -42,35 +43,40 @@ exports[`zshy with different tsconfig configurations > should copy exports to js
      "./src/index.ts"
    ]
 »  Resolved compilerOptions: {
+     "allowJs": true,
+     "allowImportingTsExtensions": true,
+     "declaration": true,
+     "declarationMap": true,
+     "forceConsistentCasingInFileNames": true,
+     "jsx": 4,
      "lib": [
        "lib.esnext.d.ts"
      ],
-     "target": "ES2020",
      "module": "ESNext",
      "moduleResolution": "Bundler",
-     "moduleDetection": 2,
-     "allowJs": true,
-     "declaration": true,
-     "jsx": 4,
-     "allowImportingTsExtensions": true,
-     "rewriteRelativeImportExtensions": true,
-     "verbatimModuleSyntax": false,
+     "moduleDetection": 1,
      "noEmit": false,
-     "strict": true,
-     "skipLibCheck": true,
      "noFallthroughCasesInSwitch": true,
+     "noImplicitThis": true,
+     "noPropertyAccessFromIndexSignature": false,
      "noUncheckedIndexedAccess": true,
-     "esModuleInterop": true,
-     "forceConsistentCasingInFileNames": true,
      "noUnusedLocals": true,
      "noUnusedParameters": false,
-     "noPropertyAccessFromIndexSignature": false,
-     "sourceMap": true,
-     "declarationMap": true,
-     "resolveJsonModule": true,
      "noImplicitOverride": true,
-     "noImplicitThis": true,
+     "noUncheckedSideEffectImports": false,
      "outDir": "<root>/test/jsr/dist",
+     "resolveJsonModule": true,
+     "rewriteRelativeImportExtensions": true,
+     "skipLibCheck": true,
+     "strict": true,
+     "sourceMap": true,
+     "target": "ES2020",
+     "types": [
+       "node"
+     ],
+     "verbatimModuleSyntax": false,
+     "esModuleInterop": true,
+     "configFilePath": "<root>/test/jsr/tsconfig.json",
      "emitDeclarationOnly": false,
      "composite": false
    }
@@ -131,6 +137,7 @@ exports[`zshy with different tsconfig configurations > should keep live bindings
      },
      "sealCjsExports": true
    }
+»  Using TypeScript <version>
 »  Reading tsconfig from ./tsconfig.json
 »  Determining entrypoints...
    ╔══════════════════════════════╤════════════════╗
@@ -152,35 +159,40 @@ exports[`zshy with different tsconfig configurations > should keep live bindings
      "./src/index.ts"
    ]
 »  Resolved compilerOptions: {
+     "allowJs": true,
+     "allowImportingTsExtensions": true,
+     "declaration": true,
+     "declarationMap": true,
+     "forceConsistentCasingInFileNames": true,
+     "jsx": 4,
      "lib": [
        "lib.esnext.d.ts"
      ],
-     "target": "ES2020",
      "module": "ESNext",
      "moduleResolution": "Bundler",
-     "moduleDetection": 2,
-     "allowJs": true,
-     "declaration": true,
-     "jsx": 4,
-     "allowImportingTsExtensions": true,
-     "rewriteRelativeImportExtensions": true,
-     "verbatimModuleSyntax": false,
+     "moduleDetection": 1,
      "noEmit": false,
-     "strict": true,
-     "skipLibCheck": true,
      "noFallthroughCasesInSwitch": true,
+     "noImplicitThis": true,
+     "noPropertyAccessFromIndexSignature": false,
      "noUncheckedIndexedAccess": true,
-     "esModuleInterop": true,
-     "forceConsistentCasingInFileNames": true,
      "noUnusedLocals": true,
      "noUnusedParameters": false,
-     "noPropertyAccessFromIndexSignature": false,
-     "sourceMap": true,
-     "declarationMap": true,
-     "resolveJsonModule": true,
      "noImplicitOverride": true,
-     "noImplicitThis": true,
+     "noUncheckedSideEffectImports": false,
      "outDir": "<root>/test/seal-cjs-exports-live/dist",
+     "resolveJsonModule": true,
+     "rewriteRelativeImportExtensions": true,
+     "skipLibCheck": true,
+     "strict": true,
+     "sourceMap": true,
+     "target": "ES2020",
+     "types": [
+       "node"
+     ],
+     "verbatimModuleSyntax": false,
+     "esModuleInterop": true,
+     "configFilePath": "<root>/test/seal-cjs-exports-live/tsconfig.json",
      "emitDeclarationOnly": false,
      "composite": false
    }
@@ -238,6 +250,7 @@ exports[`zshy with different tsconfig configurations > should not edit package.j
      },
      "noEdit": true
    }
+»  Using TypeScript <version>
 »  Reading tsconfig from ./tsconfig.json
 »  Determining entrypoints...
    ╔══════════╤════════════════╗
@@ -259,35 +272,40 @@ exports[`zshy with different tsconfig configurations > should not edit package.j
      "./src/index.ts"
    ]
 »  Resolved compilerOptions: {
+     "allowJs": true,
+     "allowImportingTsExtensions": true,
+     "declaration": true,
+     "declarationMap": true,
+     "forceConsistentCasingInFileNames": true,
+     "jsx": 4,
      "lib": [
        "lib.esnext.d.ts"
      ],
-     "target": "ES2020",
      "module": "ESNext",
      "moduleResolution": "Bundler",
-     "moduleDetection": 2,
-     "allowJs": true,
-     "declaration": true,
-     "jsx": 4,
-     "allowImportingTsExtensions": true,
-     "rewriteRelativeImportExtensions": true,
-     "verbatimModuleSyntax": false,
+     "moduleDetection": 1,
      "noEmit": false,
-     "strict": true,
-     "skipLibCheck": true,
      "noFallthroughCasesInSwitch": true,
+     "noImplicitThis": true,
+     "noPropertyAccessFromIndexSignature": false,
      "noUncheckedIndexedAccess": true,
-     "esModuleInterop": true,
-     "forceConsistentCasingInFileNames": true,
      "noUnusedLocals": true,
      "noUnusedParameters": false,
-     "noPropertyAccessFromIndexSignature": false,
-     "sourceMap": true,
-     "declarationMap": true,
-     "resolveJsonModule": true,
      "noImplicitOverride": true,
-     "noImplicitThis": true,
+     "noUncheckedSideEffectImports": false,
      "outDir": "<root>/test/no-edit-package-json/dist",
+     "resolveJsonModule": true,
+     "rewriteRelativeImportExtensions": true,
+     "skipLibCheck": true,
+     "strict": true,
+     "sourceMap": true,
+     "target": "ES2020",
+     "types": [
+       "node"
+     ],
+     "verbatimModuleSyntax": false,
+     "esModuleInterop": true,
+     "configFilePath": "<root>/test/no-edit-package-json/tsconfig.json",
      "emitDeclarationOnly": false,
      "composite": false
    }
@@ -328,6 +346,7 @@ exports[`zshy with different tsconfig configurations > should reproduce issue #5
        "./components/*": "./src/components/*"
      }
    }
+»  Using TypeScript <version>
 »  Reading tsconfig from ./tsconfig.json
 »  Determining entrypoints...
 »  Matching glob: ./src/utils/**/*.{ts,tsx,mts,cts}
@@ -356,35 +375,40 @@ exports[`zshy with different tsconfig configurations > should reproduce issue #5
      "./src/components/button.ts"
    ]
 »  Resolved compilerOptions: {
+     "allowJs": true,
+     "allowImportingTsExtensions": true,
+     "declaration": true,
+     "declarationMap": true,
+     "forceConsistentCasingInFileNames": true,
+     "jsx": 4,
      "lib": [
        "lib.esnext.d.ts"
      ],
-     "target": "ES2020",
      "module": "ESNext",
      "moduleResolution": "Bundler",
-     "moduleDetection": 2,
-     "allowJs": true,
-     "declaration": true,
-     "jsx": 4,
-     "allowImportingTsExtensions": true,
-     "rewriteRelativeImportExtensions": true,
-     "verbatimModuleSyntax": false,
+     "moduleDetection": 1,
      "noEmit": false,
-     "strict": true,
-     "skipLibCheck": true,
      "noFallthroughCasesInSwitch": true,
+     "noImplicitThis": true,
+     "noPropertyAccessFromIndexSignature": false,
      "noUncheckedIndexedAccess": true,
-     "esModuleInterop": true,
-     "forceConsistentCasingInFileNames": true,
      "noUnusedLocals": true,
      "noUnusedParameters": false,
-     "noPropertyAccessFromIndexSignature": false,
-     "sourceMap": true,
-     "declarationMap": true,
-     "resolveJsonModule": true,
      "noImplicitOverride": true,
-     "noImplicitThis": true,
+     "noUncheckedSideEffectImports": false,
      "outDir": "<root>/test/ignore-tests/dist",
+     "resolveJsonModule": true,
+     "rewriteRelativeImportExtensions": true,
+     "skipLibCheck": true,
+     "strict": true,
+     "sourceMap": true,
+     "target": "ES2020",
+     "types": [
+       "node"
+     ],
+     "verbatimModuleSyntax": false,
+     "esModuleInterop": true,
+     "configFilePath": "<root>/test/ignore-tests/tsconfig.json",
      "emitDeclarationOnly": false,
      "composite": false
    }
@@ -477,6 +501,7 @@ exports[`zshy with different tsconfig configurations > should seal the CommonJS 
      },
      "sealCjsExports": true
    }
+»  Using TypeScript <version>
 »  Reading tsconfig from ./tsconfig.json
 »  Determining entrypoints...
    ╔═════════════════════════════════╤══════════════════╗
@@ -500,35 +525,40 @@ exports[`zshy with different tsconfig configurations > should seal the CommonJS 
      "./src/default.ts"
    ]
 »  Resolved compilerOptions: {
+     "allowJs": true,
+     "allowImportingTsExtensions": true,
+     "declaration": true,
+     "declarationMap": true,
+     "forceConsistentCasingInFileNames": true,
+     "jsx": 4,
      "lib": [
        "lib.esnext.d.ts"
      ],
-     "target": "ES2020",
      "module": "ESNext",
      "moduleResolution": "Bundler",
-     "moduleDetection": 2,
-     "allowJs": true,
-     "declaration": true,
-     "jsx": 4,
-     "allowImportingTsExtensions": true,
-     "rewriteRelativeImportExtensions": true,
-     "verbatimModuleSyntax": false,
+     "moduleDetection": 1,
      "noEmit": false,
-     "strict": true,
-     "skipLibCheck": true,
      "noFallthroughCasesInSwitch": true,
+     "noImplicitThis": true,
+     "noPropertyAccessFromIndexSignature": false,
      "noUncheckedIndexedAccess": true,
-     "esModuleInterop": true,
-     "forceConsistentCasingInFileNames": true,
      "noUnusedLocals": true,
      "noUnusedParameters": false,
-     "noPropertyAccessFromIndexSignature": false,
-     "sourceMap": true,
-     "declarationMap": true,
-     "resolveJsonModule": true,
      "noImplicitOverride": true,
-     "noImplicitThis": true,
+     "noUncheckedSideEffectImports": false,
      "outDir": "<root>/test/seal-cjs-exports/dist",
+     "resolveJsonModule": true,
+     "rewriteRelativeImportExtensions": true,
+     "skipLibCheck": true,
+     "strict": true,
+     "sourceMap": true,
+     "target": "ES2020",
+     "types": [
+       "node"
+     ],
+     "verbatimModuleSyntax": false,
+     "esModuleInterop": true,
+     "configFilePath": "<root>/test/seal-cjs-exports/tsconfig.json",
      "emitDeclarationOnly": false,
      "composite": false
    }
@@ -606,6 +636,7 @@ exports[`zshy with different tsconfig configurations > should skip CJS build whe
        "custom-cjs": "esm"
      }
    }
+»  Using TypeScript <version>
 »  Reading tsconfig from ./tsconfig.json
 »  Determining entrypoints...
    ╔══════════╤════════════════╗
@@ -627,35 +658,40 @@ exports[`zshy with different tsconfig configurations > should skip CJS build whe
      "./src/index.ts"
    ]
 »  Resolved compilerOptions: {
+     "allowJs": true,
+     "allowImportingTsExtensions": true,
+     "declaration": true,
+     "declarationMap": true,
+     "forceConsistentCasingInFileNames": true,
+     "jsx": 4,
      "lib": [
        "lib.esnext.d.ts"
      ],
-     "target": "ES2020",
      "module": "ESNext",
      "moduleResolution": "Bundler",
-     "moduleDetection": 2,
-     "allowJs": true,
-     "declaration": true,
-     "jsx": 4,
-     "allowImportingTsExtensions": true,
-     "rewriteRelativeImportExtensions": true,
-     "verbatimModuleSyntax": false,
+     "moduleDetection": 1,
      "noEmit": false,
-     "strict": true,
-     "skipLibCheck": true,
      "noFallthroughCasesInSwitch": true,
+     "noImplicitThis": true,
+     "noPropertyAccessFromIndexSignature": false,
      "noUncheckedIndexedAccess": true,
-     "esModuleInterop": true,
-     "forceConsistentCasingInFileNames": true,
      "noUnusedLocals": true,
      "noUnusedParameters": false,
-     "noPropertyAccessFromIndexSignature": false,
-     "sourceMap": true,
-     "declarationMap": true,
-     "resolveJsonModule": true,
      "noImplicitOverride": true,
-     "noImplicitThis": true,
+     "noUncheckedSideEffectImports": false,
      "outDir": "<root>/test/esm-only/dist",
+     "resolveJsonModule": true,
+     "rewriteRelativeImportExtensions": true,
+     "skipLibCheck": true,
+     "strict": true,
+     "sourceMap": true,
+     "target": "ES2020",
+     "types": [
+       "node"
+     ],
+     "verbatimModuleSyntax": false,
+     "esModuleInterop": true,
+     "configFilePath": "<root>/test/esm-only/tsconfig.json",
      "emitDeclarationOnly": false,
      "composite": false
    }
@@ -697,6 +733,7 @@ exports[`zshy with different tsconfig configurations > should support bin withou
 »  Parsed zshy config: {
      "bin": "./src/cli.ts"
    }
+»  Using TypeScript <version>
 »  Reading tsconfig from ./tsconfig.json
 »  Determining entrypoints...
    ╔══════════════════╤══════════════╗
@@ -718,35 +755,40 @@ exports[`zshy with different tsconfig configurations > should support bin withou
      "./src/cli.ts"
    ]
 »  Resolved compilerOptions: {
+     "allowJs": true,
+     "allowImportingTsExtensions": true,
+     "declaration": true,
+     "declarationMap": true,
+     "forceConsistentCasingInFileNames": true,
+     "jsx": 4,
      "lib": [
        "lib.esnext.d.ts"
      ],
-     "target": "ES2020",
      "module": "ESNext",
      "moduleResolution": "Bundler",
-     "moduleDetection": 2,
-     "allowJs": true,
-     "declaration": true,
-     "jsx": 4,
-     "allowImportingTsExtensions": true,
-     "rewriteRelativeImportExtensions": true,
-     "verbatimModuleSyntax": false,
+     "moduleDetection": 1,
      "noEmit": false,
-     "strict": true,
-     "skipLibCheck": true,
      "noFallthroughCasesInSwitch": true,
+     "noImplicitThis": true,
+     "noPropertyAccessFromIndexSignature": false,
      "noUncheckedIndexedAccess": true,
-     "esModuleInterop": true,
-     "forceConsistentCasingInFileNames": true,
      "noUnusedLocals": true,
      "noUnusedParameters": false,
-     "noPropertyAccessFromIndexSignature": false,
-     "sourceMap": true,
-     "declarationMap": true,
-     "resolveJsonModule": true,
      "noImplicitOverride": true,
-     "noImplicitThis": true,
+     "noUncheckedSideEffectImports": false,
      "outDir": "<root>/test/bin/dist",
+     "resolveJsonModule": true,
+     "rewriteRelativeImportExtensions": true,
+     "skipLibCheck": true,
+     "strict": true,
+     "sourceMap": true,
+     "target": "ES2020",
+     "types": [
+       "node"
+     ],
+     "verbatimModuleSyntax": false,
+     "esModuleInterop": true,
+     "configFilePath": "<root>/test/bin/tsconfig.json",
      "emitDeclarationOnly": false,
      "composite": false
    }
@@ -790,6 +832,7 @@ exports[`zshy with different tsconfig configurations > should support multiple b
        "cli-two": "./src/cli-two.ts"
      }
    }
+»  Using TypeScript <version>
 »  Reading tsconfig from ./tsconfig.json
 »  Determining entrypoints...
    ╔═════════════════╤══════════════════╗
@@ -815,35 +858,40 @@ exports[`zshy with different tsconfig configurations > should support multiple b
      "./src/cli-two.ts"
    ]
 »  Resolved compilerOptions: {
+     "allowJs": true,
+     "allowImportingTsExtensions": true,
+     "declaration": true,
+     "declarationMap": true,
+     "forceConsistentCasingInFileNames": true,
+     "jsx": 4,
      "lib": [
        "lib.esnext.d.ts"
      ],
-     "target": "ES2020",
      "module": "ESNext",
      "moduleResolution": "Bundler",
-     "moduleDetection": 2,
-     "allowJs": true,
-     "declaration": true,
-     "jsx": 4,
-     "allowImportingTsExtensions": true,
-     "rewriteRelativeImportExtensions": true,
-     "verbatimModuleSyntax": false,
+     "moduleDetection": 1,
      "noEmit": false,
-     "strict": true,
-     "skipLibCheck": true,
      "noFallthroughCasesInSwitch": true,
+     "noImplicitThis": true,
+     "noPropertyAccessFromIndexSignature": false,
      "noUncheckedIndexedAccess": true,
-     "esModuleInterop": true,
-     "forceConsistentCasingInFileNames": true,
      "noUnusedLocals": true,
      "noUnusedParameters": false,
-     "noPropertyAccessFromIndexSignature": false,
-     "sourceMap": true,
-     "declarationMap": true,
-     "resolveJsonModule": true,
      "noImplicitOverride": true,
-     "noImplicitThis": true,
+     "noUncheckedSideEffectImports": false,
      "outDir": "<root>/test/multi-bin/dist",
+     "resolveJsonModule": true,
+     "rewriteRelativeImportExtensions": true,
+     "skipLibCheck": true,
+     "strict": true,
+     "sourceMap": true,
+     "target": "ES2020",
+     "types": [
+       "node"
+     ],
+     "verbatimModuleSyntax": false,
+     "esModuleInterop": true,
+     "configFilePath": "<root>/test/multi-bin/tsconfig.json",
      "emitDeclarationOnly": false,
      "composite": false
    }
@@ -912,6 +960,7 @@ exports[`zshy with different tsconfig configurations > should support tsconfig p
        ".": "./src/index.ts"
      }
    }
+»  Using TypeScript <version>
 »  Reading tsconfig from ./tsconfig.json
 »  Determining entrypoints...
    ╔═══════════════════════╤════════════════╗
@@ -933,46 +982,46 @@ exports[`zshy with different tsconfig configurations > should support tsconfig p
      "./src/index.ts"
    ]
 »  Resolved compilerOptions: {
-     "target": "ES2020",
+     "declaration": true,
+     "forceConsistentCasingInFileNames": true,
      "module": "ESNext",
      "moduleResolution": "Bundler",
-     "esModuleInterop": true,
-     "strict": true,
-     "skipLibCheck": true,
-     "forceConsistentCasingInFileNames": true,
-     "declaration": true,
-     "baseUrl": "<root>/test/tsconfig-paths/src",
+     "outDir": "<root>/test/tsconfig-paths/dist",
      "paths": {
        "@components/*": [
-         "<root>/test/tsconfig-paths/src/components/*"
+         "./src/components/*"
        ],
        "@/config": [
-         "<root>/test/tsconfig-paths/src/config.ts"
+         "./src/config.ts"
        ],
        "utils/*": [
-         "utils/*"
+         "./src/utils/*"
        ],
        "components/*": [
-         "components/*"
+         "./src/components/*"
        ],
        "lib/*": [
-         "lib/*"
+         "./src/lib/*"
        ],
        "~/*": [
-         "*"
+         "./src/*"
        ],
        "$config": [
-         "config.ts"
+         "./src/config.ts"
        ],
        "#helpers": [
-         "./utils/helpers.ts"
+         "./src/utils/helpers.ts"
        ],
        "@utils/*": [
-         "<root>/test/tsconfig-paths/src/utils/*"
+         "./src/utils/*"
        ]
      },
+     "skipLibCheck": true,
+     "strict": true,
+     "target": "ES2020",
+     "esModuleInterop": true,
+     "configFilePath": "<root>/test/tsconfig-paths/tsconfig.json",
      "pathsBasePath": "<root>/test/tsconfig-paths",
-     "outDir": "<root>/test/tsconfig-paths/dist",
      "noEmit": false,
      "emitDeclarationOnly": false,
      "rewriteRelativeImportExtensions": true,
@@ -1053,6 +1102,7 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
      },
      "bin": "./src/index.ts"
    }
+»  Using TypeScript <version>
 »  Reading tsconfig from ./tsconfig.json
 »  Determining entrypoints...
 »  Matching glob: ./src/plugins/**/*.{ts,tsx,mts,cts}
@@ -1114,46 +1164,51 @@ exports[`zshy with different tsconfig configurations > should work with basic.te
      "./src/default-with-enum-exports.ts"
    ]
 »  Resolved compilerOptions: {
+     "allowJs": true,
+     "allowImportingTsExtensions": true,
+     "composite": false,
+     "declaration": true,
+     "declarationMap": true,
+     "forceConsistentCasingInFileNames": true,
+     "jsx": 4,
      "lib": [
        "lib.esnext.d.ts"
      ],
-     "target": "ES2020",
      "module": "ESNext",
      "moduleResolution": "Bundler",
-     "moduleDetection": 2,
-     "allowJs": true,
-     "declaration": true,
-     "jsx": 4,
-     "allowImportingTsExtensions": true,
-     "rewriteRelativeImportExtensions": true,
-     "verbatimModuleSyntax": false,
+     "moduleDetection": 1,
      "noEmit": false,
-     "strict": true,
-     "skipLibCheck": true,
      "noFallthroughCasesInSwitch": true,
+     "noImplicitThis": true,
+     "noPropertyAccessFromIndexSignature": false,
      "noUncheckedIndexedAccess": true,
-     "esModuleInterop": true,
-     "forceConsistentCasingInFileNames": true,
      "noUnusedLocals": true,
      "noUnusedParameters": false,
-     "noPropertyAccessFromIndexSignature": false,
-     "sourceMap": true,
-     "declarationMap": true,
-     "resolveJsonModule": true,
      "noImplicitOverride": true,
-     "noImplicitThis": true,
+     "noUncheckedSideEffectImports": false,
      "outDir": "<root>/test/basic/dist",
-     "composite": false,
+     "resolveJsonModule": true,
+     "rewriteRelativeImportExtensions": true,
+     "skipLibCheck": true,
+     "strict": true,
+     "sourceMap": true,
+     "target": "ES2020",
+     "types": [
+       "node"
+     ],
+     "verbatimModuleSyntax": false,
+     "esModuleInterop": true,
+     "configFilePath": "<root>/test/basic/tsconfig.json",
      "emitDeclarationOnly": false
    }
 »  Building CJS... (rewriting .ts -> .cjs/.d.cts)
 »  Enabling CJS interop transform...
 »  Found 5 asset import(s), copying to output directory...
-»  Copied asset: ./src/assets/README.md → ./dist/assets/README.md
 »  Copied asset: ./src/assets/styles.css → ./dist/assets/styles.css
 »  Copied asset: ./src/assets/config.json → ./dist/assets/config.json
 »  Copied asset: ./src/plugins/plugin-a.css → ./dist/plugins/plugin-a.css
 »  Copied asset: ./src/plugins/plugin-b.css → ./dist/plugins/plugin-b.css
+»  Copied asset: ./src/assets/README.md → ./dist/assets/README.md
 »  Building ESM...
 »  Found 5 asset import(s), copying to output directory...
 »  Copying 3 assets...
@@ -1442,6 +1497,7 @@ exports[`zshy with different tsconfig configurations > should work with custom c
        "custom-src": "src"
      }
    }
+»  Using TypeScript <version>
 »  Reading tsconfig from ./tsconfig.json
 »  Determining entrypoints...
    ╔════════════════════════════════╤════════════════╗
@@ -1465,35 +1521,40 @@ exports[`zshy with different tsconfig configurations > should work with custom c
      "./src/utils.ts"
    ]
 »  Resolved compilerOptions: {
+     "allowJs": true,
+     "allowImportingTsExtensions": true,
+     "declaration": true,
+     "declarationMap": true,
+     "forceConsistentCasingInFileNames": true,
+     "jsx": 4,
      "lib": [
        "lib.esnext.d.ts"
      ],
-     "target": "ES2020",
      "module": "ESNext",
      "moduleResolution": "Bundler",
-     "moduleDetection": 2,
-     "allowJs": true,
-     "declaration": true,
-     "jsx": 4,
-     "allowImportingTsExtensions": true,
-     "rewriteRelativeImportExtensions": true,
-     "verbatimModuleSyntax": false,
+     "moduleDetection": 1,
      "noEmit": false,
-     "strict": true,
-     "skipLibCheck": true,
      "noFallthroughCasesInSwitch": true,
+     "noImplicitThis": true,
+     "noPropertyAccessFromIndexSignature": false,
      "noUncheckedIndexedAccess": true,
-     "esModuleInterop": true,
-     "forceConsistentCasingInFileNames": true,
      "noUnusedLocals": true,
      "noUnusedParameters": false,
-     "noPropertyAccessFromIndexSignature": false,
-     "sourceMap": true,
-     "declarationMap": true,
-     "resolveJsonModule": true,
      "noImplicitOverride": true,
-     "noImplicitThis": true,
+     "noUncheckedSideEffectImports": false,
      "outDir": "<root>/test/custom-conditions/dist",
+     "resolveJsonModule": true,
+     "rewriteRelativeImportExtensions": true,
+     "skipLibCheck": true,
+     "strict": true,
+     "sourceMap": true,
+     "target": "ES2020",
+     "types": [
+       "node"
+     ],
+     "verbatimModuleSyntax": false,
+     "esModuleInterop": true,
+     "configFilePath": "<root>/test/custom-conditions/tsconfig.json",
      "emitDeclarationOnly": false,
      "composite": false
    }
@@ -1561,6 +1622,7 @@ exports[`zshy with different tsconfig configurations > should work with custom o
        ".": "./src/index.ts"
      }
    }
+»  Using TypeScript <version>
 »  Reading tsconfig from ./tsconfig.json
 »  Determining entrypoints...
    ╔══════════╤════════════════╗
@@ -1582,36 +1644,41 @@ exports[`zshy with different tsconfig configurations > should work with custom o
      "./src/index.ts"
    ]
 »  Resolved compilerOptions: {
+     "allowJs": true,
+     "allowImportingTsExtensions": true,
+     "declaration": true,
+     "declarationDir": "<root>/test/custom-paths/dist/types/src",
+     "declarationMap": true,
+     "forceConsistentCasingInFileNames": true,
+     "jsx": 4,
      "lib": [
        "lib.esnext.d.ts"
      ],
-     "target": "ES2020",
      "module": "ESNext",
      "moduleResolution": "Bundler",
-     "moduleDetection": 2,
-     "allowJs": true,
-     "declaration": true,
-     "jsx": 4,
-     "allowImportingTsExtensions": true,
-     "rewriteRelativeImportExtensions": true,
-     "verbatimModuleSyntax": false,
+     "moduleDetection": 1,
      "noEmit": false,
-     "strict": true,
-     "skipLibCheck": true,
      "noFallthroughCasesInSwitch": true,
+     "noImplicitThis": true,
+     "noPropertyAccessFromIndexSignature": false,
      "noUncheckedIndexedAccess": true,
-     "esModuleInterop": true,
-     "forceConsistentCasingInFileNames": true,
      "noUnusedLocals": true,
      "noUnusedParameters": false,
-     "noPropertyAccessFromIndexSignature": false,
-     "sourceMap": true,
-     "declarationMap": true,
-     "resolveJsonModule": true,
      "noImplicitOverride": true,
-     "noImplicitThis": true,
+     "noUncheckedSideEffectImports": false,
      "outDir": "<root>/test/custom-paths/dist/build/src",
-     "declarationDir": "<root>/test/custom-paths/dist/types/src",
+     "resolveJsonModule": true,
+     "rewriteRelativeImportExtensions": true,
+     "skipLibCheck": true,
+     "strict": true,
+     "sourceMap": true,
+     "target": "ES2020",
+     "types": [
+       "node"
+     ],
+     "verbatimModuleSyntax": false,
+     "esModuleInterop": true,
+     "configFilePath": "<root>/test/custom-paths/tsconfig.json",
      "emitDeclarationOnly": false,
      "composite": false
    }
@@ -1660,6 +1727,7 @@ exports[`zshy with different tsconfig configurations > should work with flat bui
        ".": "./src/index.ts"
      }
    }
+»  Using TypeScript <version>
 »  Reading tsconfig from ./tsconfig.json
 »  You're building your code to the project root. This means your compiled files will be generated alongside your source files.
    Ensure that your "files" in package.json does not include TypeScript source files, or your users may experience .d.ts resolution issues in some environments:
@@ -1684,35 +1752,40 @@ exports[`zshy with different tsconfig configurations > should work with flat bui
      "./src/index.ts"
    ]
 »  Resolved compilerOptions: {
+     "allowJs": true,
+     "allowImportingTsExtensions": true,
+     "declaration": true,
+     "declarationMap": true,
+     "forceConsistentCasingInFileNames": true,
+     "jsx": 4,
      "lib": [
        "lib.esnext.d.ts"
      ],
-     "target": "ES2020",
      "module": "ESNext",
      "moduleResolution": "Bundler",
-     "moduleDetection": 2,
-     "allowJs": true,
-     "declaration": true,
-     "jsx": 4,
-     "allowImportingTsExtensions": true,
-     "rewriteRelativeImportExtensions": true,
-     "verbatimModuleSyntax": false,
+     "moduleDetection": 1,
      "noEmit": false,
-     "strict": true,
-     "skipLibCheck": true,
      "noFallthroughCasesInSwitch": true,
+     "noImplicitThis": true,
+     "noPropertyAccessFromIndexSignature": false,
      "noUncheckedIndexedAccess": true,
-     "esModuleInterop": true,
-     "forceConsistentCasingInFileNames": true,
      "noUnusedLocals": true,
      "noUnusedParameters": false,
-     "noPropertyAccessFromIndexSignature": false,
-     "sourceMap": true,
-     "declarationMap": true,
-     "resolveJsonModule": true,
      "noImplicitOverride": true,
-     "noImplicitThis": true,
+     "noUncheckedSideEffectImports": false,
      "outDir": "<root>/test/flat",
+     "resolveJsonModule": true,
+     "rewriteRelativeImportExtensions": true,
+     "skipLibCheck": true,
+     "strict": true,
+     "sourceMap": true,
+     "target": "ES2020",
+     "types": [
+       "node"
+     ],
+     "verbatimModuleSyntax": false,
+     "esModuleInterop": true,
+     "configFilePath": "<root>/test/flat/tsconfig.json",
      "emitDeclarationOnly": false,
      "composite": false
    }
