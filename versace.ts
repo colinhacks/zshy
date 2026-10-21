@@ -2,7 +2,7 @@
 
 import arg from "arg";
 import { execSync } from "child_process";
-import { existsSync, readFileSync, writeFileSync } from "fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import semver from "semver";
 
 const VERSION_FILE = "VERSION.txt";
@@ -65,7 +65,8 @@ function generatePreReleaseVersion(baseVersion: string, tag: string, bumpType: "
   return `${bumpedVersion}-${tag}.${timestamp}`;
 }
 
-function updatePackageVersion(newVersion: string): void {
+// Returns the version package.json carried before, so it can be put back afterwards.
+function updatePackageVersion(newVersion: string): string {
   const packageJson = readPackageJson();
   const oldVersion = packageJson.version;
 
@@ -73,13 +74,33 @@ function updatePackageVersion(newVersion: string): void {
 
   packageJson.version = newVersion;
   writePackageJson(packageJson);
+  return oldVersion;
 }
 
-function restorePackageVersion(): void {
+// package.json carries the released version on main (stager matches a held release run to its
+// version by reading package.json at the run's commit), so the original is put back rather than a
+// placeholder.
+function restorePackageVersion(version: string): void {
   const packageJson = readPackageJson();
-  packageJson.version = "0.0.0";
+  packageJson.version = version;
   writePackageJson(packageJson);
-  console.log("Restored package.json version to 0.0.0");
+  console.log(`Restored package.json version to ${version}`);
+}
+
+// `versace.ts pack <dir>`: the release tarball, packed into <dir> with the VERSION.txt version.
+// The release workflow packs in a job that holds no npm credential and stages that exact file from
+// another, so the job that can reach npm never runs the repo's dependencies.
+function pack(destination: string): void {
+  const version = readVersionFile();
+  validateVersion(version);
+  // npm pack writes into the destination but does not create it
+  mkdirSync(destination, { recursive: true });
+  const originalVersion = updatePackageVersion(version);
+  try {
+    execSync(`npm pack --pack-destination ${JSON.stringify(destination)}`, { stdio: "inherit" });
+  } finally {
+    restorePackageVersion(originalVersion);
+  }
 }
 
 function isLiveOnNpm(name: string, version: string): boolean {
@@ -159,6 +180,17 @@ function main(): void {
       process.exit(0);
     }
 
+    // Handle pack command
+    if (args._?.[0] === "pack") {
+      const destination = args._[1];
+      if (!destination) {
+        console.error("❌ Usage: versace.ts pack <directory>");
+        process.exit(1);
+      }
+      pack(destination);
+      process.exit(0);
+    }
+
     // Check that exactly one tag is specified
     const tagOptions = ["--latest", "--alpha", "--beta", "--canary"] as const;
     const selectedTags = tagOptions.filter((tag) => args[tag]);
@@ -214,15 +246,14 @@ function main(): void {
 
     const name = readPackageJson().name ?? "zshy";
 
+    // Update package.json
+    const originalVersion = updatePackageVersion(finalVersion);
     try {
-      // Update package.json
-      updatePackageVersion(finalVersion);
-
       // Stage, rather than publish — see runNpmStagePublish.
       runNpmStagePublish(name, finalVersion, selectedTag, additionalFlags);
     } finally {
       // Always restore the original version
-      restorePackageVersion();
+      restorePackageVersion(originalVersion);
     }
   } catch (error) {
     if (error && typeof error === "object" && "code" in error && error.code === "ARG_UNKNOWN_OPTION") {
